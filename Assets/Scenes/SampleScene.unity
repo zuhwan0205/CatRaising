@@ -374,8 +374,9 @@ GameObject:
   m_Component:
   - component: {fileID: 2019099628}
   - component: {fileID: 2019099629}
+  - component: {fileID: 2019099630}
   m_Layer: 0
-  m_Name: GameObject
+  m_Name: LoadingSceneManager
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -408,6 +409,22 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: ab79faa465d102b4dac5c128e07e1e16, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::BackendManager
+  onLoginReady:
+    m_PersistentCalls:
+      m_Calls: []
+--- !u!114 &2019099630
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2019099627}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 62e5ad0cb3a949099bb069b6432769f1, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::LoadingLoginUI
+  uiFont: {fileID: 0}
 --- !u!1660057539 &9223372036854775807
 SceneRoots:
   m_ObjectHideFlags: 0

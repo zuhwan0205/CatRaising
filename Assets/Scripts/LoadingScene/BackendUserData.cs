@@ -1,199 +1,106 @@
+using System;
 using System.Collections.Generic;
-using System.Text;
-using UnityEngine;
 
-using BackEnd;
-public class BackendUserData : MonoBehaviour
+[Serializable]
+public class BackendUserData
 {
-    public int level = 1;
-    public float atk = 3.5f;
-    public string info = string.Empty;
-    public Dictionary<string, int> inventory = new Dictionary<string, int>();
-    public List<string> equipment = new List<string>();
+    public const int CurrentVersion = 1;
+    public int schemaVersion = CurrentVersion;
+    public PlayerProgress progress = new PlayerProgress();
+    public PlayerWallet wallet = new PlayerWallet();
+    public List<OwnedCharacter> characters = new List<OwnedCharacter>();
+    public List<OwnedEquipment> equipment = new List<OwnedEquipment>();
+    public List<OwnedRelic> relics = new List<OwnedRelic>();
+    public PlayerLoadout loadout = new PlayerLoadout();
+    public IdleRewardState idleReward = new IdleRewardState();
+    // 기존 장비명은 ID 대응이 미확정이므로 원본으로 보관합니다.
+    public string legacySnapshotJson = "";
 
-    // 데이터를 디버깅하기 위한 함수입니다.(Debug.Log(UserData);)
+    public static BackendUserData CreateNew()
+    {
+        var data = new BackendUserData();
+        data.characters.Add(new OwnedCharacter { characterId = CatGameCatalog.StarterCharacterId });
+        data.loadout.characterId = CatGameCatalog.StarterCharacterId;
+        return data;
+    }
+
     public override string ToString()
     {
-        StringBuilder result = new StringBuilder();
-        result.AppendLine($"level : {level}");
-        result.AppendLine($"atk : {atk}");
-        result.AppendLine($"info : {info}");
-
-        result.AppendLine($"inventory");
-        foreach (var itemKey in inventory.Keys)
-        {
-            result.AppendLine($"| {itemKey} : {inventory[itemKey]}개");
-        }
-
-        result.AppendLine($"equipment");
-        foreach (var equip in equipment)
-        {
-            result.AppendLine($"| {equip}");
-        }
-
-        return result.ToString();
+        return $"세이브 v{schemaVersion}, 계정 레벨 {progress.accountLevel}, 캐릭터 {characters.Count}, 장비 {equipment.Count}, 유물 {relics.Count}";
     }
 }
 
-public class BackendGameData
+[Serializable]
+public class PlayerProgress
 {
-    private static BackendGameData _instance = null;
+    public int accountLevel = 1;
+    public long accountExperience;
+    public int currentStage = 1;
+    public int highestClearedStage;
+    public int permanentAttackLevel;
+    public int permanentDefenseLevel;
+    public int permanentAttackSpeedLevel;
+}
 
-    public static BackendGameData Instance
+[Serializable]
+public class ItemAmount { public string itemId; public long amount; }
+
+[Serializable]
+public class PlayerWallet
+{
+    public long gold;
+    public long gems;
+    public List<ItemAmount> materials = new List<ItemAmount>();
+}
+
+// 캐릭터와 유물은 종류당 하나를 육성하고 중복은 조각으로 관리하는 초기 모델입니다.
+[Serializable]
+public class OwnedCharacter
+{
+    public string characterId;
+    public int level = 1;
+    public long experience;
+    public int ascension;
+    public long fragments;
+}
+
+[Serializable]
+public class OwnedEquipment
+{
+    public string instanceId;
+    public string equipmentId;
+    public int enhancement;
+    public bool isLocked;
+    public StatValues randomBonuses = new StatValues();
+
+    public static OwnedEquipment Create(string definitionId)
     {
-        get
-        {
-            if (_instance == null)
-            {
-                _instance = new BackendGameData();
-            }
-
-            return _instance;
-        }
+        return new OwnedEquipment { instanceId = Guid.NewGuid().ToString("N"), equipmentId = definitionId };
     }
+}
 
-    public static BackendUserData userData;
+[Serializable]
+public class OwnedRelic
+{
+    public string relicId;
+    public int level = 1;
+    public long fragments;
+}
 
-    private string gameDataRowInDate = string.Empty;
+[Serializable]
+public class PlayerLoadout
+{
+    public string characterId;
+    public string weaponInstanceId = "";
+    public string armorInstanceId = "";
+    public string accessoryInstanceId = "";
+    public List<string> relicIds = new List<string>();
+}
 
-    public void GameDataInsert()
-    {
-        if (userData == null)
-        {
-            userData = new BackendUserData();
-        }
-
-        Debug.Log("데이터를 초기화합니다.");
-        userData.level = 1;
-        userData.atk = 3.5f;
-        userData.info = "친추는 언제나 환영입니다.";
-
-        userData.equipment.Add("전사의 투구");
-        userData.equipment.Add("강철 갑옷");
-        userData.equipment.Add("헤르메스의 군화");
-
-        userData.inventory.Add("빨간포션", 1);
-        userData.inventory.Add("하얀포션", 1);
-        userData.inventory.Add("파란포션", 1);
-
-        Debug.Log("뒤끝 업데이트 목록에 해당 데이터들을 추가합니다.");
-        Param param = new Param();
-        param.Add("level", userData.level);
-        param.Add("atk", userData.atk);
-        param.Add("info", userData.info);
-        param.Add("equipment", userData.equipment);
-        param.Add("inventory", userData.inventory);
-
-
-        Debug.Log("게임 정보 데이터 삽입을 요청합니다.");
-        var bro = Backend.GameData.Insert("USER_DATA", param);
-
-        if (bro.IsSuccess())
-        {
-            Debug.Log("게임 정보 데이터 삽입에 성공했습니다. : " + bro);
-
-            //삽입한 게임 정보의 고유값입니다.  
-            gameDataRowInDate = bro.GetInDate();
-        }
-        else
-        {
-            Debug.LogError("게임 정보 데이터 삽입에 실패했습니다. : " + bro);
-        }
-    }
-
-    public void GameDataGet()
-    {
-        Debug.Log("게임 정보 조회 함수를 호출합니다.");
-
-        var bro = Backend.GameData.GetMyData("USER_DATA", new Where());
-
-        if (bro.IsSuccess())
-        {
-            Debug.Log("게임 정보 조회에 성공했습니다. : " + bro);
-
-
-            LitJson.JsonData gameDataJson = bro.FlattenRows(); // Json으로 리턴된 데이터를 받아옵니다.  
-
-            // 받아온 데이터의 갯수가 0이라면 데이터가 존재하지 않는 것입니다.  
-            if (gameDataJson.Count <= 0)
-            {
-                Debug.LogWarning("데이터가 존재하지 않습니다.");
-            }
-            else
-            {
-                gameDataRowInDate = gameDataJson[0]["inDate"].ToString(); //불러온 게임 정보의 고유값입니다.  
-
-                userData = new BackendUserData();
-
-                userData.level = int.Parse(gameDataJson[0]["level"].ToString());
-                userData.atk = float.Parse(gameDataJson[0]["atk"].ToString());
-                userData.info = gameDataJson[0]["info"].ToString();
-
-                foreach (string itemKey in gameDataJson[0]["inventory"].Keys)
-                {
-                    userData.inventory.Add(itemKey, int.Parse(gameDataJson[0]["inventory"][itemKey].ToString()));
-                }
-
-                foreach (LitJson.JsonData equip in gameDataJson[0]["equipment"])
-                {
-                    userData.equipment.Add(equip.ToString());
-                }
-
-                Debug.Log(userData.ToString());
-            }
-        }
-        else
-        {
-            Debug.LogError("게임 정보 조회에 실패했습니다. : " + bro);
-        }
-    }
-
-    public void LevelUp()
-    {
-        Debug.Log("레벨을 1 증가시킵니다.");
-        userData.level += 1;
-        userData.atk += 3.5f;
-        userData.info = "내용을 변경합니다.";
-    }
-
-// 게임 정보 수정하기
-    public void GameDataUpdate()
-    {
-        if (userData == null)
-        {
-            Debug.LogError("서버에서 다운받거나 새로 삽입한 데이터가 존재하지 않습니다. Insert 혹은 Get을 통해 데이터를 생성해주세요.");
-            return;
-        }
-
-        Param param = new Param();
-        param.Add("level", userData.level);
-        param.Add("atk", userData.atk);
-        param.Add("info", userData.info);
-        param.Add("equipment", userData.equipment);
-        param.Add("inventory", userData.inventory);
-
-        BackendReturnObject bro = null;
-
-        if (string.IsNullOrEmpty(gameDataRowInDate))
-        {
-            Debug.Log("내 제일 최신 게임 정보 데이터 수정을 요청합니다.");
-
-            bro = Backend.GameData.Update("USER_DATA", new Where(), param);
-        }
-        else
-        {
-            Debug.Log($"{gameDataRowInDate}의 게임 정보 데이터 수정을 요청합니다.");
-
-            bro = Backend.GameData.UpdateV2("USER_DATA", gameDataRowInDate, Backend.UserInDate, param);
-        }
-
-        if (bro.IsSuccess())
-        {
-            Debug.Log("게임 정보 데이터 수정에 성공했습니다. : " + bro);
-        }
-        else
-        {
-            Debug.LogError("게임 정보 데이터 수정에 실패했습니다. : " + bro);
-        }
-    }
+[Serializable]
+public class IdleRewardState
+{
+    // 0은 서버 기준 시각 미설정. 클라이언트 시각으로 보상을 지급하지 않습니다.
+    public long lastSettledUnixSeconds;
+    public int rewardStage;
 }

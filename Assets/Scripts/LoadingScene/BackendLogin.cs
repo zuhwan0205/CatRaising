@@ -1,5 +1,3 @@
-using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
 
 using BackEnd;
@@ -21,8 +19,14 @@ public class BackendLogin
         }
     }
 
-    public void CustomSignUp(string id, string pw)
+    public bool CustomSignUp(string id, string pw)
     {
+        if (string.IsNullOrWhiteSpace(id) || string.IsNullOrWhiteSpace(pw))
+        {
+            Debug.LogWarning("아이디와 비밀번호를 입력해주세요.");
+            return false;
+        }
+
         Debug.Log("회원가입을 요청합니다.");
 
         var bro = Backend.BMember.CustomSignUp(id, pw);
@@ -30,15 +34,23 @@ public class BackendLogin
         if (bro.IsSuccess())
         {
             Debug.Log("회원가입에 성공했습니다. : " + bro);
+            return true;
         }
         else
         {
             Debug.LogError("회원가입에 실패했습니다. : " + bro);
+            return false;
         }
     }
 
-    public void CustomLogin(string id, string pw)
+    public bool CustomLogin(string id, string pw)
     {
+        if (string.IsNullOrWhiteSpace(id) || string.IsNullOrWhiteSpace(pw))
+        {
+            Debug.LogWarning("아이디와 비밀번호를 입력해주세요.");
+            return false;
+        }
+
         Debug.Log("로그인을 요청합니다.");
 
         var bro = Backend.BMember.CustomLogin(id, pw);
@@ -46,10 +58,12 @@ public class BackendLogin
         if (bro.IsSuccess())
         {
             Debug.Log("로그인이 성공했습니다. : " + bro);
+            return true;
         }
         else
         {
             Debug.LogError("로그인이 실패했습니다. : " + bro);
+            return false;
         }
     }
 
