@@ -2,10 +2,12 @@ using System;
 using BackEnd;
 using UnityEngine;
 using UnityEngine.Events;
+using UnityEngine.SceneManagement;
 
 public class BackendManager : MonoBehaviour
 {
     [SerializeField] private UnityEvent onLoginReady = new UnityEvent();
+    [SerializeField] private bool openGameSceneAfterLogin = true;
     private bool initialized;
     private bool loginReady;
     private LoadingLoginUI loginUI;
@@ -92,5 +94,8 @@ public class BackendManager : MonoBehaviour
 
         // Inspector에서 로그인 완료 후 씬 전환 등의 동작을 연결합니다.
         onLoginReady.Invoke();
+        // 기존 Inspector 씬 전환 이벤트가 있으면 자동 이동과 중복 실행하지 않습니다.
+        if (openGameSceneAfterLogin && onLoginReady.GetPersistentEventCount() == 0)
+            SceneManager.LoadSceneAsync("GameScene");
     }
 }
