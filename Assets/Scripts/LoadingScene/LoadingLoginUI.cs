@@ -33,7 +33,7 @@ public class LoadingLoginUI : MonoBehaviour
         if (uiFont == null)
             uiFont = Font.CreateDynamicFontFromOSFont(new[] { "Malgun Gothic", "Apple SD Gothic Neo", "Noto Sans CJK KR", "Arial" }, 24);
 
-        if (FindObjectOfType<EventSystem>() == null)
+        if (FindAnyObjectByType<EventSystem>() == null)
         {
             var events = new GameObject("Login EventSystem", typeof(EventSystem));
             events.transform.SetParent(transform, false);
@@ -143,7 +143,13 @@ public class LoadingLoginUI : MonoBehaviour
         yield return null;
         try
         {
-            manager.Submit(signUp, idInput.text, passwordInput.text);
+            var request = manager.SubmitAsync(signUp, idInput.text, passwordInput.text);
+            while (!request.IsCompleted) yield return null;
+            if (request.IsFaulted)
+            {
+                Debug.LogException(request.Exception);
+                ShowMessage("로그인 처리 중 오류가 발생했습니다. 다시 시도해주세요.");
+            }
         }
         finally
         {
