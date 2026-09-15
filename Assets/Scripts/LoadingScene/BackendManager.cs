@@ -1,4 +1,5 @@
 using System;
+using System.Threading.Tasks;
 using BackEnd;
 using UnityEngine;
 using UnityEngine.Events;
@@ -8,6 +9,8 @@ public class BackendManager : MonoBehaviour
 {
     [SerializeField] private UnityEvent onLoginReady = new UnityEvent();
     [SerializeField] private bool openGameSceneAfterLogin = true;
+    [SerializeField] private string databaseUuid = "01a0a448-bc6f-72bf-b5ea-c7fb23d4fd0d";
+    private bool submitting;
     private bool initialized;
     private bool loginReady;
     private LoadingLoginUI loginUI;
@@ -37,15 +40,40 @@ public class BackendManager : MonoBehaviour
         }
     }
 
-    public void Submit(bool signUp, string id, string password)
+#if UNITY_EDITOR
+    [ContextMenu("Database/Create player_save table (once)")]
+    private async void CreatePlayerSaveTable()
     {
-        if (!initialized || loginReady) return;
+        if (!Application.isPlaying || submitting)
+        {
+            Debug.LogWarning("Play 모드에서 로그인 요청이 끝난 후 실행해주세요.");
+            return;
+        }
+        submitting = true;
+        try
+        {
+            await BackendGameData.CreateTableAsync(databaseUuid);
+            loginUI.ShowMessage("player_save 테이블을 생성했습니다. 로그인 버튼을 다시 눌러주세요.");
+        }
+        catch (Exception exception)
+        {
+            Debug.LogException(exception);
+            if (this != null) loginUI.ShowMessage("테이블 생성 실패. Console 오류와 DB 권한을 확인해주세요.");
+        }
+        finally { submitting = false; }
+    }
+#endif
+
+    public async Task SubmitAsync(bool signUp, string id, string password)
+    {
+        if (!initialized || loginReady || submitting) return;
         if (string.IsNullOrWhiteSpace(id) || string.IsNullOrWhiteSpace(password))
         {
             loginUI.ShowMessage("아이디와 비밀번호를 입력해주세요.");
             return;
         }
 
+        submitting = true;
         try
         {
             if (signUp)
@@ -63,39 +91,28 @@ public class BackendManager : MonoBehaviour
                 return;
             }
 
-            // 조회 실패와 조회 성공 후 데이터가 없는 경우를 구분합니다.
-            if (!BackendGameData.Instance.GameDataGet())
+            loginUI.ShowMessage("데이터베이스에 연결하고 유저 데이터를 준비합니다…");
+            if (!await BackendGameData.Instance.InitializeAndLoadAsync(databaseUuid))
             {
-                loginUI.ShowMessage("로그인은 성공했지만 데이터를 불러오지 못했습니다. 로그인을 다시 눌러주세요.");
+                if (this != null) loginUI.ShowMessage(BackendGameData.Instance.LastError);
                 return;
             }
-            if (BackendGameData.userData == null && !BackendGameData.Instance.GameDataInsert())
-            {
-                loginUI.ShowMessage("초기 데이터를 저장하지 못했습니다. 로그인을 다시 눌러주세요.");
-                return;
-            }
-
-            // 기존 행을 갱신하며, 변환 결과 저장 실패 시 로그인 완료를 보류합니다.
-            if (BackendGameData.Instance.NeedsMigrationSave && !BackendGameData.Instance.GameDataUpdate())
-            {
-                loginUI.ShowMessage("기존 데이터를 새 형식으로 저장하지 못했습니다. 로그인을 다시 눌러주세요.");
-                return;
-            }
-
+            if (this == null) return;
             loginReady = true;
             loginUI.ShowCompleted();
         }
         catch (Exception exception)
         {
             Debug.LogException(exception);
-            loginUI.ShowMessage("처리 중 오류가 발생했습니다. 잠시 후 다시 시도해주세요.");
+            if (this != null) loginUI.ShowMessage("처리 중 오류가 발생했습니다. 잠시 후 다시 시도해주세요.");
             return;
         }
+        finally { submitting = false; }
 
         // Inspector에서 로그인 완료 후 씬 전환 등의 동작을 연결합니다.
         onLoginReady.Invoke();
         // 기존 Inspector 씬 전환 이벤트가 있으면 자동 이동과 중복 실행하지 않습니다.
         if (openGameSceneAfterLogin && onLoginReady.GetPersistentEventCount() == 0)
-            SceneManager.LoadSceneAsync("GameScene");
+            _ = SceneManager.LoadSceneAsync("GameScene");
     }
 }

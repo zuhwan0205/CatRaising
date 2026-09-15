@@ -1,0 +1,246 @@
+using System;
+using UnityEngine;
+using UnityEngine.Events;
+using UnityEngine.EventSystems;
+using UnityEngine.UI;
+#if ENABLE_INPUT_SYSTEM
+using UnityEngine.InputSystem.UI;
+#endif
+
+public class CatGameSceneUI : MonoBehaviour
+{
+    private CatGameCatalog catalog;
+    private Font uiFont;
+    private bool preview;
+    public event Action SaveRequested;
+    public event Action<OwnedCharacter> CharacterSelected;
+    private bool saving;
+    private BackendUserData data;
+    private RectTransform page;
+    private RectTransform safeArea;
+    private Text status;
+    private Text wallet;
+    private Button[] tabs;
+    private Rect lastSafeArea;
+    private Vector2 lastScreen;
+    private readonly Color ink = new Color(0.20f, 0.18f, 0.29f);
+    private readonly Color accent = new Color(0.40f, 0.29f, 0.85f);
+    private readonly Color cream = new Color(0.98f, 0.96f, 0.92f);
+
+    public void Build(BackendUserData playerData, CatGameCatalog definitions, Font font, bool isPreview)
+    {
+        data = playerData;
+        catalog = definitions;
+        uiFont = font;
+        preview = isPreview;
+        if (uiFont == null) uiFont = Font.CreateDynamicFontFromOSFont(new[] { "Malgun Gothic", "Apple SD Gothic Neo", "Noto Sans CJK KR", "Arial" }, 24);
+        if (Camera.main == null)
+        {
+            var camera = new GameObject("Game Camera", typeof(Camera)).GetComponent<Camera>();
+            camera.transform.SetParent(transform, false);
+            camera.clearFlags = CameraClearFlags.SolidColor;
+            camera.backgroundColor = cream;
+        }
+        if (FindAnyObjectByType<EventSystem>() == null)
+        {
+            var events = new GameObject("Game EventSystem", typeof(EventSystem));
+            events.transform.SetParent(transform, false);
+#if ENABLE_INPUT_SYSTEM
+            events.AddComponent<InputSystemUIInputModule>();
+#else
+            events.AddComponent<StandaloneInputModule>();
+#endif
+        }
+        var canvas = new GameObject("Game Canvas", typeof(RectTransform), typeof(Canvas), typeof(CanvasScaler), typeof(GraphicRaycaster));
+        canvas.transform.SetParent(transform, false);
+        canvas.GetComponent<Canvas>().renderMode = RenderMode.ScreenSpaceOverlay;
+        var scaler = canvas.GetComponent<CanvasScaler>();
+        scaler.uiScaleMode = CanvasScaler.ScaleMode.ScaleWithScreenSize;
+        scaler.referenceResolution = new Vector2(720, 1280);
+        scaler.matchWidthOrHeight = 0.5f;
+        Panel(canvas.transform, "Background", Vector2.zero, Vector2.one, cream);
+        safeArea = Rect(canvas.transform, "Safe Area", Vector2.zero, Vector2.one);
+        ApplySafeArea();
+        var header = Panel(safeArea, "Account Header", new Vector2(0.04f, .88f), new Vector2(.96f, .98f), Color.white);
+        Label(header, "고양이 키우기", 28, new Vector2(.04f,.48f), new Vector2(.62f,.95f));
+        wallet = Label(header, "", 22, new Vector2(.04f,.04f), new Vector2(.96f,.48f));
+        Button(header, "저장", new Vector2(.73f,.53f), new Vector2(.96f,.92f), () => SaveRequested?.Invoke());
+        page = Rect(safeArea, "Page", new Vector2(.04f,.16f), new Vector2(.96f,.86f));
+        status = Label(safeArea, "", 18, new Vector2(.05f,.10f), new Vector2(.95f,.15f));
+        var navigation = Rect(safeArea, "Navigation", new Vector2(.04f,.02f), new Vector2(.96f,.09f));
+        string[] titles = { "모험", "상점", "캐릭터", "유물" };
+        tabs = new Button[titles.Length];
+        for (int i = 0; i < titles.Length; i++)
+        {
+            string title = titles[i];
+            tabs[i] = Button(navigation, title, new Vector2(i*.25f,0), new Vector2(i*.25f+.235f,1), () => Show(title));
+        }
+        Show("모험");
+    }
+
+    private void Update() { if (safeArea != null) ApplySafeArea(); }
+    private void ApplySafeArea()
+    {
+        var area = Screen.safeArea;
+        var size = new Vector2(Screen.width, Screen.height);
+        if (size.x <= 0 || size.y <= 0 || (area == lastSafeArea && size == lastScreen)) return;
+        safeArea.anchorMin = area.position / size;
+        safeArea.anchorMax = (area.position + area.size) / size;
+        lastSafeArea = area; lastScreen = size;
+    }
+
+    private void Show(string tab)
+    {
+        if (saving) return;
+        foreach (Transform child in page) { child.gameObject.SetActive(false); Destroy(child.gameObject); }
+        wallet.text = $"Lv. {data.progress.accountLevel}    골드 {data.wallet.gold:N0}    다이아 {data.wallet.gems:N0}";
+        status.text = preview ? "씬 미리보기 · 서버 저장 없음" : "";
+        string[] names = { "모험", "상점", "캐릭터", "유물" };
+        for (int i = 0; i < tabs.Length; i++) tabs[i].image.color = names[i] == tab ? accent : new Color(.66f,.62f,.77f);
+        if (tab == "모험") Adventure();
+        else if (tab == "상점") Shop();
+        else if (tab == "캐릭터") Characters();
+        else Relics();
+    }
+
+    private void Adventure()
+    {
+        var field = Panel(page, "Battle Preview", Vector2.zero, Vector2.one, new Color(.90f,.94f,.89f));
+        Label(field, $"STAGE {data.progress.currentStage:00}", 32, new Vector2(.05f,.86f), new Vector2(.95f,.98f));
+        Label(field, "햇살 가득한 고양이의 모험", 22, new Vector2(.05f,.79f), new Vector2(.95f,.87f));
+        Panel(field, "Ground", Vector2.zero, new Vector2(1,.34f), new Color(.76f,.83f,.67f));
+        Label(field, "/\\_/\\\n( •ㅅ• )", 46, new Vector2(.08f,.34f), new Vector2(.50f,.61f));
+        Label(field, "슬라임", 30, new Vector2(.61f,.37f), new Vector2(.95f,.50f));
+        Label(field, CharacterName(data.loadout.characterId), 24, new Vector2(.03f,.24f), new Vector2(.60f,.34f));
+        Label(field, "전투 미리보기\n자동 공격과 보상은 다음 단계에서 연결됩니다.", 21, new Vector2(.05f,.07f), new Vector2(.95f,.22f));
+    }
+
+    private void Shop()
+    {
+        Label(page, "상점", 32, new Vector2(0,.90f), Vector2.one);
+        ShopCard("유물 상점", "유물 강화 · 유물 선택 / 랜덤 획득", .51f);
+        ShopCard("캐릭터 상점", "캐릭터 선택 / 랜덤 획득", .12f);
+    }
+    private void ShopCard(string title, string description, float bottom)
+    {
+        var card = Panel(page, title, new Vector2(0,bottom), new Vector2(1,bottom+.34f), Color.white);
+        Label(card, title, 28, new Vector2(.05f,.63f), new Vector2(.95f,.94f));
+        Label(card, description, 21, new Vector2(.05f,.35f), new Vector2(.95f,.63f));
+        var button = Button(card, "준비 중", new Vector2(.20f,.08f), new Vector2(.80f,.30f), () => {});
+        button.interactable = false;
+    }
+
+    // 보유 목록은 스크롤 가능하며 시안의 3열 배치를 사용합니다.
+    private Transform Grid(string title)
+    {
+        Label(page, title, 32, new Vector2(0,.90f), Vector2.one);
+        var viewport = Panel(page, "Inventory Viewport", new Vector2(0,.02f), new Vector2(1,.87f), new Color(.94f,.92f,.97f));
+        viewport.gameObject.AddComponent<RectMask2D>();
+        var content = Rect(viewport, "Inventory Items", new Vector2(0,1), Vector2.one);
+        content.pivot = new Vector2(.5f,1);
+        var grid = content.gameObject.AddComponent<GridLayoutGroup>();
+        Canvas.ForceUpdateCanvases();
+        float width = viewport.rect.width;
+        grid.cellSize = new Vector2(Mathf.Max(80,(width-48)/3), 155);
+        grid.spacing = new Vector2(12,12);
+        grid.padding = new RectOffset(12,12,12,12);
+        grid.constraint = GridLayoutGroup.Constraint.FixedColumnCount;
+        grid.constraintCount = 3;
+        var fitter = content.gameObject.AddComponent<ContentSizeFitter>();
+        fitter.verticalFit = ContentSizeFitter.FitMode.PreferredSize;
+        var scroll = viewport.gameObject.AddComponent<ScrollRect>();
+        scroll.viewport = viewport; scroll.content = content;
+        scroll.horizontal = false; scroll.movementType = ScrollRect.MovementType.Clamped;
+        return content;
+    }
+
+    private void Characters()
+    {
+        var grid = Grid("캐릭터  ·  " + data.characters.Count);
+        foreach (var owned in data.characters)
+        {
+            if (owned == null) continue;
+            var character = owned;
+            string selected = data.loadout.characterId == character.characterId ? "\n선택 중" : "";
+            Button(grid, CharacterName(character.characterId) + $"\nLv. {character.level}" + selected, Vector2.zero, Vector2.one, () => CharacterDetail(character));
+        }
+    }
+
+    private string CharacterName(string id)
+    {
+        var definition = catalog.characters.Find(item => item.id == id);
+        return definition == null ? id : definition.displayName;
+    }
+
+    private void CharacterDetail(OwnedCharacter owned)
+    {
+        foreach (Transform child in page) { child.gameObject.SetActive(false); Destroy(child.gameObject); }
+        Button(page, "목록", new Vector2(0,.92f), new Vector2(.24f,1), () => Show("캐릭터"));
+        Label(page, CharacterName(owned.characterId), 30, new Vector2(.26f,.92f), Vector2.one);
+        var portrait = Panel(page, "Character Portrait", new Vector2(0,.49f), new Vector2(1,.88f), new Color(.94f,.87f,.77f));
+        Label(portrait, "/\\_/\\\n( •ㅅ• )", 60, new Vector2(.05f,.10f), new Vector2(.95f,.90f));
+        var definition = catalog.characters.Find(item => item.id == owned.characterId);
+        string details = $"Lv. {owned.level}  ·  돌파 {owned.ascension}  ·  조각 {owned.fragments}\n";
+        if (definition != null)
+        {
+            var b = definition.baseStats; var g = definition.statsPerLevel; int n = Mathf.Max(0,owned.level-1);
+            details += $"{Rarity(definition.rarity)}  ·  기본 성장 스탯\nHP {b.maxHealth+g.maxHealth*n:0.#}    공격력 {b.attack+g.attack*n:0.#}\n방어력 {b.defense+g.defense*n:0.#}    공격 속도 {b.attackSpeed+g.attackSpeed*n:0.##}\n공격 방식: {definition.attackId}";
+        }
+        else details += "캐릭터 공통 설정을 연결해주세요.";
+        Label(page, details, 23, new Vector2(0,.19f), new Vector2(1,.47f));
+        Button(page, "이 고양이 선택 · 저장", new Vector2(0,.09f), new Vector2(1,.17f), () => CharacterSelected?.Invoke(owned));
+        var level = Button(page, "레벨업 · 성장 규칙 준비 중", new Vector2(0,0), new Vector2(1,.07f), () => {});
+        level.interactable = false;
+    }
+
+    private void Relics()
+    {
+        if (data.relics.Count == 0)
+        {
+            Label(page, "유물", 32, new Vector2(0,.90f), Vector2.one);
+            Label(page, "아직 보유한 유물이 없어요.\n유물을 획득하면 이곳에 표시됩니다.", 25, new Vector2(.04f,.30f), new Vector2(.96f,.70f));
+            return;
+        }
+        var grid = Grid("유물  ·  " + data.relics.Count);
+        foreach (var owned in data.relics)
+        {
+            if (owned == null) continue;
+            var relic = owned;
+            var definition = catalog.relics.Find(item => item.id == relic.relicId);
+            string name = definition == null ? relic.relicId : definition.displayName;
+            Button(grid, name + $"\nLv. {relic.level}", Vector2.zero, Vector2.one, () => {
+                status.text = definition == null ? "유물 공통 설정을 연결해주세요." : $"{Rarity(definition.rarity)} · {definition.trigger} · 확률 {definition.chance:P0} · 재사용 {definition.cooldownSeconds:0.#}초";
+            });
+        }
+    }
+
+    public void SetBusy(bool value) { saving = value; }
+    public void ShowStatus(string message) { status.text = message; }
+    private string Rarity(ItemRarity value) { return new[] { "노말", "에픽", "유니크", "레전드리" }[Mathf.Clamp((int)value,0,3)]; }
+    private RectTransform Rect(Transform parent, string name, Vector2 min, Vector2 max)
+    {
+        var rect = new GameObject(name, typeof(RectTransform)).GetComponent<RectTransform>();
+        rect.SetParent(parent,false); rect.anchorMin=min; rect.anchorMax=max; rect.offsetMin=rect.offsetMax=Vector2.zero;
+        return rect;
+    }
+    private RectTransform Panel(Transform parent,string name,Vector2 min,Vector2 max,Color color)
+    { var rect=Rect(parent,name,min,max); rect.gameObject.AddComponent<Image>().color=color; return rect; }
+    private Text Label(Transform parent,string value,int size,Vector2 min,Vector2 max)
+    {
+        var text=Rect(parent,"Label",min,max).gameObject.AddComponent<Text>();
+        text.font=uiFont; text.text=value; text.fontSize=size; text.color=ink;
+        text.alignment=TextAnchor.MiddleCenter; text.raycastTarget=false;
+        text.resizeTextForBestFit=true; text.resizeTextMinSize=12; text.resizeTextMaxSize=size;
+        return text;
+    }
+    private Button Button(Transform parent,string title,Vector2 min,Vector2 max,UnityAction action)
+    {
+        var rect=Panel(parent,title,min,max,accent);
+        var button=rect.gameObject.AddComponent<Button>(); button.targetGraphic=rect.GetComponent<Image>();
+        button.onClick.AddListener(() => { if (!saving) action(); });
+        Label(rect,title,23,new Vector2(.04f,.04f),new Vector2(.96f,.96f)).color=Color.white;
+        return button;
+    }
+
+}
+
