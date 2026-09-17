@@ -8,8 +8,27 @@ public class CatGameSession
     private readonly bool preview;
     private readonly Func<Task<bool>> saveData;
     public bool IsSaving { get; private set; }
+    public bool HasPendingReward { get; private set; }
+    private bool rewardLimitReached;
+    public event Action<bool> GameplayBlockedChanged;
     public event Action<bool> BusyChanged;
     public event Action<string> StatusChanged;
+
+    public async Task AwardGoldAsync(long amount)
+    {
+        if (IsSaving || HasPendingReward || rewardLimitReached || amount < 0) return;
+        if (data.wallet.gold > long.MaxValue - amount)
+        {
+            rewardLimitReached = true;
+            GameplayBlockedChanged?.Invoke(true);
+            StatusChanged?.Invoke("골드 한도에 도달해 전투를 중단했습니다.");
+            return;
+        }
+        data.wallet.gold += amount;
+        HasPendingReward = true;
+        GameplayBlockedChanged?.Invoke(true);
+        await SaveAsync();
+    }
 
     public CatGameSession(BackendUserData data, bool preview, Func<Task<bool>> saveData)
     {
@@ -31,10 +50,13 @@ public class CatGameSession
         if (IsSaving) return;
         if (preview)
         {
+            HasPendingReward = false;
+            GameplayBlockedChanged?.Invoke(rewardLimitReached);
             StatusChanged?.Invoke("미리보기 변경입니다. 서버에는 저장하지 않습니다.");
             return;
         }
         IsSaving = true;
+        GameplayBlockedChanged?.Invoke(true);
         bool success = false;
         try
         {
@@ -46,9 +68,11 @@ public class CatGameSession
         finally
         {
             if (!success) rollback?.Invoke();
+            if (success) HasPendingReward = false;
             IsSaving = false;
+            GameplayBlockedChanged?.Invoke(HasPendingReward || rewardLimitReached);
             BusyChanged?.Invoke(false);
         }
-        StatusChanged?.Invoke(success ? "저장했습니다." : "저장하지 못했습니다. 반복되면 다시 로그인해주세요.");
+        StatusChanged?.Invoke(success ? "저장했습니다." : "저장 실패 · 전투가 대기 중이면 저장 버튼으로 재시도해주세요. 반복되면 다시 로그인해주세요.");
     }
 }

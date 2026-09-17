@@ -20,6 +20,16 @@ public class CatGameSceneUI : MonoBehaviour
     private RectTransform safeArea;
     private Text status;
     private Text wallet;
+    public event Action<bool> MovementModeChanged;
+    public event Action<Vector2> StickChanged;
+    public event Action<bool> AdventureVisibilityChanged;
+    private RenderTexture fieldTexture;
+    private bool automatic = true;
+    private FieldJoystick joystick;
+    private Text combatLabel;
+    private Text playerHpLabel;
+    private string playerHpText = "HP 준비 중";
+    private string combatMessage = "자동 공격 준비 중";
     private Button[] tabs;
     private Rect lastSafeArea;
     private Vector2 lastScreen;
@@ -27,9 +37,10 @@ public class CatGameSceneUI : MonoBehaviour
     private readonly Color accent = new Color(0.40f, 0.29f, 0.85f);
     private readonly Color cream = new Color(0.98f, 0.96f, 0.92f);
 
-    public void Build(BackendUserData playerData, CatGameCatalog definitions, Font font, bool isPreview)
+    public void Build(BackendUserData playerData, CatGameCatalog definitions, Font font, bool isPreview, RenderTexture fieldOutput)
     {
         data = playerData;
+        fieldTexture = fieldOutput;
         catalog = definitions;
         uiFont = font;
         preview = isPreview;
@@ -92,11 +103,16 @@ public class CatGameSceneUI : MonoBehaviour
     private void Show(string tab)
     {
         if (saving) return;
+        if (joystick != null) joystick.ResetInput();
+        joystick = null;
+        combatLabel = null;
+        playerHpLabel = null;
         foreach (Transform child in page) { child.gameObject.SetActive(false); Destroy(child.gameObject); }
         wallet.text = $"Lv. {data.progress.accountLevel}    골드 {data.wallet.gold:N0}    다이아 {data.wallet.gems:N0}";
         status.text = preview ? "씬 미리보기 · 서버 저장 없음" : "";
         string[] names = { "모험", "상점", "캐릭터", "유물" };
         for (int i = 0; i < tabs.Length; i++) tabs[i].image.color = names[i] == tab ? accent : new Color(.66f,.62f,.77f);
+        AdventureVisibilityChanged?.Invoke(tab == "모험");
         if (tab == "모험") Adventure();
         else if (tab == "상점") Shop();
         else if (tab == "캐릭터") Characters();
@@ -105,16 +121,35 @@ public class CatGameSceneUI : MonoBehaviour
 
     private void Adventure()
     {
-        var field = Panel(page, "Battle Preview", Vector2.zero, Vector2.one, new Color(.90f,.94f,.89f));
-        Label(field, $"STAGE {data.progress.currentStage:00}", 32, new Vector2(.05f,.86f), new Vector2(.95f,.98f));
-        Label(field, "햇살 가득한 고양이의 모험", 22, new Vector2(.05f,.79f), new Vector2(.95f,.87f));
-        Panel(field, "Ground", Vector2.zero, new Vector2(1,.34f), new Color(.76f,.83f,.67f));
-        Label(field, "/\\_/\\\n( •ㅅ• )", 46, new Vector2(.08f,.34f), new Vector2(.50f,.61f));
-        Label(field, "슬라임", 30, new Vector2(.61f,.37f), new Vector2(.95f,.50f));
-        Label(field, CharacterName(data.loadout.characterId), 24, new Vector2(.03f,.24f), new Vector2(.60f,.34f));
-        Label(field, "전투 미리보기\n자동 공격과 보상은 다음 단계에서 연결됩니다.", 21, new Vector2(.05f,.07f), new Vector2(.95f,.22f));
+        var field = Panel(page,"Field",Vector2.zero,Vector2.one,new Color(.30f,.42f,.30f));
+        var image = Rect(field,"Field Camera View",Vector2.zero,Vector2.one).gameObject.AddComponent<RawImage>();
+        image.texture=fieldTexture; image.raycastTarget=false;
+        var fit=image.gameObject.AddComponent<AspectRatioFitter>();
+        fit.aspectMode=AspectRatioFitter.AspectMode.FitInParent; fit.aspectRatio=.72f;
+        Label(field,$"STAGE {data.progress.currentStage:00} · 2.5D 필드",25,new Vector2(.03f,.91f),new Vector2(.97f,1));
+        var mode=Button(field,"",new Vector2(.52f,.80f),new Vector2(.96f,.89f),()=>{});
+        var modeText=mode.GetComponentInChildren<Text>();
+        modeText.text=automatic?"자동 이동 ON":"수동 이동";
+        playerHpLabel=Label(field,playerHpText,22,new Vector2(.02f,.80f),new Vector2(.50f,.89f));
+        var pad=Panel(field,"Movement Joystick",new Vector2(.04f,.05f),new Vector2(.34f,.27f),new Color(.2f,.2f,.3f,.45f));
+        var handle=Panel(pad,"Handle",new Vector2(.35f,.35f),new Vector2(.65f,.65f),new Color(1,1,1,.8f));
+        handle.GetComponent<Image>().raycastTarget=false;
+        joystick=pad.gameObject.AddComponent<FieldJoystick>(); joystick.Handle=handle;
+        joystick.InputChanged=value=>StickChanged?.Invoke(value);
+        pad.gameObject.SetActive(!automatic);
+        mode.onClick.AddListener(()=>
+        {
+            if(saving)return;
+            automatic=!automatic;
+            joystick.ResetInput();
+            pad.gameObject.SetActive(!automatic);
+            modeText.text=automatic?"자동 이동 ON":"수동 이동";
+            MovementModeChanged?.Invoke(automatic);
+        });
+        combatLabel = Label(field,combatMessage,20,new Vector2(.36f,.18f),new Vector2(.98f,.30f));
+        Label(field,"공격은 두 모드 모두 자동\n수동 이동: WASD / 방향키 / 조이스틱",18,new Vector2(.36f,.03f),new Vector2(.98f,.17f));
+        MovementModeChanged?.Invoke(automatic);
     }
-
     private void Shop()
     {
         Label(page, "상점", 32, new Vector2(0,.90f), Vector2.one);
@@ -174,6 +209,8 @@ public class CatGameSceneUI : MonoBehaviour
 
     private void CharacterDetail(OwnedCharacter owned)
     {
+        if (joystick != null) joystick.ResetInput();
+        joystick = null;
         foreach (Transform child in page) { child.gameObject.SetActive(false); Destroy(child.gameObject); }
         Button(page, "목록", new Vector2(0,.92f), new Vector2(.24f,1), () => Show("캐릭터"));
         Label(page, CharacterName(owned.characterId), 30, new Vector2(.26f,.92f), Vector2.one);
@@ -214,7 +251,22 @@ public class CatGameSceneUI : MonoBehaviour
         }
     }
 
+    public void RefreshWallet()
+    {
+        if (wallet != null) wallet.text = $"Lv. {data.progress.accountLevel}    골드 {data.wallet.gold:N0}    다이아 {data.wallet.gems:N0}";
+    }
+
     public void SetBusy(bool value) { saving = value; }
+    public void ShowCombatMessage(string message)
+    {
+        combatMessage = message;
+        if (combatLabel != null) combatLabel.text = message;
+    }
+    public void ShowPlayerHealth(double hp,double maximum)
+    {
+        playerHpText=$"HP {hp:0.#} / {maximum:0.#}";
+        if(playerHpLabel!=null)playerHpLabel.text=playerHpText;
+    }
     public void ShowStatus(string message) { status.text = message; }
     private string Rarity(ItemRarity value) { return new[] { "노말", "에픽", "유니크", "레전드리" }[Mathf.Clamp((int)value,0,3)]; }
     private RectTransform Rect(Transform parent, string name, Vector2 min, Vector2 max)
@@ -243,4 +295,3 @@ public class CatGameSceneUI : MonoBehaviour
     }
 
 }
-
