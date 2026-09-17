@@ -6,6 +6,7 @@ public class CatGameScene : MonoBehaviour
     // 기존 씬/Inspector에 저장된 참조를 유지합니다.
     [SerializeField] private CatGameCatalog catalog;
     [SerializeField] private Font uiFont;
+    [SerializeField] private bool previewSampleContent = true;
 
     private bool ownCatalog;
     private CatGameSceneUI view;
@@ -16,7 +17,15 @@ public class CatGameScene : MonoBehaviour
     {
         bool preview = BackendGameData.userData == null;
         var data = preview ? BackendUserData.CreateNew() : BackendGameData.userData;
+        // 씬 단독 미리보기에서만 테스트 보유 목록을 구성합니다.
+        if (preview && previewSampleContent)
+        {
+            data.characters.Add(new OwnedCharacter { characterId = "cat_spinner" });
+            data.relics.Add(new OwnedRelic { relicId = "relic_claw" });
+            data.relics.Add(new OwnedRelic { relicId = "relic_bell" });
+        }
 
+        if (catalog == null) catalog = Resources.Load<CatGameCatalog>("DefaultCatCatalog");
         if (catalog == null)
         {
             catalog = ScriptableObject.CreateInstance<CatGameCatalog>();
@@ -32,11 +41,13 @@ public class CatGameScene : MonoBehaviour
         view.Build(data, catalog, uiFont, preview, field.Output);
         view.SaveRequested += Save;
         view.CharacterSelected += SelectCharacter;
+        view.RelicSelected += SelectRelic;
         session.BusyChanged += view.SetBusy;
         session.StatusChanged += view.ShowStatus;
         session.GameplayBlockedChanged += field.SetGameplayBlocked;
         field.Combat.GoldEarned += AwardGold;
         field.Combat.MessageChanged += view.ShowCombatMessage;
+        field.Combat.RelicMessageChanged += view.ShowRelicMessage;
         field.Combat.HealthChanged += view.ShowPlayerHealth;
     }
 
@@ -48,6 +59,11 @@ public class CatGameScene : MonoBehaviour
         await request;
     }
     private async void SelectCharacter(OwnedCharacter character) { await session.SelectCharacterAsync(character); }
+    private async void SelectRelic(OwnedRelic relic)
+    {
+        await session.ToggleRelicAsync(relic);
+        if (view != null) view.RefreshRelics();
+    }
 
     private void OnDestroy()
     {
@@ -58,6 +74,7 @@ public class CatGameScene : MonoBehaviour
         {
             view.SaveRequested -= Save;
             view.CharacterSelected -= SelectCharacter;
+            view.RelicSelected -= SelectRelic;
             if (session != null)
             {
                 session.BusyChanged -= view.SetBusy;
@@ -73,6 +90,7 @@ public class CatGameScene : MonoBehaviour
             view.AdventureVisibilityChanged -= field.SetVisible;
             field.Combat.GoldEarned -= AwardGold;
             field.Combat.MessageChanged -= view.ShowCombatMessage;
+            field.Combat.RelicMessageChanged -= view.ShowRelicMessage;
             field.Combat.HealthChanged -= view.ShowPlayerHealth;
         }
         if (ownCatalog && catalog != null) Destroy(catalog);

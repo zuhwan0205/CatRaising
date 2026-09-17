@@ -18,5 +18,10 @@ public sealed class CombatHealth
         Current=Math.Max(0,Current-damage);
         return Dead;
     }
+    public void Heal(double amount)
+    {
+        if (Dead || double.IsNaN(amount) || double.IsInfinity(amount) || amount <= 0) return;
+        Current = Math.Min(Maximum, Current + amount);
+    }
     public void Reset() { Current=Maximum; }
 }

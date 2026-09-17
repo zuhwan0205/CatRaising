@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using UnityEngine;
 
 // XZ 거리 기반 추적과 자동 공격. 이동 모드와 관계없이 공격을 처리합니다.
@@ -6,6 +7,7 @@ public class FieldCombatController : MonoBehaviour
 {
     public event Action<long> GoldEarned;
     public event Action<string> MessageChanged;
+    public event Action<string> RelicMessageChanged;
     public event Action<double,double> HealthChanged;
     public event Action PlayerHit;
     public event Action<Vector3,Vector3> AttackPerformed;
@@ -27,19 +29,25 @@ public class FieldCombatController : MonoBehaviour
     private int selectedLevel;
     private double attack, speed;
     private bool valid;
+    private ICharacterAttack attackBehavior;
+    private RelicEffectRunner relicEffects;
+    private readonly List<FieldEnemy> attackTargets = new List<FieldEnemy>();
+    private int killsThisFrame;
     public float Range=1.7f;
     public float EnemySpeed=1.1f;
     public long GoldPerKill=10;
     public float RespawnDelay=2;
 
     public void Initialize(Transform target,FieldEnemy[] targets,BackendUserData playerData,CatGameCatalog definitions)
-    { player=target;enemies=targets;data=playerData;catalog=definitions; }
+    { player=target;enemies=targets;data=playerData;catalog=definitions; relicEffects=new RelicEffectRunner(data,catalog); }
 
     private void Update()
     {
         if(Blocked || player==null)return;
         float delta=Mathf.Min(Time.deltaTime,.1f);
         ResolveStats();
+        relicEffects.Tick(delta);
+        killsThisFrame=0;
         if (PlayerHealth.Dead)
         {
             deathRemaining-=delta;
@@ -78,6 +86,7 @@ public class FieldCombatController : MonoBehaviour
         {
             contactCooldown=Mathf.Max(.1f,ContactInterval);
             bool died=PlayerHealth.Damage(Math.Max(1,ContactDamage-defense));
+            if (!died) TriggerRelics(EffectTrigger.OnDamaged, null);
             PlayerHit?.Invoke();
             HealthChanged?.Invoke(PlayerHealth.Current,PlayerHealth.Maximum);
             if(died)
@@ -89,14 +98,53 @@ public class FieldCombatController : MonoBehaviour
         }
         if(!valid || cooldown>0 || closest==null)return;
         cooldown=(float)(1/speed);
-        AttackPerformed?.Invoke(player.position,closest.transform.position);
-        bool killed=closest.Hit(attack);
-        MessageChanged?.Invoke(killed?$"적 처치! 골드 +{GoldPerKill}":$"할퀴기 {attack:0.#} · 적 HP {closest.Health.Current:0.#}/{closest.Health.Maximum:0.#}");
-        if(killed)
+        // OnAttack은 공격 1회당, OnHit은 기본 공격 명중 대상마다 실행합니다.
+        double attackBonus=0;
+        TriggerRelics(EffectTrigger.OnAttack, value=>attackBonus+=value);
+        attackBehavior.SelectTargets(player.position,closest,enemies,Range,attackTargets);
+        double minDamage=double.PositiveInfinity, maxDamage=0, maxBonus=0;
+        foreach (var target in attackTargets)
         {
-            closest.RespawnRemaining=RespawnDelay;
-            GoldEarned?.Invoke(GoldPerKill);
+            AttackPerformed?.Invoke(player.position,target.transform.position);
+            double hitBonus=0;
+            TriggerRelics(EffectTrigger.OnHit, value=>hitBonus+=value);
+            double bonus=attackBonus+hitBonus;
+            double damage=attack+bonus;
+            minDamage=Math.Min(minDamage,damage); maxDamage=Math.Max(maxDamage,damage);
+            maxBonus=Math.Max(maxBonus,bonus);
+            if(target.Hit(damage))
+            {
+                target.RespawnRemaining=RespawnDelay;
+                killsThisFrame++;
+                TriggerRelics(EffectTrigger.OnKill, null);
+            }
         }
+        if (attackTargets.Count > 0)
+        {
+            string damageText=minDamage==maxDamage?$"{maxDamage:0.#}":$"{minDamage:0.#}~{maxDamage:0.#}";
+            string bonusText=maxBonus>0?$" (유물 +{maxBonus:0.#})":"";
+            string result=killsThisFrame>0?$" · {killsThisFrame}마리 처치":$" · {attackTargets.Count}마리 명중";
+            if(attackTargets.Count==1)result+=$"\n적 HP {closest.Health.Current:0.#}/{closest.Health.Maximum:0.#}";
+            MessageChanged?.Invoke($"공격 피해 {damageText}{bonusText}{result}");
+        }
+        // 범위 공격은 한 번에 합산 저장하여 저장 중 중복 보상 누락을 막습니다.
+        if(killsThisFrame>0) GoldEarned?.Invoke(GoldPerKill*killsThisFrame);
+    }
+
+    private void TriggerRelics(EffectTrigger trigger, Action<double> bonusDamage)
+    {
+        double restored=0;
+        relicEffects.Trigger(trigger, value =>
+        {
+            double before=PlayerHealth.Current;
+            PlayerHealth.Heal(value);
+            restored=PlayerHealth.Current-before;
+            HealthChanged?.Invoke(PlayerHealth.Current,PlayerHealth.Maximum);
+        }, bonusDamage, (definition,value) =>
+        {
+            string effect=definition.effectId=="heal"?$"HP +{restored:0.#}":$"추가 피해 +{value:0.#}";
+            RelicMessageChanged?.Invoke($"{definition.displayName} 발동 · {effect}");
+        });
     }
 
     private void ResolveStats()
@@ -105,7 +153,9 @@ public class FieldCombatController : MonoBehaviour
         int level=owned==null?0:owned.level;
         if(PlayerHealth!=null && selectedId==data.loadout.characterId && selectedLevel==level)return;
         selectedId=data.loadout.characterId;selectedLevel=level;cooldown=0;valid=false;
-        var definition=catalog.characters.Find(x=>x!=null && x.id==selectedId);
+        var definition=catalog.FindCharacter(selectedId);
+        attackBehavior=CharacterAttackFactory.Create(definition == null ? null : definition.attackId);
+        Range=definition != null && definition.attackRange>0 && !float.IsInfinity(definition.attackRange) ? definition.attackRange : 1.7f;
         double maxHp=100;
         defense=0;
         if(owned!=null && definition!=null && definition.baseStats!=null && definition.statsPerLevel!=null)
@@ -120,14 +170,14 @@ public class FieldCombatController : MonoBehaviour
         PlayerHealth=new CombatHealth(maxHp);
         PlayerHealth.Damage(maxHp*(1-ratio));
         HealthChanged?.Invoke(PlayerHealth.Current,PlayerHealth.Maximum);
-        if(owned!=null && definition!=null && definition.attackId=="claw_melee" && definition.baseStats!=null && definition.statsPerLevel!=null)
+        if(owned!=null && definition!=null && attackBehavior!=null && definition.baseStats!=null && definition.statsPerLevel!=null)
         {
             int growth=Math.Max(0,level-1);
             attack=definition.baseStats.attack+(double)definition.statsPerLevel.attack*growth;
             speed=definition.baseStats.attackSpeed+(double)definition.statsPerLevel.attackSpeed*growth;
             valid=attack>0 && speed>0 && !double.IsNaN(attack) && !double.IsInfinity(attack) && !double.IsNaN(speed) && !double.IsInfinity(speed);
         }
-        MessageChanged?.Invoke(valid?"자동 공격 중 · 가까운 적을 할퀩니다":"공격 설정이 없습니다. claw_melee 캐릭터 설정을 확인해주세요.");
+        MessageChanged?.Invoke(valid?"자동 공격 중":"공격 설정이 없습니다. 캐릭터의 Attack Id를 확인해주세요.");
     }
 
     private Vector3 SpawnPosition()

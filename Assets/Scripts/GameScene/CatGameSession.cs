@@ -39,10 +39,28 @@ public class CatGameSession
 
     public async Task SelectCharacterAsync(OwnedCharacter character)
     {
-        if (IsSaving || character == null || !data.characters.Contains(character)) return;
+        if (IsSaving || HasPendingReward || character == null || !data.characters.Contains(character)) return;
         string previous = data.loadout.characterId;
         data.loadout.characterId = character.characterId;
         await SaveAsync(() => data.loadout.characterId = previous);
+    }
+
+    public async Task ToggleRelicAsync(OwnedRelic relic)
+    {
+        if (IsSaving || HasPendingReward || relic == null || !data.relics.Contains(relic)) return;
+        var previous = new System.Collections.Generic.List<string>(data.loadout.relicIds);
+        if (data.loadout.relicIds.Contains(relic.relicId))
+            data.loadout.relicIds.RemoveAll(id => id == relic.relicId);
+        else
+        {
+            if (data.loadout.relicIds.Count >= 3)
+            {
+                StatusChanged?.Invoke("유물은 최대 3개까지 장착할 수 있습니다.");
+                return;
+            }
+            data.loadout.relicIds.Add(relic.relicId);
+        }
+        await SaveAsync(() => data.loadout.relicIds = previous);
     }
 
     public async Task SaveAsync(Action rollback = null)

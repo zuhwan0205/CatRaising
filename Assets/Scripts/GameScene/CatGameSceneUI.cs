@@ -14,6 +14,7 @@ public class CatGameSceneUI : MonoBehaviour
     private bool preview;
     public event Action SaveRequested;
     public event Action<OwnedCharacter> CharacterSelected;
+    public event Action<OwnedRelic> RelicSelected;
     private bool saving;
     private BackendUserData data;
     private RectTransform page;
@@ -27,6 +28,7 @@ public class CatGameSceneUI : MonoBehaviour
     private bool automatic = true;
     private FieldJoystick joystick;
     private Text combatLabel;
+    private Text relicEffectLabel;
     private Text playerHpLabel;
     private string playerHpText = "HP 준비 중";
     private string combatMessage = "자동 공격 준비 중";
@@ -106,6 +108,7 @@ public class CatGameSceneUI : MonoBehaviour
         if (joystick != null) joystick.ResetInput();
         joystick = null;
         combatLabel = null;
+        relicEffectLabel = null;
         playerHpLabel = null;
         foreach (Transform child in page) { child.gameObject.SetActive(false); Destroy(child.gameObject); }
         wallet.text = $"Lv. {data.progress.accountLevel}    골드 {data.wallet.gold:N0}    다이아 {data.wallet.gems:N0}";
@@ -131,6 +134,17 @@ public class CatGameSceneUI : MonoBehaviour
         var modeText=mode.GetComponentInChildren<Text>();
         modeText.text=automatic?"자동 이동 ON":"수동 이동";
         playerHpLabel=Label(field,playerHpText,22,new Vector2(.02f,.80f),new Vector2(.50f,.89f));
+        var equippedNames = new System.Collections.Generic.List<string>();
+        foreach (string id in data.loadout.relicIds)
+        {
+            var definition=catalog.FindRelic(id);
+            bool owned=data.relics.Exists(x=>x!=null && x.relicId==id);
+            equippedNames.Add(!owned?$"{id} (미보유)":definition==null?$"{id} (설정 없음)":definition.displayName);
+        }
+        string equippedText=equippedNames.Count==0?"장착 유물 없음 · 유물 메뉴에서 장착하세요":"장착: "+string.Join(" / ",equippedNames);
+        Label(field,equippedText,18,new Vector2(.02f,.71f),new Vector2(.98f,.79f));
+        relicEffectLabel=Label(field,"유물 발동 대기",20,new Vector2(.02f,.32f),new Vector2(.98f,.41f));
+        relicEffectLabel.color=new Color(.9f,1,.65f);
         var pad=Panel(field,"Movement Joystick",new Vector2(.04f,.05f),new Vector2(.34f,.27f),new Color(.2f,.2f,.3f,.45f));
         var handle=Panel(pad,"Handle",new Vector2(.35f,.35f),new Vector2(.65f,.65f),new Color(1,1,1,.8f));
         handle.GetComponent<Image>().raycastTarget=false;
@@ -203,7 +217,7 @@ public class CatGameSceneUI : MonoBehaviour
 
     private string CharacterName(string id)
     {
-        var definition = catalog.characters.Find(item => item.id == id);
+        var definition = catalog.FindCharacter(id);
         return definition == null ? id : definition.displayName;
     }
 
@@ -216,7 +230,7 @@ public class CatGameSceneUI : MonoBehaviour
         Label(page, CharacterName(owned.characterId), 30, new Vector2(.26f,.92f), Vector2.one);
         var portrait = Panel(page, "Character Portrait", new Vector2(0,.49f), new Vector2(1,.88f), new Color(.94f,.87f,.77f));
         Label(portrait, "/\\_/\\\n( •ㅅ• )", 60, new Vector2(.05f,.10f), new Vector2(.95f,.90f));
-        var definition = catalog.characters.Find(item => item.id == owned.characterId);
+        var definition = catalog.FindCharacter(owned.characterId);
         string details = $"Lv. {owned.level}  ·  돌파 {owned.ascension}  ·  조각 {owned.fragments}\n";
         if (definition != null)
         {
@@ -243,13 +257,28 @@ public class CatGameSceneUI : MonoBehaviour
         {
             if (owned == null) continue;
             var relic = owned;
-            var definition = catalog.relics.Find(item => item.id == relic.relicId);
+            var definition = catalog.FindRelic(relic.relicId);
             string name = definition == null ? relic.relicId : definition.displayName;
-            Button(grid, name + $"\nLv. {relic.level}", Vector2.zero, Vector2.one, () => {
-                status.text = definition == null ? "유물 공통 설정을 연결해주세요." : $"{Rarity(definition.rarity)} · {definition.trigger} · 확률 {definition.chance:P0} · 재사용 {definition.cooldownSeconds:0.#}초";
-            });
+            string equipped = data.loadout.relicIds.Contains(relic.relicId) ? "\n장착 중" : "";
+            Button(grid, name + $"\nLv. {relic.level}" + equipped, Vector2.zero, Vector2.one, () => RelicDetail(relic));
         }
     }
+
+    private void RelicDetail(OwnedRelic owned)
+    {
+        foreach (Transform child in page) { child.gameObject.SetActive(false); Destroy(child.gameObject); }
+        var definition = catalog.FindRelic(owned.relicId);
+        Button(page, "목록", new Vector2(0,.92f), new Vector2(.24f,1), () => Show("유물"));
+        Label(page, definition == null ? owned.relicId : definition.displayName, 30, new Vector2(.26f,.92f), Vector2.one);
+        string description = definition == null ? "유물 공통 설정을 연결해주세요." :
+            $"{Rarity(definition.rarity)} · Lv. {owned.level}\n{definition.description}\n{definition.trigger} · 확률 {definition.chance:P0}\n효과 {definition.effectValue+definition.effectPerLevel*Math.Max(0,owned.level-1):0.#} · 재사용 {definition.cooldownSeconds:0.#}초";
+        Label(page, description, 25, new Vector2(.04f,.25f), new Vector2(.96f,.84f));
+        bool equipped = data.loadout.relicIds.Contains(owned.relicId);
+        var button = Button(page, equipped ? "유물 해제 · 저장" : "유물 장착 · 저장 (최대 3개)", new Vector2(0,.08f), new Vector2(1,.20f), () => RelicSelected?.Invoke(owned));
+        button.interactable = definition != null || equipped;
+    }
+
+    public void RefreshRelics() { string message = status.text; Show("유물"); status.text = message; }
 
     public void RefreshWallet()
     {
@@ -261,6 +290,10 @@ public class CatGameSceneUI : MonoBehaviour
     {
         combatMessage = message;
         if (combatLabel != null) combatLabel.text = message;
+    }
+    public void ShowRelicMessage(string message)
+    {
+        if (relicEffectLabel != null) relicEffectLabel.text="최근 유물 효과: "+message;
     }
     public void ShowPlayerHealth(double hp,double maximum)
     {
