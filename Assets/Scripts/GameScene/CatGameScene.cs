@@ -31,7 +31,7 @@ public class CatGameScene : MonoBehaviour
             catalog = ScriptableObject.CreateInstance<CatGameCatalog>();
             ownCatalog = true;
         }
-        session = new CatGameSession(data, preview, () => BackendGameData.Instance.GameDataUpdateAsync());
+        session = new CatGameSession(data, preview, () => BackendGameData.Instance.GameDataUpdateAsync(), catalog);
         view = gameObject.AddComponent<CatGameSceneUI>();
         field = gameObject.AddComponent<CatFieldController>();
         field.Build(data, catalog);
@@ -42,6 +42,10 @@ public class CatGameScene : MonoBehaviour
         view.SaveRequested += Save;
         view.CharacterSelected += SelectCharacter;
         view.RelicSelected += SelectRelic;
+        view.CharacterLevelUpRequested += LevelUpCharacter;
+        view.RelicLevelUpRequested += LevelUpRelic;
+        view.CharacterPurchaseRequested += BuyCharacter;
+        view.RelicPurchaseRequested += BuyRelic;
         session.BusyChanged += view.SetBusy;
         session.StatusChanged += view.ShowStatus;
         session.GameplayBlockedChanged += field.SetGameplayBlocked;
@@ -59,6 +63,26 @@ public class CatGameScene : MonoBehaviour
         await request;
     }
     private async void SelectCharacter(OwnedCharacter character) { await session.SelectCharacterAsync(character); }
+    private async void BuyCharacter(string id)
+    {
+        await session.BuyCharacterAsync(id);
+        if (view != null) view.RefreshShop();
+    }
+    private async void BuyRelic(string id)
+    {
+        await session.BuyRelicAsync(id);
+        if (view != null) view.RefreshShop();
+    }
+    private async void LevelUpCharacter(OwnedCharacter character)
+    {
+        await session.LevelUpCharacterAsync(character);
+        if (view != null) { view.RefreshWallet(); view.RefreshCharacterDetail(character); }
+    }
+    private async void LevelUpRelic(OwnedRelic relic)
+    {
+        await session.LevelUpRelicAsync(relic);
+        if (view != null) { view.RefreshWallet(); view.RefreshRelicDetail(relic); }
+    }
     private async void SelectRelic(OwnedRelic relic)
     {
         await session.ToggleRelicAsync(relic);
@@ -75,6 +99,10 @@ public class CatGameScene : MonoBehaviour
             view.SaveRequested -= Save;
             view.CharacterSelected -= SelectCharacter;
             view.RelicSelected -= SelectRelic;
+            view.CharacterLevelUpRequested -= LevelUpCharacter;
+            view.RelicLevelUpRequested -= LevelUpRelic;
+            view.CharacterPurchaseRequested -= BuyCharacter;
+            view.RelicPurchaseRequested -= BuyRelic;
             if (session != null)
             {
                 session.BusyChanged -= view.SetBusy;

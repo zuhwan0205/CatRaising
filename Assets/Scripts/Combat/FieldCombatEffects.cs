@@ -22,7 +22,7 @@ public class FieldCombatEffects : MonoBehaviour
     public void Initialize(Camera camera,Sprite sprite,Transform artwork)
     {
         view=camera;catArt=artwork;
-        catSprites=artwork.GetComponentsInChildren<SpriteRenderer>();
+        catSprites=artwork.GetComponentsInChildren<SpriteRenderer>(true);
         originalColors=new Color[catSprites.Length];
         for(int i=0;i<catSprites.Length;i++)originalColors[i]=catSprites[i].color;
         slash=new GameObject("Claw Slash Effect").transform;slash.SetParent(transform,false);

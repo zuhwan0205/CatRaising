@@ -15,9 +15,27 @@ MonoBehaviour:
   characterAssets:
   - {fileID: 11400000, guid: 3945fcf91fd34ab8aa79ef0783a29fe9, type: 2}
   - {fileID: 11400000, guid: 091dd2bca89c48b2ab3502e03b2bf43f, type: 2}
+  - {fileID: 11400000, guid: ab2c5abc90924128bf098975f57de129, type: 2}
+  - {fileID: 11400000, guid: a5dbedfd2ca9459cbfad13777617f7de, type: 2}
+  - {fileID: 11400000, guid: 76962fec45864fefa66f9900a23c8f0b, type: 2}
+  - {fileID: 11400000, guid: 742ab6b05fb74746b3421690a60ca009, type: 2}
+  - {fileID: 11400000, guid: d45389c6216f4d60b5909e932f3ed777, type: 2}
+  - {fileID: 11400000, guid: 6943ca32ae2c408b80d643df017e631b, type: 2}
+  - {fileID: 11400000, guid: 985cfac3028e45dfb32a2199bcfc39ed, type: 2}
+  - {fileID: 11400000, guid: 96220709fbe54a3f866e26a3a32c7060, type: 2}
+  - {fileID: 11400000, guid: cda57ad995964ad5b30974333e3f72f0, type: 2}
   relicAssets:
   - {fileID: 11400000, guid: 74079ca4b9874377a46898169368a692, type: 2}
   - {fileID: 11400000, guid: 9b64f1090b3f4361a09aca5ea28c1099, type: 2}
+  - {fileID: 11400000, guid: a47bb8435de84040919e6f70c2240dae, type: 2}
+  - {fileID: 11400000, guid: 985a2bf16ad8464aac3f879477976b6f, type: 2}
+  - {fileID: 11400000, guid: f2fc7f89ba10412cb4e000f47f8aac64, type: 2}
+  - {fileID: 11400000, guid: ee661b3c96c8456187db352f7df61fa4, type: 2}
+  - {fileID: 11400000, guid: d1c96a2d47954aa494a795dfe534e229, type: 2}
+  - {fileID: 11400000, guid: c00a491a87ce4be68752acf87171be75, type: 2}
+  - {fileID: 11400000, guid: e3d84f6809b849f7a68e278cd0c7ccf2, type: 2}
+  - {fileID: 11400000, guid: 31c8b82bd3f84614974d411cb04662e7, type: 2}
+  - {fileID: 11400000, guid: 2f5e4f4189224b7d800197de2478c7d9, type: 2}
   characters: []
   equipment: []
   relics: []

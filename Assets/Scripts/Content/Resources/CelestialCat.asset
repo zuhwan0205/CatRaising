@@ -10,30 +10,30 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: a20e01e9e25a4ff5aeec547a3fb8c69e, type: 3}
-  m_Name: SpinnerCat
+  m_Name: CelestialCat
   m_EditorClassIdentifier: 
   definition:
     shop:
       available: 1
-      goldPrice: 100
+      goldPrice: 3000
     growth:
       maxLevel: 100
-      baseGoldCost: 20
-      goldCostPerLevel: 10
-    description: "주변 모든 적을 한 번에 공격합니다."
+      baseGoldCost: 150
+      goldCostPerLevel: 75
+    description: "사거리 안의 모든 적을 공격합니다. 넓은 범위와 높은 공격력을 가진 고양이입니다."
     icon: {fileID: 0}
-    attackRange: 2.2
-    id: cat_spinner
-    displayName: "회전 고양이"
-    rarity: 0
+    attackRange: 3.5
+    id: cat_celestial
+    displayName: "천상 고양이"
+    rarity: 3
     attackId: spin_melee
     baseStats:
-      attack: 2.5
-      defense: 0
-      attackSpeed: 1
-      maxHealth: 100
+      attack: 10
+      defense: 5
+      attackSpeed: 1.5
+      maxHealth: 280
     statsPerLevel:
-      attack: 1
-      defense: 0
+      attack: 2.0
+      defense: 0.4
       attackSpeed: 0
-      maxHealth: 5
+      maxHealth: 15

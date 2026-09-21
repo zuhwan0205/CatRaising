@@ -10,27 +10,30 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: a20e01e9e25a4ff5aeec547a3fb8c69e, type: 3}
-  m_Name: StarterCat
+  m_Name: NinjaCat
   m_EditorClassIdentifier: 
   definition:
+    shop:
+      available: 1
+      goldPrice: 300
     growth:
       maxLevel: 100
-      baseGoldCost: 20
-      goldCostPerLevel: 10
-    description: "가까운 적 한 마리를 할퀩니다."
+      baseGoldCost: 40
+      goldCostPerLevel: 20
+    description: "가까운 적 한 마리를 공격합니다. 빠른 공격 속도로 적을 몰아붙입니다."
     icon: {fileID: 0}
-    attackRange: 1.7
-    id: cat_starter
-    displayName: "기본 고양이"
-    rarity: 0
+    attackRange: 1.8
+    id: cat_ninja
+    displayName: "닌자 고양이"
+    rarity: 1
     attackId: claw_melee
     baseStats:
-      attack: 3.5
+      attack: 4.5
       defense: 0
-      attackSpeed: 1
+      attackSpeed: 1.8
       maxHealth: 100
     statsPerLevel:
-      attack: 1
+      attack: 1.0
       defense: 0
       attackSpeed: 0
       maxHealth: 5

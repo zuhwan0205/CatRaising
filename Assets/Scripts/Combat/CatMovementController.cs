@@ -7,7 +7,9 @@ public class CatMovementController : MonoBehaviour
 {
     public bool Automatic { get; private set; } = true;
     public Vector2 StickInput { get; set; }
+    public bool ManualInputEnabled { get; set; } = true;
     public Transform[] Targets { get; set; }
+    public FieldNavigation Navigation { get; set; }
     public float Speed = 3;
     public float StopDistance = 1.5f;
     public float FieldHalfSize = 18;
@@ -20,7 +22,8 @@ public class CatMovementController : MonoBehaviour
         Vector2 next = new Vector2(transform.position.x, transform.position.z) + Vector2.ClampMagnitude(direction, 1) * Speed * Mathf.Min(Time.deltaTime, .1f);
         next.x = Mathf.Clamp(next.x, -FieldHalfSize, FieldHalfSize);
         next.y = Mathf.Clamp(next.y, -FieldHalfSize, FieldHalfSize);
-        transform.position = new Vector3(next.x,0,next.y);
+        Vector3 destination=new Vector3(next.x,0,next.y);
+        transform.position = Navigation==null?destination:Navigation.Move(transform.position,destination-transform.position);
     }
 
     private Vector2 AutoDirection()
@@ -35,15 +38,19 @@ public class CatMovementController : MonoBehaviour
             if (distance < best) { best=distance; nearest=target; }
         }
         if (nearest == null) return Vector2.zero;
-        Vector3 displacement = nearest.position-transform.position;
+        Vector3 goal=nearest.position;
+        bool direct=Navigation==null||Navigation.Clear(transform.position,goal);
+        if(!direct)goal=Navigation.Waypoint(transform.position,goal);
+        Vector3 displacement = goal-transform.position;
         Vector2 delta = new Vector2(displacement.x,displacement.z);
         // 이동 한 번으로 유지 거리를 지나치지 않습니다.
         float step = Speed * Mathf.Min(Time.deltaTime,.1f);
-        return delta.normalized * Mathf.Clamp01((delta.magnitude-StopDistance)/Mathf.Max(step,.0001f));
+        return delta.normalized * Mathf.Clamp01((delta.magnitude-(direct?StopDistance:0))/Mathf.Max(step,.0001f));
     }
 
     private Vector2 ManualDirection()
     {
+        if (!ManualInputEnabled) return Vector2.zero;
         Vector2 keys = Vector2.zero;
 #if ENABLE_INPUT_SYSTEM
         var keyboard = Keyboard.current;

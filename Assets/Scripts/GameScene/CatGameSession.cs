@@ -7,6 +7,7 @@ public class CatGameSession
     private readonly BackendUserData data;
     private readonly bool preview;
     private readonly Func<Task<bool>> saveData;
+    private readonly CatGameCatalog catalog;
     public bool IsSaving { get; private set; }
     public bool HasPendingReward { get; private set; }
     private bool rewardLimitReached;
@@ -30,11 +31,87 @@ public class CatGameSession
         await SaveAsync();
     }
 
-    public CatGameSession(BackendUserData data, bool preview, Func<Task<bool>> saveData)
+    public CatGameSession(BackendUserData data, bool preview, Func<Task<bool>> saveData, CatGameCatalog catalog = null)
     {
         this.data = data ?? throw new ArgumentNullException(nameof(data));
         this.preview = preview;
         this.saveData = saveData ?? throw new ArgumentNullException(nameof(saveData));
+        this.catalog = catalog;
+    }
+
+    public Task LevelUpCharacterAsync(OwnedCharacter character)
+    {
+        if (character == null || !data.characters.Contains(character)) return Task.CompletedTask;
+        var definition = catalog == null ? null : catalog.FindCharacter(character.characterId);
+        return LevelUpAsync(character.level, definition?.growth, value => character.level = value);
+    }
+
+    public Task BuyCharacterAsync(string id)
+    {
+        if (string.IsNullOrWhiteSpace(id) || catalog == null) return Task.CompletedTask;
+        var definition = catalog.FindCharacter(id);
+        var item = new OwnedCharacter { characterId = id };
+        return PurchaseAsync(definition?.shop, data.characters.Exists(x => x != null && x.characterId == id),
+            () => data.characters.Add(item), () => data.characters.Remove(item));
+    }
+
+    public Task BuyRelicAsync(string id)
+    {
+        if (string.IsNullOrWhiteSpace(id) || catalog == null) return Task.CompletedTask;
+        var definition = catalog.FindRelic(id);
+        var item = new OwnedRelic { relicId = id };
+        return PurchaseAsync(definition?.shop, data.relics.Exists(x => x != null && x.relicId == id),
+            () => data.relics.Add(item), () => data.relics.Remove(item));
+    }
+
+    private async Task PurchaseAsync(ShopOffer offer, bool alreadyOwned, Action grant, Action revoke)
+    {
+        if (IsSaving || HasPendingReward) return;
+        if (offer == null || !offer.CanSell)
+        {
+            StatusChanged?.Invoke("현재 판매하지 않는 상품입니다.");
+            return;
+        }
+        if (alreadyOwned)
+        {
+            StatusChanged?.Invoke("이미 보유하고 있습니다.");
+            return;
+        }
+        if (data.wallet.gold < offer.goldPrice)
+        {
+            StatusChanged?.Invoke($"골드가 부족합니다. 필요 골드: {offer.goldPrice:N0}");
+            return;
+        }
+        long previousGold = data.wallet.gold;
+        data.wallet.gold -= offer.goldPrice;
+        grant();
+        await SaveAsync(() => { data.wallet.gold = previousGold; revoke(); });
+    }
+
+    public Task LevelUpRelicAsync(OwnedRelic relic)
+    {
+        if (relic == null || !data.relics.Contains(relic)) return Task.CompletedTask;
+        var definition = catalog == null ? null : catalog.FindRelic(relic.relicId);
+        return LevelUpAsync(relic.level, definition?.growth, value => relic.level = value);
+    }
+
+    private async Task LevelUpAsync(int level, LevelUpRules rules, Action<int> setLevel)
+    {
+        if (IsSaving || HasPendingReward) return;
+        if (rules == null || !rules.TryGetCost(level, out long cost))
+        {
+            StatusChanged?.Invoke("최대 레벨이거나 성장 설정이 없습니다.");
+            return;
+        }
+        if (data.wallet.gold < cost)
+        {
+            StatusChanged?.Invoke($"골드가 부족합니다. 필요 골드: {cost:N0}");
+            return;
+        }
+        long previousGold = data.wallet.gold;
+        data.wallet.gold -= cost;
+        setLevel(level + 1);
+        await SaveAsync(() => { data.wallet.gold = previousGold; setLevel(level); });
     }
 
     public async Task SelectCharacterAsync(OwnedCharacter character)

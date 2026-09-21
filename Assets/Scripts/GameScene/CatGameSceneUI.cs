@@ -7,7 +7,7 @@ using UnityEngine.UI;
 using UnityEngine.InputSystem.UI;
 #endif
 
-public class CatGameSceneUI : MonoBehaviour
+public partial class CatGameSceneUI : MonoBehaviour
 {
     private CatGameCatalog catalog;
     private Font uiFont;
@@ -15,6 +15,8 @@ public class CatGameSceneUI : MonoBehaviour
     public event Action SaveRequested;
     public event Action<OwnedCharacter> CharacterSelected;
     public event Action<OwnedRelic> RelicSelected;
+    public event Action<OwnedCharacter> CharacterLevelUpRequested;
+    public event Action<OwnedRelic> RelicLevelUpRequested;
     private bool saving;
     private BackendUserData data;
     private RectTransform page;
@@ -164,26 +166,11 @@ public class CatGameSceneUI : MonoBehaviour
         Label(field,"공격은 두 모드 모두 자동\n수동 이동: WASD / 방향키 / 조이스틱",18,new Vector2(.36f,.03f),new Vector2(.98f,.17f));
         MovementModeChanged?.Invoke(automatic);
     }
-    private void Shop()
-    {
-        Label(page, "상점", 32, new Vector2(0,.90f), Vector2.one);
-        ShopCard("유물 상점", "유물 강화 · 유물 선택 / 랜덤 획득", .51f);
-        ShopCard("캐릭터 상점", "캐릭터 선택 / 랜덤 획득", .12f);
-    }
-    private void ShopCard(string title, string description, float bottom)
-    {
-        var card = Panel(page, title, new Vector2(0,bottom), new Vector2(1,bottom+.34f), Color.white);
-        Label(card, title, 28, new Vector2(.05f,.63f), new Vector2(.95f,.94f));
-        Label(card, description, 21, new Vector2(.05f,.35f), new Vector2(.95f,.63f));
-        var button = Button(card, "준비 중", new Vector2(.20f,.08f), new Vector2(.80f,.30f), () => {});
-        button.interactable = false;
-    }
-
     // 보유 목록은 스크롤 가능하며 시안의 3열 배치를 사용합니다.
-    private Transform Grid(string title)
+    private Transform Grid(string title, float top = .87f)
     {
         Label(page, title, 32, new Vector2(0,.90f), Vector2.one);
-        var viewport = Panel(page, "Inventory Viewport", new Vector2(0,.02f), new Vector2(1,.87f), new Color(.94f,.92f,.97f));
+        var viewport = Panel(page, "Inventory Viewport", new Vector2(0,.02f), new Vector2(1,top), new Color(.94f,.92f,.97f));
         viewport.gameObject.AddComponent<RectMask2D>();
         var content = Rect(viewport, "Inventory Items", new Vector2(0,1), Vector2.one);
         content.pivot = new Vector2(.5f,1);
@@ -211,7 +198,9 @@ public class CatGameSceneUI : MonoBehaviour
             if (owned == null) continue;
             var character = owned;
             string selected = data.loadout.characterId == character.characterId ? "\n선택 중" : "";
-            Button(grid, CharacterName(character.characterId) + $"\nLv. {character.level}" + selected, Vector2.zero, Vector2.one, () => CharacterDetail(character));
+            var definition = catalog.FindCharacter(character.characterId);
+            string grade = definition == null ? "" : "\n" + Rarity(definition.rarity);
+            Button(grid, CharacterName(character.characterId) + grade + $"\nLv. {character.level}" + selected, Vector2.zero, Vector2.one, () => CharacterDetail(character));
         }
     }
 
@@ -240,8 +229,7 @@ public class CatGameSceneUI : MonoBehaviour
         else details += "캐릭터 공통 설정을 연결해주세요.";
         Label(page, details, 23, new Vector2(0,.19f), new Vector2(1,.47f));
         Button(page, "이 고양이 선택 · 저장", new Vector2(0,.09f), new Vector2(1,.17f), () => CharacterSelected?.Invoke(owned));
-        var level = Button(page, "레벨업 · 성장 규칙 준비 중", new Vector2(0,0), new Vector2(1,.07f), () => {});
-        level.interactable = false;
+        LevelUpButton(definition?.growth, owned.level, Vector2.zero, new Vector2(1,.07f), () => CharacterLevelUpRequested?.Invoke(owned));
     }
 
     private void Relics()
@@ -276,7 +264,20 @@ public class CatGameSceneUI : MonoBehaviour
         bool equipped = data.loadout.relicIds.Contains(owned.relicId);
         var button = Button(page, equipped ? "유물 해제 · 저장" : "유물 장착 · 저장 (최대 3개)", new Vector2(0,.08f), new Vector2(1,.20f), () => RelicSelected?.Invoke(owned));
         button.interactable = definition != null || equipped;
+        LevelUpButton(definition?.growth, owned.level, Vector2.zero, new Vector2(1,.07f), () => RelicLevelUpRequested?.Invoke(owned));
     }
+
+    private void LevelUpButton(LevelUpRules rules, int level, Vector2 min, Vector2 max, UnityAction action)
+    {
+        long cost=0;
+        bool available=rules!=null && rules.TryGetCost(level,out cost);
+        string title=available?$"Lv. {level} → {level+1} · {cost:N0} 골드":rules!=null && level>=rules.maxLevel?"최대 레벨":"성장 설정 없음";
+        var button=Button(page,title,min,max,action);
+        button.interactable=available;
+    }
+
+    public void RefreshCharacterDetail(OwnedCharacter owned) { CharacterDetail(owned); }
+    public void RefreshRelicDetail(OwnedRelic owned) { RelicDetail(owned); }
 
     public void RefreshRelics() { string message = status.text; Show("유물"); status.text = message; }
 
@@ -301,7 +302,7 @@ public class CatGameSceneUI : MonoBehaviour
         if(playerHpLabel!=null)playerHpLabel.text=playerHpText;
     }
     public void ShowStatus(string message) { status.text = message; }
-    private string Rarity(ItemRarity value) { return new[] { "노말", "에픽", "유니크", "레전드리" }[Mathf.Clamp((int)value,0,3)]; }
+    private string Rarity(ItemRarity value) { return new[] { "Common", "Epic", "Unique", "Legendary" }[Mathf.Clamp((int)value,0,3)]; }
     private RectTransform Rect(Transform parent, string name, Vector2 min, Vector2 max)
     {
         var rect = new GameObject(name, typeof(RectTransform)).GetComponent<RectTransform>();
