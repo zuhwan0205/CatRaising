@@ -20,6 +20,7 @@ public class FieldCombatController : MonoBehaviour
     private float deathRemaining;
     private double defense;
     public bool Blocked;
+    public FieldNavigation Navigation { get; set; }
     private Transform player;
     private FieldEnemy[] enemies;
     private BackendUserData data;
@@ -76,11 +77,19 @@ public class FieldCombatController : MonoBehaviour
             }
             Vector3 toward=player.position-enemy.transform.position;toward.y=0;
             float distance=toward.magnitude;
-            if(distance>.9f) enemy.transform.position+=toward.normalized*Mathf.Min(EnemySpeed*delta,distance-.9f);
+            if(distance>.9f)
+            {
+                Vector3 start=enemy.transform.position;
+                Vector3 goal=Navigation==null?player.position:Navigation.Waypoint(start,player.position);
+                Vector3 direction=goal-start; direction.y=0;
+                Vector3 step=direction.normalized*Mathf.Min(EnemySpeed*delta,Mathf.Min(direction.magnitude,distance-.9f));
+                enemy.transform.position=Navigation==null?start+step:Navigation.Move(start,step);
+            }
             enemy.StepVisual(delta);
             float sqr=(enemy.transform.position-player.position).sqrMagnitude;
-            if(sqr<=ContactDistance*ContactDistance)touching=true;
-            if(sqr<=nearest){nearest=sqr;closest=enemy;}
+            bool clear=Navigation==null||Navigation.Clear(player.position,enemy.transform.position);
+            if(clear && sqr<=ContactDistance*ContactDistance)touching=true;
+            if(clear && sqr<=nearest){nearest=sqr;closest=enemy;}
         }
         if(touching && contactCooldown<=0)
         {
@@ -102,6 +111,7 @@ public class FieldCombatController : MonoBehaviour
         double attackBonus=0;
         TriggerRelics(EffectTrigger.OnAttack, value=>attackBonus+=value);
         attackBehavior.SelectTargets(player.position,closest,enemies,Range,attackTargets);
+        if(Navigation!=null)attackTargets.RemoveAll(target=>!Navigation.Clear(player.position,target.transform.position));
         double minDamage=double.PositiveInfinity, maxDamage=0, maxBonus=0;
         foreach (var target in attackTargets)
         {
@@ -182,10 +192,15 @@ public class FieldCombatController : MonoBehaviour
 
     private Vector3 SpawnPosition()
     {
-        Vector2 direction=UnityEngine.Random.insideUnitCircle.normalized;
-        if(direction.sqrMagnitude<.1f)direction=Vector2.right;
-        Vector3 position=player.position+new Vector3(direction.x,0,direction.y)*7;
-        position.x=Mathf.Clamp(position.x,-17,17);position.z=Mathf.Clamp(position.z,-17,17);
-        return position;
+        for(int attempt=0;attempt<32;attempt++)
+        {
+            Vector2 direction=UnityEngine.Random.insideUnitCircle.normalized;
+            if(direction.sqrMagnitude<.1f)direction=Vector2.right;
+            Vector3 position=player.position+new Vector3(direction.x,0,direction.y)*7;
+            position.x=Mathf.Clamp(position.x,-17,17);position.z=Mathf.Clamp(position.z,-17,17);
+            if(Navigation==null||Navigation.IsFree(position))return position;
+        }
+        // 중앙 통로는 구조물이 없는 고정 재등장 지점입니다.
+        return Vector3.zero;
     }
 }

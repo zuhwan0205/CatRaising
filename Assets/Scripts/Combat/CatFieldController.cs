@@ -34,11 +34,8 @@ public class CatFieldController : MonoBehaviour
         Output=new RenderTexture(720,1000,16); Output.Create(); fieldCamera.targetTexture=Output;
 
         Ground("Grass",field.transform,Vector3.zero,new Vector2(40,40),new Color(.76f,.84f,.62f),-10000);
-        for(int i=-20;i<=20;i+=2)
-        {
-            Ground("Grid X",field.transform,new Vector3(i,.005f,0),new Vector2(.025f,40),new Color(.68f,.77f,.55f),-9999);
-            Ground("Grid Z",field.transform,new Vector3(0,.005f,i),new Vector2(40,.025f),new Color(.68f,.77f,.55f),-9999);
-        }
+        var scenery=field.AddComponent<FieldScenery>();
+        scenery.Build(square,fieldCamera);
         // 바닥에 놓인 경계선으로 이동 가능한 영역을 표시합니다.
         for(int sign=-1;sign<=1;sign+=2)
         {
@@ -46,18 +43,22 @@ public class CatFieldController : MonoBehaviour
             Ground("Boundary Z",field.transform,new Vector3(0,.01f,sign*18),new Vector2(36,.1f),new Color(.42f,.54f,.34f),-9998);
         }
         var cat = new GameObject("Player Cat"); cat.transform.SetParent(field.transform,false);
-        Ground("Cat Shadow",cat.transform,new Vector3(0,.02f,0),new Vector2(.8f,.5f),new Color(.15f,.22f,.13f,.35f),-9000);
         var catArt=Billboard("Cat Artwork",cat.transform);
-        Paint("Body",catArt,Vector2.zero,new Vector2(.8f,.7f),new Color(1,.85f,.58f),0);
-        Paint("Left Ear",catArt,new Vector2(-.27f,.42f),new Vector2(.22f,.28f),new Color(1,.85f,.58f),0);
-        Paint("Right Ear",catArt,new Vector2(.27f,.42f),new Vector2(.22f,.28f),new Color(1,.85f,.58f),0);
-        Paint("Left Eye",catArt,new Vector2(-.18f,.08f),new Vector2(.07f,.12f),Color.black,1);
-        Paint("Right Eye",catArt,new Vector2(.18f,.08f),new Vector2(.07f,.12f),Color.black,1);
-        Paint("Cat HP Background",catArt,new Vector2(0,.86f),new Vector2(1,.09f),new Color(.2f,.2f,.2f),3);
+        var fallbackArt=new GameObject("Legacy Cat Artwork").transform;
+        fallbackArt.SetParent(catArt,false);
+        Paint("Body",fallbackArt,Vector2.zero,new Vector2(.8f,.7f),new Color(1,.85f,.58f),0);
+        Paint("Left Ear",fallbackArt,new Vector2(-.27f,.42f),new Vector2(.22f,.28f),new Color(1,.85f,.58f),0);
+        Paint("Right Ear",fallbackArt,new Vector2(.27f,.42f),new Vector2(.22f,.28f),new Color(1,.85f,.58f),0);
+        Paint("Left Eye",fallbackArt,new Vector2(-.18f,.08f),new Vector2(.07f,.12f),Color.black,1);
+        Paint("Right Eye",fallbackArt,new Vector2(.18f,.08f),new Vector2(.07f,.12f),Color.black,1);
+        var catVisual=catArt.gameObject.AddComponent<CatCharacterVisual>();
+        catVisual.Build(cat.transform,fieldCamera,data,square,fallbackArt);
+        Paint("Cat HP Background",catArt,new Vector2(0,1.35f),new Vector2(1,.09f),new Color(.2f,.2f,.2f),3);
         playerHealthFill=new GameObject("Cat HP Fill Origin").transform;
-        playerHealthFill.SetParent(catArt,false);playerHealthFill.localPosition=new Vector3(-.5f,.86f,0);
+        playerHealthFill.SetParent(catArt,false);playerHealthFill.localPosition=new Vector3(-.5f,1.35f,0);
         Paint("Cat HP Fill",playerHealthFill,new Vector2(.5f,0),new Vector2(1,.09f),new Color(.25f,.9f,.4f),4);
         movement=cat.AddComponent<CatMovementController>();
+        movement.Navigation=scenery.Navigation;
         var targets=new List<Transform>();
         var enemies=new List<FieldEnemy>();
         foreach(var position in new[] {new Vector3(4,0,3),new Vector3(-6,0,4),new Vector3(7,0,-5),new Vector3(-5,0,-7)})
@@ -76,10 +77,11 @@ public class CatFieldController : MonoBehaviour
         }
         movement.Targets=targets.ToArray();
         Combat=field.AddComponent<FieldCombatController>();
+        Combat.Navigation=scenery.Navigation;
         Combat.Initialize(cat.transform,enemies.ToArray(),data,catalog);
         Combat.HealthChanged+=OnPlayerHealthChanged;
         var effects=field.AddComponent<FieldCombatEffects>();
-        effects.Initialize(fieldCamera,square,catArt);
+        effects.Initialize(fieldCamera,square,catVisual.ImpactRoot);
         Combat.AttackPerformed+=effects.Attack;
         Combat.PlayerHit+=effects.Hurt;
         var follow=cameraObject.AddComponent<CatCameraFollow>(); follow.Target=cat.transform; follow.Snap();
@@ -121,13 +123,24 @@ public class CatFieldController : MonoBehaviour
         playerHealthFill.localScale=new Vector3((float)(hp/maximum),1,1);
     }
     public void SetAutomatic(bool value) { movement.SetAutomatic(value); }
-    public void SetStick(Vector2 value) { if(movement!=null) movement.StickInput=value; }
-    public void SetVisible(bool value) { visible=value; ApplyActive(); }
+    public void SetStick(Vector2 value) { if(movement!=null) movement.StickInput=visible?value:Vector2.zero; }
+    public void SetVisible(bool value)
+    {
+        visible=value;
+        if(movement!=null)
+        {
+            movement.ManualInputEnabled=value;
+            movement.StickInput=Vector2.zero;
+        }
+        ApplyActive();
+    }
     private void ApplyActive()
     {
         if(field==null)return;
-        bool active=visible&&!paused&&focused;
-        field.SetActive(active); fieldCamera.enabled=active;
+        // 탭은 화면 출력만 제어합니다. 필드의 전투/자동 이동은 계속 실행합니다.
+        bool active=!paused&&focused;
+        field.SetActive(active);
+        fieldCamera.enabled=active&&visible;
     }
     private void OnApplicationPause(bool value) { paused=value; ApplyActive(); }
     private void OnApplicationFocus(bool value) { focused=value; ApplyActive(); }

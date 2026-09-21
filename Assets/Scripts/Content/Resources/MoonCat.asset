@@ -10,27 +10,30 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: a20e01e9e25a4ff5aeec547a3fb8c69e, type: 3}
-  m_Name: StarterCat
+  m_Name: MoonCat
   m_EditorClassIdentifier: 
   definition:
+    shop:
+      available: 1
+      goldPrice: 1000
     growth:
       maxLevel: 100
-      baseGoldCost: 20
-      goldCostPerLevel: 10
-    description: "가까운 적 한 마리를 할퀩니다."
+      baseGoldCost: 80
+      goldCostPerLevel: 40
+    description: "사거리 안의 모든 적을 공격합니다. 넓은 범위를 공격하는 고양이입니다."
     icon: {fileID: 0}
-    attackRange: 1.7
-    id: cat_starter
-    displayName: "기본 고양이"
-    rarity: 0
-    attackId: claw_melee
+    attackRange: 3
+    id: cat_moon
+    displayName: "달빛 고양이"
+    rarity: 2
+    attackId: spin_melee
     baseStats:
-      attack: 3.5
-      defense: 0
-      attackSpeed: 1
-      maxHealth: 100
+      attack: 6
+      defense: 2
+      attackSpeed: 1.3
+      maxHealth: 160
     statsPerLevel:
-      attack: 1
-      defense: 0
+      attack: 1.3
+      defense: 0.2
       attackSpeed: 0
-      maxHealth: 5
+      maxHealth: 9

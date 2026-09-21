@@ -10,27 +10,30 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: a20e01e9e25a4ff5aeec547a3fb8c69e, type: 3}
-  m_Name: StarterCat
+  m_Name: ShadowCat
   m_EditorClassIdentifier: 
   definition:
+    shop:
+      available: 1
+      goldPrice: 1000
     growth:
       maxLevel: 100
-      baseGoldCost: 20
-      goldCostPerLevel: 10
-    description: "가까운 적 한 마리를 할퀩니다."
+      baseGoldCost: 80
+      goldCostPerLevel: 40
+    description: "가까운 적 한 마리를 공격합니다. 단일 대상에게 빠른 공격을 이어갑니다."
     icon: {fileID: 0}
-    attackRange: 1.7
-    id: cat_starter
-    displayName: "기본 고양이"
-    rarity: 0
+    attackRange: 2.2
+    id: cat_shadow
+    displayName: "그림자 고양이"
+    rarity: 2
     attackId: claw_melee
     baseStats:
-      attack: 3.5
-      defense: 0
-      attackSpeed: 1
-      maxHealth: 100
+      attack: 7
+      defense: 1
+      attackSpeed: 2.0
+      maxHealth: 130
     statsPerLevel:
-      attack: 1
-      defense: 0
+      attack: 1.5
+      defense: 0.1
       attackSpeed: 0
-      maxHealth: 5
+      maxHealth: 7

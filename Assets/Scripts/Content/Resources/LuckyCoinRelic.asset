@@ -10,26 +10,26 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 55692f3fbd0946d696b64a71e458f189, type: 3}
-  m_Name: ClawRelic
+  m_Name: LuckyCoinRelic
   m_EditorClassIdentifier: 
   definition:
     shop:
       available: 1
-      goldPrice: 50
+      goldPrice: 200
     growth:
       maxLevel: 100
-      baseGoldCost: 20
-      goldCostPerLevel: 10
-    description: "기본 공격 명중 시 추가 피해를 줍니다."
+      baseGoldCost: 40
+      goldCostPerLevel: 20
+    description: "공격 시 30% 확률로 해당 공격의 각 대상에게 추가 피해 12를 줍니다. 재사용 대기시간은 1초입니다. 표기 수치는 1레벨 기준입니다."
     icon: {fileID: 0}
-    effectPerLevel: 1
-    id: relic_claw
-    displayName: "날카로운 발톱"
-    rarity: 0
+    effectPerLevel: 2
+    id: relic_lucky_coin
+    displayName: "행운의 동전"
+    rarity: 1
     effectId: bonus_damage
-    trigger: 1
-    chance: 1
-    effectValue: 2
+    trigger: 0
+    chance: 0.3
+    effectValue: 12
     durationSeconds: 0
-    cooldownSeconds: 0
+    cooldownSeconds: 1
     maxStacks: 1

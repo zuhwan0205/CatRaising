@@ -2,7 +2,8 @@ using System;
 using System.Collections.Generic;
 using UnityEngine;
 
-public enum ItemRarity { Normal, Epic, Unique, Legendary }
+// 숫자는 기존 에셋과의 호환을 위해 유지합니다.
+public enum ItemRarity { Common = 0, Epic = 1, Unique = 2, Legendary = 3 }
 public enum EquipmentSlot { Weapon, Armor, Accessory }
 public enum EffectTrigger { OnAttack, OnHit, OnDamaged, OnKill }
 
@@ -18,6 +19,8 @@ public class StatValues
 [Serializable]
 public class CharacterDefinition
 {
+    public ShopOffer shop = new ShopOffer();
+    public LevelUpRules growth = new LevelUpRules();
     [TextArea] public string description;
     public Sprite icon;
     public float attackRange = 1.7f;
@@ -43,6 +46,8 @@ public class EquipmentDefinition
 [Serializable]
 public class RelicDefinition
 {
+    public ShopOffer shop = new ShopOffer();
+    public LevelUpRules growth = new LevelUpRules();
     [TextArea] public string description;
     public Sprite icon;
     public float effectPerLevel;
@@ -78,6 +83,28 @@ public class CatGameCatalog : ScriptableObject
     }
 
     // 이전 카탈로그의 인라인 데이터는 유지하되, 개별 에셋을 우선 조회합니다.
+    public IEnumerable<CharacterDefinition> AllCharacters()
+    {
+        var ids = new HashSet<string>();
+        foreach (var asset in characterAssets)
+            if (asset != null && asset.definition != null && !string.IsNullOrWhiteSpace(asset.definition.id) && ids.Add(asset.definition.id))
+                yield return asset.definition;
+        foreach (var definition in characters)
+            if (definition != null && !string.IsNullOrWhiteSpace(definition.id) && ids.Add(definition.id))
+                yield return definition;
+    }
+
+    public IEnumerable<RelicDefinition> AllRelics()
+    {
+        var ids = new HashSet<string>();
+        foreach (var asset in relicAssets)
+            if (asset != null && asset.definition != null && !string.IsNullOrWhiteSpace(asset.definition.id) && ids.Add(asset.definition.id))
+                yield return asset.definition;
+        foreach (var definition in relics)
+            if (definition != null && !string.IsNullOrWhiteSpace(definition.id) && ids.Add(definition.id))
+                yield return definition;
+    }
+
     public CharacterDefinition FindCharacter(string id)
     {
         var asset = characterAssets.Find(x => x != null && x.definition != null && x.definition.id == id);
@@ -95,7 +122,7 @@ public class CatGameCatalog : ScriptableObject
         new CharacterDefinition
         {
             id = StarterCharacterId, displayName = "기본 고양이",
-            rarity = ItemRarity.Normal, attackId = "claw_melee",
+            rarity = ItemRarity.Common, attackId = "claw_melee",
             baseStats = new StatValues { attack = 3.5f, attackSpeed = 1, maxHealth = 100 },
             statsPerLevel = new StatValues { attack = 1, maxHealth = 5 }
         }

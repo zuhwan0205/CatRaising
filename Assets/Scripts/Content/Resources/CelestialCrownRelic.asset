@@ -10,26 +10,26 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 55692f3fbd0946d696b64a71e458f189, type: 3}
-  m_Name: ClawRelic
+  m_Name: CelestialCrownRelic
   m_EditorClassIdentifier: 
   definition:
     shop:
       available: 1
-      goldPrice: 50
+      goldPrice: 2000
     growth:
       maxLevel: 100
-      baseGoldCost: 20
-      goldCostPerLevel: 10
-    description: "기본 공격 명중 시 추가 피해를 줍니다."
+      baseGoldCost: 150
+      goldCostPerLevel: 75
+    description: "매 공격마다 해당 공격의 각 대상에게 추가 피해 15를 줍니다. 표기 수치는 1레벨 기준입니다."
     icon: {fileID: 0}
-    effectPerLevel: 1
-    id: relic_claw
-    displayName: "날카로운 발톱"
-    rarity: 0
+    effectPerLevel: 3
+    id: relic_celestial_crown
+    displayName: "천상의 왕관"
+    rarity: 3
     effectId: bonus_damage
-    trigger: 1
+    trigger: 0
     chance: 1
-    effectValue: 2
+    effectValue: 15
     durationSeconds: 0
     cooldownSeconds: 0
     maxStacks: 1

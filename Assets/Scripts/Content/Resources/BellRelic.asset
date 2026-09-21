@@ -13,6 +13,13 @@ MonoBehaviour:
   m_Name: BellRelic
   m_EditorClassIdentifier: 
   definition:
+    shop:
+      available: 1
+      goldPrice: 50
+    growth:
+      maxLevel: 100
+      baseGoldCost: 20
+      goldCostPerLevel: 10
     description: "살아남은 피격 후 HP를 회복합니다. 치명적인 피해는 막지 못합니다."
     icon: {fileID: 0}
     effectPerLevel: 1

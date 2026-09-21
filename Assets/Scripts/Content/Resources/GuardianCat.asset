@@ -10,27 +10,30 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: a20e01e9e25a4ff5aeec547a3fb8c69e, type: 3}
-  m_Name: StarterCat
+  m_Name: GuardianCat
   m_EditorClassIdentifier: 
   definition:
+    shop:
+      available: 1
+      goldPrice: 300
     growth:
       maxLevel: 100
-      baseGoldCost: 20
-      goldCostPerLevel: 10
-    description: "가까운 적 한 마리를 할퀩니다."
+      baseGoldCost: 40
+      goldCostPerLevel: 20
+    description: "사거리 안의 모든 적을 공격합니다. 높은 체력과 방어력을 가진 고양이입니다."
     icon: {fileID: 0}
-    attackRange: 1.7
-    id: cat_starter
-    displayName: "기본 고양이"
-    rarity: 0
-    attackId: claw_melee
+    attackRange: 2.3
+    id: cat_guardian
+    displayName: "수호 고양이"
+    rarity: 1
+    attackId: spin_melee
     baseStats:
-      attack: 3.5
-      defense: 0
-      attackSpeed: 1
-      maxHealth: 100
+      attack: 4
+      defense: 4
+      attackSpeed: 0.8
+      maxHealth: 200
     statsPerLevel:
-      attack: 1
-      defense: 0
+      attack: 0.9
+      defense: 0.3
       attackSpeed: 0
-      maxHealth: 5
+      maxHealth: 12
