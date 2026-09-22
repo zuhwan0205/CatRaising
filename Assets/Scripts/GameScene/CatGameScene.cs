@@ -45,7 +45,8 @@ public class CatGameScene : MonoBehaviour
         view.CharacterLevelUpRequested += LevelUpCharacter;
         view.RelicLevelUpRequested += LevelUpRelic;
         view.CharacterPurchaseRequested += BuyCharacter;
-        view.RelicPurchaseRequested += BuyRelic;
+        view.RelicDrawRequested += DrawRelic;
+        view.CharacterDrawRequested += DrawCharacter;
         session.BusyChanged += view.SetBusy;
         session.StatusChanged += view.ShowStatus;
         session.GameplayBlockedChanged += field.SetGameplayBlocked;
@@ -68,10 +69,19 @@ public class CatGameScene : MonoBehaviour
         await session.BuyCharacterAsync(id);
         if (view != null) view.RefreshShop();
     }
-    private async void BuyRelic(string id)
+    private void DrawRelic() { DrawContent(false); }
+    private void DrawCharacter() { DrawContent(true); }
+    private async void DrawContent(bool character)
     {
-        await session.BuyRelicAsync(id);
-        if (view != null) view.RefreshShop();
+        if(view==null || !view.BeginRelicDraw(character))return;
+        ContentDrawResult result=null;
+        try { result=character?await session.DrawCharacterAsync():await session.DrawRelicAsync(); }
+        catch(System.Exception exception)
+        {
+            Debug.LogException(exception);
+            if(view!=null)view.ShowStatus("뽑기 처리 중 오류가 발생했습니다. 저장 상태를 확인해주세요.");
+        }
+        finally { if(view!=null)view.CompleteRelicDraw(result); }
     }
     private async void LevelUpCharacter(OwnedCharacter character)
     {
@@ -102,7 +112,8 @@ public class CatGameScene : MonoBehaviour
             view.CharacterLevelUpRequested -= LevelUpCharacter;
             view.RelicLevelUpRequested -= LevelUpRelic;
             view.CharacterPurchaseRequested -= BuyCharacter;
-            view.RelicPurchaseRequested -= BuyRelic;
+            view.RelicDrawRequested -= DrawRelic;
+            view.CharacterDrawRequested -= DrawCharacter;
             if (session != null)
             {
                 session.BusyChanged -= view.SetBusy;

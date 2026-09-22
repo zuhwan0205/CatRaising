@@ -5,7 +5,7 @@ using UnityEngine;
 // 외부에서 추가된 이미지의 최초 임포트를 확정합니다. 프로젝트 전체 설정은 변경하지 않습니다.
 public static class CatArtworkImport
 {
-    private const string Path = "Assets/Scripts/Content/Resources/CatStarterIsometric.png";
+
 
     [InitializeOnLoadMethod]
     private static void ScheduleImport()
@@ -17,6 +17,12 @@ public static class CatArtworkImport
     private static void EnsureImported()
     {
         if (EditorApplication.isPlayingOrWillChangePlaymode) return;
+        ImportTexture("Assets/Scripts/Content/Resources/CatStarterIsometric.png");
+        ImportTexture("Assets/Scripts/Content/Resources/CatCombatFrames.png");
+    }
+
+    private static void ImportTexture(string Path)
+    {
         if (!System.IO.File.Exists(Path)) return;
         if (AssetDatabase.LoadAssetAtPath<Texture2D>(Path) == null)
             AssetDatabase.ImportAsset(Path, ImportAssetOptions.ForceUpdate | ImportAssetOptions.ForceSynchronousImport);

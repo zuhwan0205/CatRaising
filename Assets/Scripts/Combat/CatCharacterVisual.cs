@@ -14,6 +14,11 @@ public sealed class CatCharacterVisual : MonoBehaviour
     private Vector3 previous;
     private float phase, motion;
     private string selectedId;
+    private readonly Sprite[] combatFrames=new Sprite[4];
+    private float attackRemaining, facingRemaining;
+    private bool facingBack;
+    private Vector2 attackDirection;
+    private const float AttackDuration=.32f;
 
     public void Build(Transform player,Camera camera,BackendUserData playerData,Sprite square,Transform fallbackArt)
     {
@@ -22,11 +27,19 @@ public sealed class CatCharacterVisual : MonoBehaviour
         fallback=fallbackArt.gameObject;fallbackArt.SetParent(ImpactRoot,false);
         animated=new GameObject("Shared Cat Artwork").transform;animated.SetParent(ImpactRoot,false);
         animated.localPosition=new Vector3(0,.35f,0);
-        var texture=Resources.Load<Texture2D>("CatStarterIsometric");
+        var sheet=Resources.Load<Texture2D>("CatCombatFrames");
+        var texture=sheet!=null?sheet:Resources.Load<Texture2D>("CatStarterIsometric");
         if(texture!=null)
         {
-            generatedSprite=Sprite.Create(texture,new Rect(0,0,texture.width,texture.height),new Vector2(.5f,.5f),texture.height/1.65f);
-            catSprite=animated.gameObject.AddComponent<SpriteRenderer>();catSprite.sprite=generatedSprite;catSprite.sortingOrder=1;
+            if(sheet!=null)
+            {
+                float width=sheet.width/2f,height=sheet.height/2f;
+                // 시트의 위쪽 행: 정면 대기/공격, 아래쪽 행: 후면 대기/공격.
+                for(int i=0;i<4;i++)
+                    combatFrames[i]=Sprite.Create(sheet,new Rect((i%2)*width,(i<2?1:0)*height,width,height),new Vector2(.5f,.5f),height/1.65f,0,SpriteMeshType.FullRect);
+            }
+            else generatedSprite=Sprite.Create(texture,new Rect(0,0,texture.width,texture.height),new Vector2(.5f,.5f),texture.height/1.65f);
+            catSprite=animated.gameObject.AddComponent<SpriteRenderer>();catSprite.sprite=combatFrames[0]!=null?combatFrames[0]:generatedSprite;catSprite.sortingOrder=1;
             animated.gameObject.layer=2;
         }
         else Debug.LogWarning("CatStarterIsometric 이미지가 없어 기존 고양이 그림을 사용합니다.");
@@ -54,6 +67,25 @@ public sealed class CatCharacterVisual : MonoBehaviour
         bool detailed=catSprite!=null;
         animated.gameObject.SetActive(detailed);fallback.SetActive(!detailed);
         phase=motion=0;previous=feet.position;
+        attackRemaining=facingRemaining=0;
+    }
+
+    public void Attack(Vector3 source,Vector3 target)
+    {
+        if(selectedId!=data.loadout.characterId)ApplySelection();
+        Face(target-source);
+        attackRemaining=AttackDuration;
+        facingRemaining=.45f;
+    }
+
+    private void Face(Vector3 direction)
+    {
+        Vector2 screen=new Vector2(Vector3.Dot(direction,view.transform.right),Vector3.Dot(direction,view.transform.up));
+        if(screen.sqrMagnitude<.00001f)return;
+        screen=screen.normalized;
+        attackDirection=screen;
+        if(catSprite!=null && Mathf.Abs(screen.x)>.01f)catSprite.flipX=screen.x<0;
+        if(Mathf.Abs(screen.y)>.03f)facingBack=screen.y>0;
     }
     private void LateUpdate()
     {
@@ -64,21 +96,28 @@ public sealed class CatCharacterVisual : MonoBehaviour
         // 재등장 순간의 순간이동을 걷기 애니메이션으로 처리하지 않습니다.
         bool walking=distance>.0001f && distance<.75f;
         float dt=Mathf.Min(Time.deltaTime,.1f);
+        attackRemaining=Mathf.Max(0,attackRemaining-dt);
+        facingRemaining=Mathf.Max(0,facingRemaining-dt);
         motion=Mathf.MoveTowards(motion,walking?1:0,dt*10);
         if(walking)
         {
             phase+=distance*13;
-            float horizontal=Vector3.Dot(delta,view.transform.right);
-            if(catSprite!=null && Mathf.Abs(horizontal)>.001f)catSprite.flipX=horizontal<0;
+            if(facingRemaining<=0)Face(delta);
         }
-        animated.localPosition=new Vector3(0,.35f+Mathf.Abs(Mathf.Sin(phase))*.055f*motion,0);
-        animated.localRotation=Quaternion.Euler(0,0,Mathf.Sin(phase)*2.5f*motion);
-        animated.localScale=new Vector3(1+Mathf.Sin(phase*2)*.018f*motion,1-Mathf.Sin(phase*2)*.018f*motion,1);
+        float progress=1-attackRemaining/AttackDuration;
+        bool striking=attackRemaining>0 && progress>=.15f && progress<.8f;
+        float lunge=attackRemaining>0?Mathf.Sin(progress*Mathf.PI)*.12f:0;
+        float walk=attackRemaining>0?0:motion;
+        if(catSprite!=null && combatFrames[0]!=null)catSprite.sprite=combatFrames[(facingBack?2:0)+(striking?1:0)];
+        animated.localPosition=new Vector3(attackDirection.x*lunge,.35f+attackDirection.y*lunge+Mathf.Abs(Mathf.Sin(phase))*.055f*walk,0);
+        animated.localRotation=Quaternion.Euler(0,0,Mathf.Sin(phase)*2.5f*walk);
+        animated.localScale=new Vector3(1+Mathf.Sin(phase*2)*.018f*walk,1-Mathf.Sin(phase*2)*.018f*walk,1);
         shadow.localScale=new Vector3(1-Mathf.Abs(Mathf.Sin(phase))*.06f*motion,.65f,1);
     }
     private void OnDestroy()
     {
         if(generatedSprite!=null)Destroy(generatedSprite);
         if(shadowSprite!=null)Destroy(shadowSprite);
+        foreach(var frame in combatFrames)if(frame!=null)Destroy(frame);
     }
 }
