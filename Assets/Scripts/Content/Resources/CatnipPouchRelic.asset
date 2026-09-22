@@ -13,6 +13,7 @@ MonoBehaviour:
   m_Name: CatnipPouchRelic
   m_EditorClassIdentifier: 
   definition:
+    inRelicDraw: 1
     shop:
       available: 1
       goldPrice: 200

@@ -11,6 +11,7 @@ public class FieldCombatController : MonoBehaviour
     public event Action<double,double> HealthChanged;
     public event Action PlayerHit;
     public event Action<Vector3,Vector3> AttackPerformed;
+    public event Action<Vector3,Vector3> AttackStarted;
     public CombatHealth PlayerHealth { get; private set; }
     public float ContactDistance=1.05f;
     public float ContactInterval=.75f;
@@ -107,6 +108,8 @@ public class FieldCombatController : MonoBehaviour
         }
         if(!valid || cooldown>0 || closest==null)return;
         cooldown=(float)(1/speed);
+        // 여러 적을 맞히는 공격도 몸의 방향/모션은 한 번만 시작합니다.
+        AttackStarted?.Invoke(player.position,closest.transform.position);
         // OnAttack은 공격 1회당, OnHit은 기본 공격 명중 대상마다 실행합니다.
         double attackBonus=0;
         TriggerRelics(EffectTrigger.OnAttack, value=>attackBonus+=value);

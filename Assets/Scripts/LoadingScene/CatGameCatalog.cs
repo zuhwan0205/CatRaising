@@ -19,6 +19,8 @@ public class StatValues
 [Serializable]
 public class CharacterDefinition
 {
+    public bool inCharacterDraw = true;
+    public CharacterGrowthRules fragmentGrowth = new CharacterGrowthRules();
     public ShopOffer shop = new ShopOffer();
     public LevelUpRules growth = new LevelUpRules();
     [TextArea] public string description;
@@ -46,6 +48,7 @@ public class EquipmentDefinition
 [Serializable]
 public class RelicDefinition
 {
+    public bool inRelicDraw = true;
     public ShopOffer shop = new ShopOffer();
     public LevelUpRules growth = new LevelUpRules();
     [TextArea] public string description;
@@ -67,6 +70,20 @@ public class RelicDefinition
 [CreateAssetMenu(menuName = "Cat Raising/Game Catalog")]
 public class CatGameCatalog : ScriptableObject
 {
+    public CharacterDrawRules characterDraw = new CharacterDrawRules();
+    public List<CharacterDefinition> CharacterDrawPool()
+    {
+        var pool=new List<CharacterDefinition>();
+        foreach(var character in AllCharacters())if(character.inCharacterDraw)pool.Add(character);
+        return pool;
+    }
+    public RelicDrawRules relicDraw = new RelicDrawRules();
+    public List<RelicDefinition> RelicDrawPool()
+    {
+        var pool = new List<RelicDefinition>();
+        foreach(var relic in AllRelics()) if(relic.inRelicDraw)pool.Add(relic);
+        return pool;
+    }
     public List<CatCharacterAsset> characterAssets = new List<CatCharacterAsset>();
     public List<CatRelicAsset> relicAssets = new List<CatRelicAsset>();
 

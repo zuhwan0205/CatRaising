@@ -12,6 +12,20 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: b42b6d474e934fb3b2fc0a3110371c22, type: 3}
   m_Name: DefaultCatCatalog
   m_EditorClassIdentifier: 
+  characterDraw:
+    goldCost: 200
+    duplicateFragments: 1
+    commonPercent: 70
+    epicPercent: 23
+    uniquePercent: 6
+    legendaryPercent: 1
+  relicDraw:
+    goldCost: 100
+    duplicateFragments: 1
+    commonPercent: 70
+    epicPercent: 23
+    uniquePercent: 6
+    legendaryPercent: 1
   characterAssets:
   - {fileID: 11400000, guid: 3945fcf91fd34ab8aa79ef0783a29fe9, type: 2}
   - {fileID: 11400000, guid: 091dd2bca89c48b2ab3502e03b2bf43f, type: 2}

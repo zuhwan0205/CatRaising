@@ -106,7 +106,7 @@ public partial class CatGameSceneUI : MonoBehaviour
 
     private void Show(string tab)
     {
-        if (saving) return;
+        if (saving || drawOverlay!=null) return;
         if (joystick != null) joystick.ResetInput();
         joystick = null;
         combatLabel = null;
@@ -197,10 +197,7 @@ public partial class CatGameSceneUI : MonoBehaviour
         {
             if (owned == null) continue;
             var character = owned;
-            string selected = data.loadout.characterId == character.characterId ? "\n선택 중" : "";
-            var definition = catalog.FindCharacter(character.characterId);
-            string grade = definition == null ? "" : "\n" + Rarity(definition.rarity);
-            Button(grid, CharacterName(character.characterId) + grade + $"\nLv. {character.level}" + selected, Vector2.zero, Vector2.one, () => CharacterDetail(character));
+            CharacterCard(grid, character, catalog.FindCharacter(character.characterId));
         }
     }
 
@@ -218,7 +215,7 @@ public partial class CatGameSceneUI : MonoBehaviour
         Button(page, "목록", new Vector2(0,.92f), new Vector2(.24f,1), () => Show("캐릭터"));
         Label(page, CharacterName(owned.characterId), 30, new Vector2(.26f,.92f), Vector2.one);
         var portrait = Panel(page, "Character Portrait", new Vector2(0,.49f), new Vector2(1,.88f), new Color(.94f,.87f,.77f));
-        Label(portrait, "/\\_/\\\n( •ㅅ• )", 60, new Vector2(.05f,.10f), new Vector2(.95f,.90f));
+        CharacterPortrait(portrait, catalog.FindCharacter(owned.characterId));
         var definition = catalog.FindCharacter(owned.characterId);
         string details = $"Lv. {owned.level}  ·  돌파 {owned.ascension}  ·  조각 {owned.fragments}\n";
         if (definition != null)
@@ -229,7 +226,10 @@ public partial class CatGameSceneUI : MonoBehaviour
         else details += "캐릭터 공통 설정을 연결해주세요.";
         Label(page, details, 23, new Vector2(0,.19f), new Vector2(1,.47f));
         Button(page, "이 고양이 선택 · 저장", new Vector2(0,.09f), new Vector2(1,.17f), () => CharacterSelected?.Invoke(owned));
-        LevelUpButton(definition?.growth, owned.level, Vector2.zero, new Vector2(1,.07f), () => CharacterLevelUpRequested?.Invoke(owned));
+        long fragmentCost=0;
+        bool canGrow=definition?.fragmentGrowth!=null && definition.fragmentGrowth.TryGetCost(owned.level,out fragmentCost);
+        var grow=Button(page,canGrow?$"Lv. {owned.level} → {owned.level+1} · 조각 {fragmentCost:N0}개":"최대 레벨 / 성장 설정 없음",Vector2.zero,new Vector2(1,.07f),()=>CharacterLevelUpRequested?.Invoke(owned));
+        grow.interactable=canGrow;
     }
 
     private void Relics()
@@ -259,7 +259,7 @@ public partial class CatGameSceneUI : MonoBehaviour
         Button(page, "목록", new Vector2(0,.92f), new Vector2(.24f,1), () => Show("유물"));
         Label(page, definition == null ? owned.relicId : definition.displayName, 30, new Vector2(.26f,.92f), Vector2.one);
         string description = definition == null ? "유물 공통 설정을 연결해주세요." :
-            $"{Rarity(definition.rarity)} · Lv. {owned.level}\n{definition.description}\n{definition.trigger} · 확률 {definition.chance:P0}\n효과 {definition.effectValue+definition.effectPerLevel*Math.Max(0,owned.level-1):0.#} · 재사용 {definition.cooldownSeconds:0.#}초";
+            $"{Rarity(definition.rarity)} · Lv. {owned.level} · 조각 {owned.fragments}\n{definition.description}\n{definition.trigger} · 확률 {definition.chance:P0}\n효과 {definition.effectValue+definition.effectPerLevel*Math.Max(0,owned.level-1):0.#} · 재사용 {definition.cooldownSeconds:0.#}초";
         Label(page, description, 25, new Vector2(.04f,.25f), new Vector2(.96f,.84f));
         bool equipped = data.loadout.relicIds.Contains(owned.relicId);
         var button = Button(page, equipped ? "유물 해제 · 저장" : "유물 장착 · 저장 (최대 3개)", new Vector2(0,.08f), new Vector2(1,.20f), () => RelicSelected?.Invoke(owned));
@@ -323,7 +323,7 @@ public partial class CatGameSceneUI : MonoBehaviour
     {
         var rect=Panel(parent,title,min,max,accent);
         var button=rect.gameObject.AddComponent<Button>(); button.targetGraphic=rect.GetComponent<Image>();
-        button.onClick.AddListener(() => { if (!saving) action(); });
+        button.onClick.AddListener(() => { if (!saving && drawOverlay==null) action(); });
         Label(rect,title,23,new Vector2(.04f,.04f),new Vector2(.96f,.96f)).color=Color.white;
         return button;
     }

@@ -13,6 +13,11 @@ MonoBehaviour:
   m_Name: LionCat
   m_EditorClassIdentifier: 
   definition:
+    inCharacterDraw: 1
+    fragmentGrowth:
+      maxLevel: 100
+      baseFragments: 1
+      fragmentsPerLevel: 1
     shop:
       available: 1
       goldPrice: 1000
