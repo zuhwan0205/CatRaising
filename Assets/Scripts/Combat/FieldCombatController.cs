@@ -22,6 +22,7 @@ public class FieldCombatController : MonoBehaviour
     private double defense;
     public bool Blocked;
     public FieldNavigation Navigation { get; set; }
+    public FieldEnemy LockedTarget { get; private set; }
     private Transform player;
     private FieldEnemy[] enemies;
     private BackendUserData data;
@@ -46,12 +47,15 @@ public class FieldCombatController : MonoBehaviour
     private void Update()
     {
         if(Blocked || player==null)return;
+        // 재등장 처리 전에 기존 대상의 생존 여부를 확인합니다.
+        if(LockedTarget!=null && !LockedTarget.Alive)LockedTarget=null;
         float delta=Mathf.Min(Time.deltaTime,.1f);
         ResolveStats();
         relicEffects.Tick(delta);
         killsThisFrame=0;
         if (PlayerHealth.Dead)
         {
+            LockedTarget=null;
             deathRemaining-=delta;
             if(deathRemaining<=0)
             {
@@ -70,6 +74,7 @@ public class FieldCombatController : MonoBehaviour
         float nearest=Range*Range;
         foreach(var enemy in enemies)
         {
+            if(enemy==null)continue;
             if(!enemy.Alive)
             {
                 enemy.RespawnRemaining-=delta;
@@ -101,12 +106,21 @@ public class FieldCombatController : MonoBehaviour
             HealthChanged?.Invoke(PlayerHealth.Current,PlayerHealth.Maximum);
             if(died)
             {
+                LockedTarget=null;
                 deathRemaining=Mathf.Max(.1f,PlayerRespawnDelay);
                 MessageChanged?.Invoke($"쓰러졌습니다. {deathRemaining:0.#}초 후 회복합니다.");
                 return;
             }
         }
+        // 살아 있는 고정 대상은 거리나 다른 적의 접근으로 교체하지 않습니다.
+        if(LockedTarget!=null)
+        {
+            closest=LockedTarget;
+            if((closest.transform.position-player.position).sqrMagnitude>Range*Range ||
+                (Navigation!=null && !Navigation.Clear(player.position,closest.transform.position)))return;
+        }
         if(!valid || cooldown>0 || closest==null)return;
+        LockedTarget=closest;
         cooldown=(float)(1/speed);
         // 여러 적을 맞히는 공격도 몸의 방향/모션은 한 번만 시작합니다.
         AttackStarted?.Invoke(player.position,closest.transform.position);
@@ -127,6 +141,7 @@ public class FieldCombatController : MonoBehaviour
             maxBonus=Math.Max(maxBonus,bonus);
             if(target.Hit(damage))
             {
+                if(target==LockedTarget)LockedTarget=null;
                 target.RespawnRemaining=RespawnDelay;
                 killsThisFrame++;
                 TriggerRelics(EffectTrigger.OnKill, null);

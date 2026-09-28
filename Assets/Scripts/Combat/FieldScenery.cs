@@ -8,6 +8,7 @@ public sealed class FieldScenery : MonoBehaviour
     private Sprite square, oval, triangle, diamond;
     private Camera view;
     private readonly List<Sprite> ownedSprites=new List<Sprite>();
+    private readonly List<Texture2D> ownedTextures=new List<Texture2D>();
 
     public void Build(Sprite tile,Camera camera)
     {
@@ -18,8 +19,9 @@ public sealed class FieldScenery : MonoBehaviour
         oval=Shape(circle);
         triangle=Shape(new[]{new Vector2(-.5f,-.5f),new Vector2(.5f,-.5f),new Vector2(0,.5f)});
         diamond=Shape(new[]{new Vector2(-.5f,0),new Vector2(0,-.5f),new Vector2(.5f,0),new Vector2(0,.5f)});
-        Floor("East West Path",Vector3.zero,new Vector2(36,2.4f),new Color(.68f,.61f,.43f),square,-9900);
-        Floor("North South Path",Vector3.zero,new Vector2(2.4f,36),new Color(.68f,.61f,.43f),square,-9900);
+        Floor("East West Path",Vector3.zero,new Vector2(36,2.4f),Color.white,PixelSurface(512,32,false),-9900);
+        Floor("North South Path",Vector3.zero,new Vector2(2.4f,36),Color.white,PixelSurface(32,512,false),-9900);
+        Floor("Pixel Grass",Vector3.zero,new Vector2(40,40),Color.white,PixelSurface(512,512,true),-9950);
         var random=new System.Random(731);
         for(int i=0;i<180;i++)
         {
@@ -41,19 +43,56 @@ public sealed class FieldScenery : MonoBehaviour
         Navigation.Bake();
     }
 
-    private Sprite Shape(Vector2[] points)
+    private Sprite PixelSprite(Texture2D texture)
     {
-        var sprite=Sprite.Create(square.texture,new Rect(0,0,1,1),new Vector2(.5f,.5f),1);
-        var indices=new ushort[(points.Length-2)*3];
-        for(int i=0;i<points.Length-2;i++){indices[i*3]=0;indices[i*3+1]=(ushort)(i+1);indices[i*3+2]=(ushort)(i+2);}
-        // OverrideGeometry는 피벗 기준 월드 좌표가 아니라 Sprite Rect의 픽셀 좌표를 받습니다.
-        var vertices=new Vector2[points.Length];
-        for(int i=0;i<points.Length;i++)
-            vertices[i]=new Vector2(Mathf.Clamp01(points[i].x+.5f)*sprite.rect.width,
-                Mathf.Clamp01(points[i].y+.5f)*sprite.rect.height);
-        sprite.OverrideGeometry(vertices,indices);ownedSprites.Add(sprite);return sprite;
+        texture.filterMode=FilterMode.Point;
+        texture.wrapMode=TextureWrapMode.Clamp;
+        texture.Apply(false,true);
+        ownedTextures.Add(texture);
+        var sprite=Sprite.Create(texture,new Rect(0,0,texture.width,texture.height),new Vector2(.5f,.5f),1,0,SpriteMeshType.FullRect);
+        ownedSprites.Add(sprite);
+        return sprite;
     }
 
+    private Sprite PixelSurface(int width,int height,bool grass)
+    {
+        var texture=new Texture2D(width,height,TextureFormat.RGBA32,false);
+        var colors=new Color[width*height];
+        var random=new System.Random(grass?417:892);
+        Color ground=grass?new Color(.38f,.51f,.28f):new Color(.62f,.51f,.34f);
+        for(int i=0;i<colors.Length;i++)colors[i]=ground;
+        // 픽셀을 작은 묶음으로 배치해 풀과 자갈 무늬를 만듭니다.
+        for(int i=0;i<width*height/24;i++)
+        {
+            int x=random.Next(1,width-2),y=random.Next(1,height-2);
+            Color detail=grass?(i%2==0?new Color(.46f,.59f,.32f):new Color(.31f,.44f,.24f)):
+                (i%2==0?new Color(.72f,.62f,.43f):new Color(.53f,.43f,.29f));
+            colors[y*width+x]=detail;colors[y*width+x+1]=detail;
+            if(grass)colors[(y+1)*width+x]=detail;
+        }
+        texture.SetPixels(colors);
+        return PixelSprite(texture);
+    }
+
+    private Sprite Shape(Vector2[] points)
+    {
+        const int size=24;
+        var texture=new Texture2D(size,size,TextureFormat.RGBA32,false);
+        var colors=new Color[size*size];
+        for(int y=0;y<size;y++)for(int x=0;x<size;x++)
+        {
+            var p=new Vector2((x+.5f)/size-.5f,(y+.5f)/size-.5f);
+            bool inside=false;
+            for(int i=0,j=points.Length-1;i<points.Length;j=i++)
+            {
+                var a=points[i];var b=points[j];
+                if((a.y>p.y)!=(b.y>p.y) && p.x<(b.x-a.x)*(p.y-a.y)/(b.y-a.y)+a.x)inside=!inside;
+            }
+            colors[y*size+x]=inside?Color.white:Color.clear;
+        }
+        texture.SetPixels(colors);
+        return PixelSprite(texture);
+    }
     private Transform Structure(string name,Vector3 position,float radius)
     {
         Navigation.Add(position,radius);
@@ -75,6 +114,13 @@ public sealed class FieldScenery : MonoBehaviour
         Part(art,oval,new Vector2(-.6f,1.35f),new Vector2(.42f,.48f),new Color(1,.87f,.48f),4);
         Part(art,triangle,new Vector2(-.88f,2.93f),new Vector2(.45f,.55f),new Color(.59f,.28f,.23f),4);
         Part(art,triangle,new Vector2(.88f,2.93f),new Vector2(.45f,.55f),new Color(.59f,.28f,.23f),4);
+        for(int row=0;row<4;row++)
+        {
+            float y=1.86f+row*.22f;
+            Part(art,square,new Vector2(-.16f,y),new Vector2(1.7f-row*.38f,.065f),new Color(.64f,.32f,.24f),5);
+        }
+        for(int row=0;row<3;row++)for(int col=0;col<3;col++)
+            Part(art,square,new Vector2(-.75f+col*.7f,.30f+row*.55f),new Vector2(.14f,.07f),new Color(.76f,.60f,.39f),3);
     }
 
     private void Tree(Vector3 p)
@@ -84,6 +130,8 @@ public sealed class FieldScenery : MonoBehaviour
         Part(art,oval,new Vector2(.15f,1.85f),new Vector2(2,2),new Color(.20f,.37f,.25f),1);
         Part(art,oval,new Vector2(-.15f,2.02f),new Vector2(1.9f,1.8f),new Color(.32f,.53f,.30f),2);
         Part(art,oval,new Vector2(-.42f,2.45f),new Vector2(.95f,.7f),new Color(.48f,.65f,.35f),3);
+        for(int i=0;i<5;i++)
+            Part(art,square,new Vector2(-.55f+(i%3)*.35f,1.7f+(i/3)*.35f),new Vector2(.18f,.12f),new Color(.43f,.60f,.32f),4);
     }
 
     private void Tower(Vector3 p)
@@ -107,7 +155,7 @@ public sealed class FieldScenery : MonoBehaviour
     private SpriteRenderer Part(Transform parent,Sprite sprite,Vector2 position,Vector2 size,Color color,int order)
     {
         var item=new GameObject("Detail");item.layer=2;item.transform.SetParent(parent,false);
-        item.transform.localPosition=position;item.transform.localScale=new Vector3(size.x,size.y,1);
+        item.transform.localPosition=position;item.transform.localScale=new Vector3(size.x/sprite.bounds.size.x,size.y/sprite.bounds.size.y,1);
         var renderer=item.AddComponent<SpriteRenderer>();renderer.sprite=sprite;renderer.color=color;renderer.sortingOrder=order;return renderer;
     }
     private void Floor(string name,Vector3 position,Vector2 size,Color color,Sprite sprite,int order)
@@ -115,5 +163,5 @@ public sealed class FieldScenery : MonoBehaviour
         var renderer=Part(transform,sprite,Vector2.zero,size,color,order);renderer.name=name;
         renderer.transform.localPosition=new Vector3(position.x,.015f,position.z);renderer.transform.localRotation=Quaternion.Euler(90,0,0);
     }
-    private void OnDestroy() {foreach(var sprite in ownedSprites)if(sprite!=null)Destroy(sprite);}
+    private void OnDestroy() {foreach(var sprite in ownedSprites)if(sprite!=null)Destroy(sprite);foreach(var texture in ownedTextures)if(texture!=null)Destroy(texture);}
 }

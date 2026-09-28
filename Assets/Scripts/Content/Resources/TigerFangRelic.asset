@@ -22,7 +22,7 @@ MonoBehaviour:
       baseGoldCost: 40
       goldCostPerLevel: 20
     description: "기본 공격 명중마다 추가 피해 4를 줍니다. 표기 수치는 1레벨 기준입니다."
-    icon: {fileID: 0}
+    icon: {fileID: 21300000, guid: 613ca69262fd4a5784446ec302219078, type: 3}
     effectPerLevel: 1
     id: relic_tiger_fang
     displayName: "호랑이 송곳니"

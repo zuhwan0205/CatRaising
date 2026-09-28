@@ -22,7 +22,7 @@ MonoBehaviour:
       baseGoldCost: 80
       goldCostPerLevel: 40
     description: "살아남은 피격 후 HP 12를 회복합니다. 재사용 대기시간은 2초입니다. 표기 수치는 1레벨 기준입니다."
-    icon: {fileID: 0}
+    icon: {fileID: 21300000, guid: e9ffe9fe456b4711bd429125c6d25e07, type: 3}
     effectPerLevel: 3
     id: relic_star_bell
     displayName: "별빛 방울"
