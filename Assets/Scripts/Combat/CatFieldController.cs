@@ -79,6 +79,7 @@ public class CatFieldController : MonoBehaviour
         Combat=field.AddComponent<FieldCombatController>();
         Combat.Navigation=scenery.Navigation;
         Combat.Initialize(cat.transform,enemies.ToArray(),data,catalog);
+        movement.Combat=Combat;
         Combat.AttackStarted+=catVisual.Attack;
         Combat.HealthChanged+=OnPlayerHealthChanged;
         var effects=field.AddComponent<FieldCombatEffects>();

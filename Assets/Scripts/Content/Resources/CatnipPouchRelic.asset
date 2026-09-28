@@ -22,7 +22,7 @@ MonoBehaviour:
       baseGoldCost: 40
       goldCostPerLevel: 20
     description: "공격 시 HP 3을 회복합니다. 재사용 대기시간은 3초입니다. 표기 수치는 1레벨 기준입니다."
-    icon: {fileID: 0}
+    icon: {fileID: 21300000, guid: 7514df6093a54aaebb034aaf59a97ada, type: 3}
     effectPerLevel: 1
     id: relic_catnip_pouch
     displayName: "캣닢 주머니"

@@ -22,7 +22,7 @@ MonoBehaviour:
       baseGoldCost: 150
       goldCostPerLevel: 75
     description: "매 공격마다 해당 공격의 각 대상에게 추가 피해 15를 줍니다. 표기 수치는 1레벨 기준입니다."
-    icon: {fileID: 0}
+    icon: {fileID: 21300000, guid: 45cbfad48a1e4592a1300a52eb00d927, type: 3}
     effectPerLevel: 3
     id: relic_celestial_crown
     displayName: "천상의 왕관"

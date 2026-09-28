@@ -10,6 +10,7 @@ public class CatMovementController : MonoBehaviour
     public bool ManualInputEnabled { get; set; } = true;
     public Transform[] Targets { get; set; }
     public FieldNavigation Navigation { get; set; }
+    public FieldCombatController Combat { get; set; }
     public float Speed = 3;
     public float StopDistance = 1.5f;
     public float FieldHalfSize = 18;
@@ -28,9 +29,10 @@ public class CatMovementController : MonoBehaviour
 
     private Vector2 AutoDirection()
     {
-        Transform nearest = null;
+        Transform nearest = Combat!=null && Combat.LockedTarget!=null && Combat.LockedTarget.Alive
+            ? Combat.LockedTarget.transform : null;
         float best = float.MaxValue;
-        if (Targets != null) foreach (var target in Targets)
+        if (nearest==null && Targets != null) foreach (var target in Targets)
         {
             if (target == null || !target.gameObject.activeInHierarchy) continue;
             Vector3 offset = target.position-transform.position;

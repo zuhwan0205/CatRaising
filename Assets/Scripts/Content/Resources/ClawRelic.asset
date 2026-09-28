@@ -22,7 +22,7 @@ MonoBehaviour:
       baseGoldCost: 20
       goldCostPerLevel: 10
     description: "기본 공격 명중 시 추가 피해를 줍니다."
-    icon: {fileID: 0}
+    icon: {fileID: 21300000, guid: 9b3fdfdf72c64bfaa25e2968ac18d3bb, type: 3}
     effectPerLevel: 1
     id: relic_claw
     displayName: "날카로운 발톱"

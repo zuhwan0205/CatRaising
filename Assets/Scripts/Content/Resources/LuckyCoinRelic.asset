@@ -22,7 +22,7 @@ MonoBehaviour:
       baseGoldCost: 40
       goldCostPerLevel: 20
     description: "공격 시 30% 확률로 해당 공격의 각 대상에게 추가 피해 12를 줍니다. 재사용 대기시간은 1초입니다. 표기 수치는 1레벨 기준입니다."
-    icon: {fileID: 0}
+    icon: {fileID: 21300000, guid: ce3a1f4e10f845f3a31c8519390feef3, type: 3}
     effectPerLevel: 2
     id: relic_lucky_coin
     displayName: "행운의 동전"

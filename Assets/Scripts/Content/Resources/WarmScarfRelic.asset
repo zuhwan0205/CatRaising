@@ -22,7 +22,7 @@ MonoBehaviour:
       baseGoldCost: 40
       goldCostPerLevel: 20
     description: "살아남은 피격 후 HP 6을 회복합니다. 재사용 대기시간은 2초입니다. 표기 수치는 1레벨 기준입니다."
-    icon: {fileID: 0}
+    icon: {fileID: 21300000, guid: d52bb4b083f241b28a58bfa7c674e727, type: 3}
     effectPerLevel: 1.5
     id: relic_warm_scarf
     displayName: "포근한 목도리"

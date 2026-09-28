@@ -22,7 +22,7 @@ MonoBehaviour:
       baseGoldCost: 20
       goldCostPerLevel: 10
     description: "살아남은 피격 후 HP를 회복합니다. 치명적인 피해는 막지 못합니다."
-    icon: {fileID: 0}
+    icon: {fileID: 21300000, guid: 086d2a6695314567ad4b917ca9a4ef6d, type: 3}
     effectPerLevel: 1
     id: relic_bell
     displayName: "회복 방울"

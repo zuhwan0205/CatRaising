@@ -76,16 +76,13 @@ public partial class CatGameSceneUI
         lockPlate.gameObject.SetActive(false);
         var reward=Panel(drawOverlay,"Relic Reward",new Vector2(.32f,.44f),new Vector2(.68f,.64f),rarityColor);
         var inner=Panel(reward,"Reward Face",new Vector2(.045f,.045f),new Vector2(.955f,.955f),new Color(.17f,.12f,.26f));
-        var iconSprite=result.character?catalog.FindCharacter(result.id)?.icon:catalog.FindRelic(result.id)?.icon;
-        if(iconSprite!=null)
+        if (!result.character)
         {
-            var icon=Rect(inner,"Relic Icon",new Vector2(.15f,.15f),new Vector2(.85f,.85f)).gameObject.AddComponent<Image>();
-            icon.sprite=iconSprite;icon.preserveAspect=true;icon.raycastTarget=false;
+            RelicIcon(inner, catalog.FindRelic(result.id));
         }
         else
         {
-            var emblem=Panel(inner,"Relic Emblem",new Vector2(.34f,.27f),new Vector2(.66f,.73f),rarityColor);
-            emblem.localRotation=Quaternion.Euler(0,0,45);
+            CharacterPortrait(inner, catalog.FindCharacter(result.id));
         }
         var group=reward.gameObject.AddComponent<CanvasGroup>();group.alpha=0;
         var start=reward.anchoredPosition;
@@ -113,7 +110,7 @@ public partial class CatGameSceneUI
         button.onClick.AddListener(()=>
         {
             if(drawOverlay==null)return;
-            drawOverlay.gameObject.SetActive(false);Destroy(drawOverlay.gameObject);drawOverlay=null;
+            RemoveUI(drawOverlay.gameObject);drawOverlay=null;
             RefreshWallet();
         });
     }

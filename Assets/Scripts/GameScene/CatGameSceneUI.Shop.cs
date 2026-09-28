@@ -15,6 +15,11 @@ public partial class CatGameSceneUI
     private void Shop()
     {
         var grid = Grid(characterShop ? "캐릭터 상점" : "유물 뽑기", .34f);
+        if (characterShop)
+        {
+            var layout = grid.GetComponent<UnityEngine.UI.GridLayoutGroup>();
+            layout.cellSize = new Vector2(layout.cellSize.x, 230);
+        }
         var charactersTab = Button(page, "캐릭터", new Vector2(0,.79f), new Vector2(.48f,.88f), () => SelectShop(true));
         var relicsTab = Button(page, "유물", new Vector2(.52f,.79f), new Vector2(1,.88f), () => SelectShop(false));
         var inactive = new Color(.66f,.62f,.77f);
@@ -31,8 +36,7 @@ public partial class CatGameSceneUI
             int tierCount=drawPool.FindAll(x=>x.rarity==item.rarity).Count;
             string odds=item.inCharacterDraw && catalog.characterDraw!=null && catalog.characterDraw.Validate(drawPool)?$" · {catalog.characterDraw.Percent(item.rarity)/(double)tierCount:0.###}%":"";
             string purchase=owned?"보유 · 중복은 조각":item.shop!=null && item.shop.CanSell?$"최초 해금 {item.shop.goldPrice:N0} 골드":"뽑기로 획득";
-            Button(grid, $"{item.displayName}\n{Rarity(item.rarity)}{odds}\n" + purchase,
-                Vector2.zero, Vector2.one, () => ShopDetail(item.id, true));
+            CharacterShopCard(grid, item, purchase, odds);
             count++;
         }
         if (!characterShop)
@@ -56,6 +60,8 @@ public partial class CatGameSceneUI
 
     private void RelicDrawPanel(Transform grid)
     {
+        var layout = grid.GetComponent<UnityEngine.UI.GridLayoutGroup>();
+        layout.cellSize = new Vector2(layout.cellSize.x, 220);
         var rules=catalog.relicDraw;
         var pool=catalog.RelicDrawPool();
         bool valid=rules!=null && rules.Validate(pool);
@@ -70,7 +76,7 @@ public partial class CatGameSceneUI
             var item=definition;
             int count=pool.FindAll(x=>x.rarity==item.rarity).Count;
             string chance=valid?$"{rules.Percent(item.rarity)/(double)count:0.###}%":"확률 미설정";
-            Button(grid,$"{item.displayName}\n{Rarity(item.rarity)} · {chance}",Vector2.zero,Vector2.one,()=>ShowStatus(item.description));
+            RelicCard(grid, item, item.displayName, $"{Rarity(item.rarity)} · {chance}", () => ShowStatus(item.description));
         }
     }
 
@@ -92,7 +98,7 @@ public partial class CatGameSceneUI
     private void ShopDetail(string id, bool character)
     {
         characterShop = character;
-        foreach (Transform child in page) { child.gameObject.SetActive(false); Destroy(child.gameObject); }
+        ClearPage();
         var cat = character ? catalog.FindCharacter(id) : null;
         var relic = character ? null : catalog.FindRelic(id);
         if (cat == null && relic == null) { Show("상점"); return; }
