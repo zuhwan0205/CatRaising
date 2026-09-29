@@ -25,11 +25,11 @@ MonoBehaviour:
       maxLevel: 100
       baseGoldCost: 40
       goldCostPerLevel: 20
-    description: "가까운 적 한 마리를 공격합니다. 느리지만 한 번의 공격이 강력합니다."
+    description: "기사 헬멧을 쓰고 거대한 양손 망치를 내려칩니다. 느리지만 한 마리에게 강력한 피해를 줍니다."
     icon: {fileID: 0}
     attackRange: 2
     id: cat_tiger
-    displayName: "호랑이 고양이"
+    displayName: "망치 기사 고양이"
     rarity: 1
     attackId: claw_melee
     baseStats:

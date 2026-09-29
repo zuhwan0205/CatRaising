@@ -115,6 +115,19 @@ public partial class CatGameSceneUI
     private void CharacterPortrait(Transform parent,CharacterDefinition definition)
     {
         var rect=Rect(parent,"Character Image",new Vector2(.06f,.02f),new Vector2(.94f,.98f));
+        if(definition!=null && (definition.id=="cat_knight" || definition.id=="cat_kitten_trio" || definition.id=="cat_celestial" || definition.id=="cat_moon" || definition.id=="cat_lion" || definition.id=="cat_ninja" || definition.id=="cat_shadow" || definition.id=="cat_tiger"))
+        {
+            var sheet=Resources.Load<Texture2D>(definition.id=="cat_tiger"?"CatHammerKnightPixel":definition.id=="cat_shadow"?"CatSnowflakePixel":definition.id=="cat_ninja"?"CatSiameseArcherPixel":definition.id=="cat_lion"?"CatDragonPixel":definition.id=="cat_moon"?"CatStarMagePixel":definition.id=="cat_celestial"?"CatLegendaryBootsPixel":definition.id=="cat_kitten_trio"?"CatKittenTrioPixel":"CatMackerelBipedPixel");
+            if(sheet!=null)
+            {
+                var portrait=rect.gameObject.AddComponent<RawImage>();
+                portrait.texture=sheet;portrait.uvRect=new Rect(0,2f/3f,.25f,1f/3f);portrait.raycastTarget=false;
+                var aspect=rect.gameObject.AddComponent<AspectRatioFitter>();
+                aspect.aspectMode=AspectRatioFitter.AspectMode.FitInParent;
+                aspect.aspectRatio=(sheet.width/4f)/(sheet.height/3f);
+                return;
+            }
+        }
         if(definition!=null && definition.icon!=null)
         {
             var image=rect.gameObject.AddComponent<Image>();image.sprite=definition.icon;

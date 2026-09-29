@@ -25,11 +25,11 @@ MonoBehaviour:
       maxLevel: 100
       baseGoldCost: 150
       goldCostPerLevel: 75
-    description: "사거리 안의 모든 적을 공격합니다. 넓은 범위와 높은 공격력을 가진 고양이입니다."
+    description: "깃털 모자와 장화를 갖춘 전설의 검객입니다. 레이피어의 검격으로 사거리 안의 모든 적을 공격합니다."
     icon: {fileID: 0}
     attackRange: 3.5
     id: cat_celestial
-    displayName: "천상 고양이"
+    displayName: "장화 신은 검객 고양이"
     rarity: 3
     attackId: spin_melee
     baseStats:

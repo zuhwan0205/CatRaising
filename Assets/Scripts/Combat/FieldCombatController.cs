@@ -88,7 +88,7 @@ public class FieldCombatController : MonoBehaviour
                 Vector3 start=enemy.transform.position;
                 Vector3 goal=Navigation==null?player.position:Navigation.Waypoint(start,player.position);
                 Vector3 direction=goal-start; direction.y=0;
-                Vector3 step=direction.normalized*Mathf.Min(EnemySpeed*delta,Mathf.Min(direction.magnitude,distance-.9f));
+                Vector3 step=direction.normalized*Mathf.Min(EnemySpeed*enemy.MovementMultiplier*delta,Mathf.Min(direction.magnitude,distance-.9f));
                 enemy.transform.position=Navigation==null?start+step:Navigation.Move(start,step);
             }
             enemy.StepVisual(delta);
@@ -129,6 +129,7 @@ public class FieldCombatController : MonoBehaviour
         TriggerRelics(EffectTrigger.OnAttack, value=>attackBonus+=value);
         attackBehavior.SelectTargets(player.position,closest,enemies,Range,attackTargets);
         if(Navigation!=null)attackTargets.RemoveAll(target=>!Navigation.Clear(player.position,target.transform.position));
+        if(attackBehavior is TrioAttack trio)trio.LimitTargets(attackTargets);
         double minDamage=double.PositiveInfinity, maxDamage=0, maxBonus=0;
         foreach (var target in attackTargets)
         {
@@ -139,7 +140,9 @@ public class FieldCombatController : MonoBehaviour
             double damage=attack+bonus;
             minDamage=Math.Min(minDamage,damage); maxDamage=Math.Max(maxDamage,damage);
             maxBonus=Math.Max(maxBonus,bonus);
-            if(target.Hit(damage))
+            bool killed=target.Hit(damage);
+            if(!killed && selectedId=="cat_shadow")target.ApplyIceSlow();
+            if(killed)
             {
                 if(target==LockedTarget)LockedTarget=null;
                 target.RespawnRemaining=RespawnDelay;
