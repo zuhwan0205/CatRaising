@@ -38,6 +38,7 @@ MonoBehaviour:
   - {fileID: 11400000, guid: 985cfac3028e45dfb32a2199bcfc39ed, type: 2}
   - {fileID: 11400000, guid: 96220709fbe54a3f866e26a3a32c7060, type: 2}
   - {fileID: 11400000, guid: cda57ad995964ad5b30974333e3f72f0, type: 2}
+  - {fileID: 11400000, guid: 2d76a3a0bcf1420e9554beeae55f4b89, type: 2}
   relicAssets:
   - {fileID: 11400000, guid: 74079ca4b9874377a46898169368a692, type: 2}
   - {fileID: 11400000, guid: 9b64f1090b3f4361a09aca5ea28c1099, type: 2}

@@ -25,11 +25,11 @@ MonoBehaviour:
       maxLevel: 100
       baseGoldCost: 80
       goldCostPerLevel: 40
-    description: "사거리 안의 모든 적을 공격합니다. 넓은 범위를 공격하는 고양이입니다."
+    description: "오른쪽 가슴에 금빛 별무늬를 지닌 검정 고양이입니다. 별빛 마법을 시전하여 사거리 안의 모든 적을 공격합니다."
     icon: {fileID: 0}
     attackRange: 3
     id: cat_moon
-    displayName: "달빛 고양이"
+    displayName: "별빛 마법 고양이"
     rarity: 2
     attackId: spin_melee
     baseStats:

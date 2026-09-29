@@ -15,8 +15,28 @@ public static class CharacterAttackFactory
         {
             case "claw_melee": return new ClawAttack();
             case "spin_melee": return new SpinAttack();
+            case "trio_melee": return new TrioAttack();
             default: return null;
         }
+    }
+}
+
+public sealed class TrioAttack : ICharacterAttack
+{
+    private readonly SpinAttack candidates = new SpinAttack();
+    public void SelectTargets(Vector3 origin, FieldEnemy closest, FieldEnemy[] enemies, float range, List<FieldEnemy> results)
+    {
+        candidates.SelectTargets(origin, closest, enemies, range, results);
+        results.Sort((a,b) => a==b?0:a==closest?-1:b==closest?1:
+            (a.transform.position-origin).sqrMagnitude.CompareTo((b.transform.position-origin).sqrMagnitude));
+    }
+
+    // 장애물에 가려진 적을 제거한 후 가까운 세 마리만 남깁니다.
+    public void LimitTargets(List<FieldEnemy> results)
+    {
+        for(int i=results.Count-1;i>=0;i--)
+            if(results.IndexOf(results[i])!=i)results.RemoveAt(i);
+        if(results.Count>3)results.RemoveRange(3,results.Count-3);
     }
 }
 

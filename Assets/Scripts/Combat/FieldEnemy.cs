@@ -9,6 +9,13 @@ public class FieldEnemy : MonoBehaviour
     private Transform healthBar;
     private Color color;
     private float flashRemaining;
+    private float slowRemaining;
+    public float MovementMultiplier => slowRemaining>0?.6f:1f;
+
+    public void ApplyIceSlow()
+    {
+        if(Alive)slowRemaining=2f;
+    }
 
     public void Initialize(SpriteRenderer art, Transform bar, double hp)
     {
@@ -17,7 +24,8 @@ public class FieldEnemy : MonoBehaviour
     public void StepVisual(float delta)
     {
         flashRemaining=Mathf.Max(0,flashRemaining-delta);
-        artwork.color=flashRemaining>0?Color.white:color;
+        slowRemaining=Mathf.Max(0,slowRemaining-delta);
+        artwork.color=flashRemaining>0?Color.white:slowRemaining>0?Color.Lerp(color,new Color(.35f,.8f,1),.65f):color;
     }
     public bool Hit(double damage)
     {
@@ -31,7 +39,7 @@ public class FieldEnemy : MonoBehaviour
     }
     public void Respawn(Vector3 position)
     {
-        transform.position=position; Health.Reset(); flashRemaining=0;
+        transform.position=position; Health.Reset(); flashRemaining=0;slowRemaining=0;
         artwork.color=color;healthBar.localScale=Vector3.one;gameObject.SetActive(true);
     }
 }
