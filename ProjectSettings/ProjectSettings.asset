@@ -719,7 +719,9 @@ PlayerSettings:
   webEnableSubmoduleStrippingCompatibility: 0
   webProgressiveAssetLoading: 0
   scriptingDefineSymbols:
+    Android: BACKND_SDK_INSTALLED
     Standalone: BACKND_SDK_INSTALLED
+    iPhone: BACKND_SDK_INSTALLED
   additionalCompilerArguments: {}
   platformArchitecture: {}
   scriptingBackend:
