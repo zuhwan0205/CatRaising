@@ -140,7 +140,8 @@ public class CatGameCatalog : ScriptableObject
         {
             id = StarterCharacterId, displayName = "기본 고양이",
             rarity = ItemRarity.Common, attackId = "claw_melee",
-            baseStats = new StatValues { attack = 3.5f, attackSpeed = 1, maxHealth = 100 },
+            attackRange = 1,
+            baseStats = new StatValues { attack = 1, attackSpeed = 1, maxHealth = 100 },
             statsPerLevel = new StatValues { attack = 1, maxHealth = 5 }
         }
     };

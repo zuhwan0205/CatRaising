@@ -25,17 +25,17 @@ MonoBehaviour:
       maxLevel: 100
       baseGoldCost: 150
       goldCostPerLevel: 75
-    description: "깃털 모자와 장화를 갖춘 전설의 검객입니다. 레이피어의 검격으로 사거리 안의 모든 적을 공격합니다."
+    description: "레이피어로 전방 길이 2, 전체 폭 2 안의 적들을 공격합니다."
     icon: {fileID: 0}
-    attackRange: 3.5
+    attackRange: 2
     id: cat_celestial
     displayName: "장화 신은 검객 고양이"
     rarity: 3
-    attackId: spin_melee
+    attackId: forward_area
     baseStats:
-      attack: 10
+      attack: 5
       defense: 5
-      attackSpeed: 1.5
+      attackSpeed: 2
       maxHealth: 280
     statsPerLevel:
       attack: 2.0

@@ -16,7 +16,45 @@ public static class CharacterAttackFactory
             case "claw_melee": return new ClawAttack();
             case "spin_melee": return new SpinAttack();
             case "trio_melee": return new TrioAttack();
+            case "forward_area": return new ForwardAreaAttack();
+            case "target_area": return new TargetAreaAttack();
             default: return null;
+        }
+    }
+}
+
+// 지정 대상 방향으로 사거리만큼, 좌우 각각 1(전체 폭 2)의 전방 영역.
+public sealed class ForwardAreaAttack : ICharacterAttack
+{
+    public void SelectTargets(Vector3 origin, FieldEnemy closest, FieldEnemy[] enemies, float range, List<FieldEnemy> results)
+    {
+        results.Clear();
+        if(closest==null || !closest.Alive)return;
+        Vector3 forward=closest.transform.position-origin;forward.y=0;
+        forward=forward.sqrMagnitude>.000001f?forward.normalized:Vector3.forward;
+        foreach(var enemy in enemies)
+        {
+            if(enemy==null || !enemy.Alive || results.Contains(enemy))continue;
+            Vector3 offset=enemy.transform.position-origin;offset.y=0;
+            float along=Vector3.Dot(offset,forward);
+            float side=Vector3.Cross(forward,offset).y;
+            if(along>=0 && along<=range && Mathf.Abs(side)<=1f)results.Add(enemy);
+        }
+    }
+}
+
+// 사거리는 주 대상 선택에 사용하고 폭발 범위는 대상 중심 반경 2로 계산합니다.
+public sealed class TargetAreaAttack : ICharacterAttack
+{
+    public void SelectTargets(Vector3 origin, FieldEnemy closest, FieldEnemy[] enemies, float range, List<FieldEnemy> results)
+    {
+        results.Clear();
+        if(closest==null || !closest.Alive)return;
+        foreach(var enemy in enemies)
+        {
+            if(enemy==null || !enemy.Alive || results.Contains(enemy))continue;
+            Vector3 offset=enemy.transform.position-closest.transform.position;offset.y=0;
+            if(offset.sqrMagnitude<=4f)results.Add(enemy);
         }
     }
 }

@@ -47,7 +47,8 @@ public class CatMovementController : MonoBehaviour
         Vector2 delta = new Vector2(displacement.x,displacement.z);
         // 이동 한 번으로 유지 거리를 지나치지 않습니다.
         float step = Speed * Mathf.Min(Time.deltaTime,.1f);
-        return delta.normalized * Mathf.Clamp01((delta.magnitude-(direct?StopDistance:0))/Mathf.Max(step,.0001f));
+        float stop=Combat!=null?Mathf.Max(.1f,Combat.Range*.9f):StopDistance;
+        return delta.normalized * Mathf.Clamp01((delta.magnitude-(direct?stop:0))/Mathf.Max(step,.0001f));
     }
 
     private Vector2 ManualDirection()

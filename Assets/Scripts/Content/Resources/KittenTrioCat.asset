@@ -25,17 +25,17 @@ MonoBehaviour:
       maxLevel: 100
       baseGoldCost: 40
       goldCostPerLevel: 20
-    description: "아기 고양이 세 마리가 함께 이동하며 서로 다른 적을 최대 3마리까지 동시에 한 번씩 공격합니다."
+    description: "세 아기 고양이가 함께 움직이며 한 번에 적 한 마리를 빠르게 공격합니다."
     icon: {fileID: 0}
-    attackRange: 2.3
+    attackRange: 1
     id: cat_kitten_trio
     displayName: "아기 고양이 삼총사"
     rarity: 1
-    attackId: trio_melee
+    attackId: claw_melee
     baseStats:
-      attack: 4.5
+      attack: 1
       defense: 0
-      attackSpeed: 1
+      attackSpeed: 3
       maxHealth: 100
     statsPerLevel:
       attack: 1.0

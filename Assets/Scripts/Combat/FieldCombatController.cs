@@ -38,8 +38,12 @@ public class FieldCombatController : MonoBehaviour
     private int killsThisFrame;
     public float Range=1.7f;
     public float EnemySpeed=1.1f;
-    public long GoldPerKill=10;
     public float RespawnDelay=2;
+    public float SurvivalSeconds { get; private set; }
+    // 종류는 1분마다, 개체 수는 그 절반인 30초마다 증가합니다.
+    private const float MonsterKindIntervalSeconds=60f;
+    public int UnlockedMonsterKinds => Math.Min(4,1+(int)(SurvivalSeconds/MonsterKindIntervalSeconds));
+    public int TargetMonsterCount => Math.Min(40,4+2*(int)(SurvivalSeconds/(MonsterKindIntervalSeconds/2f)));
 
     public void Initialize(Transform target,FieldEnemy[] targets,BackendUserData playerData,CatGameCatalog definitions)
     { player=target;enemies=targets;data=playerData;catalog=definitions; relicEffects=new RelicEffectRunner(data,catalog); }
@@ -60,21 +64,42 @@ public class FieldCombatController : MonoBehaviour
             if(deathRemaining<=0)
             {
                 player.position=Vector3.zero;
-                foreach(var enemy in enemies) enemy.Respawn(SpawnPosition());
+                for(int i=0;i<enemies.Length;i++)
+                {
+                    var enemy=enemies[i];
+                    if(enemy==null)continue;
+                    if(i<4){enemy.ConfigureMonster(0);enemy.Respawn(SpawnPosition());}
+                    else enemy.gameObject.SetActive(false);
+                }
                 PlayerHealth.Reset(); contactCooldown=1; cooldown=1;
                 HealthChanged?.Invoke(PlayerHealth.Current,PlayerHealth.Maximum);
                 MessageChanged?.Invoke("HP 회복 · 전투를 다시 시작합니다.");
             }
             return;
         }
+        int previousCount=TargetMonsterCount;
+        SurvivalSeconds+=delta;
+        if(TargetMonsterCount>previousCount)
+            for(int i=previousCount;i<Math.Min(enemies.Length,TargetMonsterCount);i++)
+            {
+                var enemy=enemies[i];
+                if(enemy==null)continue;
+                int step=(i-4)/2+1;
+                // 새 종류 해금 시 해당 종류를 먼저 추가하고 이후에는 네 종류를 순환합니다.
+                int kind=step<=6?Math.Min(3,step/2):step%4;
+                enemy.ConfigureMonster(kind);
+                enemy.Respawn(SpawnPosition());
+            }
         contactCooldown=Mathf.Max(0,contactCooldown-delta);
         cooldown=Mathf.Max(0,cooldown-delta);
         bool touching=false;
+        double touchingDamage=0;
         FieldEnemy closest=null;
         float nearest=Range*Range;
-        foreach(var enemy in enemies)
+        for(int enemyIndex=0;enemyIndex<Math.Min(enemies.Length,TargetMonsterCount);enemyIndex++)
         {
-            if(enemy==null)continue;
+            var enemy=enemies[enemyIndex];
+            if(enemy==null || enemy.Kind>=UnlockedMonsterKinds)continue;
             if(!enemy.Alive)
             {
                 enemy.RespawnRemaining-=delta;
@@ -88,24 +113,30 @@ public class FieldCombatController : MonoBehaviour
                 Vector3 start=enemy.transform.position;
                 Vector3 goal=Navigation==null?player.position:Navigation.Waypoint(start,player.position);
                 Vector3 direction=goal-start; direction.y=0;
-                Vector3 step=direction.normalized*Mathf.Min(EnemySpeed*enemy.MovementMultiplier*delta,Mathf.Min(direction.magnitude,distance-.9f));
+                Vector3 step=direction.normalized*Mathf.Min(enemy.MoveSpeed*enemy.MovementMultiplier*delta,Mathf.Min(direction.magnitude,distance-.9f));
                 enemy.transform.position=Navigation==null?start+step:Navigation.Move(start,step);
             }
             enemy.StepVisual(delta);
             float sqr=(enemy.transform.position-player.position).sqrMagnitude;
             bool clear=Navigation==null||Navigation.Clear(player.position,enemy.transform.position);
-            if(clear && sqr<=ContactDistance*ContactDistance)touching=true;
+            if(clear && sqr<=ContactDistance*ContactDistance)
+            {
+                touching=true;
+                touchingDamage=Math.Max(touchingDamage,enemy.ContactDamage);
+            }
             if(clear && sqr<=nearest){nearest=sqr;closest=enemy;}
         }
         if(touching && contactCooldown<=0)
         {
             contactCooldown=Mathf.Max(.1f,ContactInterval);
-            bool died=PlayerHealth.Damage(Math.Max(1,ContactDamage-defense));
+            bool died=PlayerHealth.Damage(Math.Max(1,touchingDamage-defense));
             if (!died) TriggerRelics(EffectTrigger.OnDamaged, null);
             PlayerHit?.Invoke();
             HealthChanged?.Invoke(PlayerHealth.Current,PlayerHealth.Maximum);
             if(died)
             {
+                SurvivalSeconds=0;
+                foreach(var enemy in enemies)if(enemy!=null)enemy.gameObject.SetActive(false);
                 LockedTarget=null;
                 deathRemaining=Mathf.Max(.1f,PlayerRespawnDelay);
                 MessageChanged?.Invoke($"쓰러졌습니다. {deathRemaining:0.#}초 후 회복합니다.");
@@ -131,6 +162,7 @@ public class FieldCombatController : MonoBehaviour
         if(Navigation!=null)attackTargets.RemoveAll(target=>!Navigation.Clear(player.position,target.transform.position));
         if(attackBehavior is TrioAttack trio)trio.LimitTargets(attackTargets);
         double minDamage=double.PositiveInfinity, maxDamage=0, maxBonus=0;
+        long earnedGold=0;
         foreach (var target in attackTargets)
         {
             AttackPerformed?.Invoke(player.position,target.transform.position);
@@ -138,15 +170,16 @@ public class FieldCombatController : MonoBehaviour
             TriggerRelics(EffectTrigger.OnHit, value=>hitBonus+=value);
             double bonus=attackBonus+hitBonus;
             double damage=attack+bonus;
-            minDamage=Math.Min(minDamage,damage); maxDamage=Math.Max(maxDamage,damage);
             maxBonus=Math.Max(maxBonus,bonus);
             bool killed=target.Hit(damage);
+            minDamage=Math.Min(minDamage,target.LastHitDamage); maxDamage=Math.Max(maxDamage,target.LastHitDamage);
             if(!killed && selectedId=="cat_shadow")target.ApplyIceSlow();
             if(killed)
             {
                 if(target==LockedTarget)LockedTarget=null;
                 target.RespawnRemaining=RespawnDelay;
                 killsThisFrame++;
+                earnedGold+=target.GoldReward;
                 TriggerRelics(EffectTrigger.OnKill, null);
             }
         }
@@ -159,7 +192,7 @@ public class FieldCombatController : MonoBehaviour
             MessageChanged?.Invoke($"공격 피해 {damageText}{bonusText}{result}");
         }
         // 범위 공격은 한 번에 합산 저장하여 저장 중 중복 보상 누락을 막습니다.
-        if(killsThisFrame>0) GoldEarned?.Invoke(GoldPerKill*killsThisFrame);
+        if(earnedGold>0) GoldEarned?.Invoke(earnedGold);
     }
 
     private void TriggerRelics(EffectTrigger trigger, Action<double> bonusDamage)

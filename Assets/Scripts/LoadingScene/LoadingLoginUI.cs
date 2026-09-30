@@ -23,6 +23,7 @@ public class LoadingLoginUI : MonoBehaviour
     private Text message;
     private Text submitLabel;
     private CanvasGroup formGroup;
+    private CanvasGroup choiceGroup;
     private bool signUp;
     private bool busy;
 
@@ -62,8 +63,13 @@ public class LoadingLoginUI : MonoBehaviour
         message = Label("", background, new Vector2(0, -330), new Vector2(600, 110), 21);
 
         choice = Box("Choose Account Action", background, Vector2.zero, new Vector2(580, 300)).gameObject;
-        MakeButton("회원가입", choice.transform, new Vector2(0, 55), () => SelectMode(true));
-        MakeButton("로그인", choice.transform, new Vector2(0, -55), () => SelectMode(false));
+        choiceGroup = choice.AddComponent<CanvasGroup>();
+        MakeButton("회원가입", choice.transform, new Vector2(0, 90), () => SelectMode(true));
+        MakeButton("로그인", choice.transform, Vector2.zero, () => SelectMode(false));
+        MakeButton("Google로 계속하기", choice.transform, new Vector2(0, -90), () =>
+        {
+            if (!busy) StartCoroutine(SubmitRoutine(true));
+        });
 
         form = Box("Account Form", background, Vector2.zero, new Vector2(580, 440)).gameObject;
         formGroup = form.AddComponent<CanvasGroup>();
@@ -133,17 +139,18 @@ public class LoadingLoginUI : MonoBehaviour
         StartCoroutine(SubmitRoutine());
     }
 
-    private IEnumerator SubmitRoutine()
+    private IEnumerator SubmitRoutine(bool google = false)
     {
         busy = true;
         formGroup.interactable = false;
+        choiceGroup.interactable = false;
         ShowMessage("처리 중입니다…");
         // 동기 API 호출 전에 처리 중 안내를 화면에 표시합니다.
         yield return null;
         yield return null;
         try
         {
-            var request = manager.SubmitAsync(signUp, idInput.text, passwordInput.text);
+            var request = google ? manager.SubmitGoogleAsync() : manager.SubmitAsync(signUp, idInput.text, passwordInput.text);
             while (!request.IsCompleted) yield return null;
             if (request.IsFaulted)
             {
@@ -155,6 +162,7 @@ public class LoadingLoginUI : MonoBehaviour
         {
             busy = false;
             if (formGroup != null) formGroup.interactable = true;
+            if (choiceGroup != null) choiceGroup.interactable = true;
         }
     }
 
