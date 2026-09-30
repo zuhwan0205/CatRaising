@@ -61,9 +61,10 @@ public class CatFieldController : MonoBehaviour
         movement.Navigation=scenery.Navigation;
         var targets=new List<Transform>();
         var enemies=new List<FieldEnemy>();
-        foreach(var position in new[] {new Vector3(4,0,3),new Vector3(-6,0,4),new Vector3(7,0,-5),new Vector3(-5,0,-7)})
+        for(int slot=0;slot<40;slot++)
         {
-            var target=new GameObject("Slime Enemy"); target.transform.SetParent(field.transform,false); target.transform.localPosition=position;
+            var position=new Vector3(Mathf.Cos(slot*Mathf.PI/2)*7,0,Mathf.Sin(slot*Mathf.PI/2)*7);
+            var target=new GameObject("Monster "+slot); target.transform.SetParent(field.transform,false); target.transform.localPosition=position;
             Ground("Target Shadow",target.transform,new Vector3(0,.02f,0),new Vector2(.9f,.5f),new Color(.15f,.22f,.13f,.35f),-9000);
             var billboard=Billboard("Enemy Billboard",target.transform);
             var art=Paint("Slime",billboard,Vector2.zero,new Vector2(.9f,.7f),new Color(.42f,.58f,.90f),0);
@@ -71,7 +72,8 @@ public class CatFieldController : MonoBehaviour
             var barOrigin=new GameObject("Health Fill Origin").transform;
             barOrigin.SetParent(billboard,false);barOrigin.localPosition=new Vector3(-.45f,.65f,0);
             Paint("Health Fill",barOrigin,new Vector2(.45f,0),new Vector2(.9f,.08f),new Color(.9f,.25f,.3f),2);
-            var enemy=target.AddComponent<FieldEnemy>();enemy.Initialize(art,barOrigin,14);
+            var enemy=target.AddComponent<FieldEnemy>();enemy.Initialize(art,barOrigin,14);enemy.ConfigureMonster(0);
+            if(slot>=4)target.SetActive(false);
             enemies.Add(enemy);
             targets.Add(target.transform);
         }

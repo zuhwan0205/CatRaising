@@ -25,17 +25,17 @@ MonoBehaviour:
       maxLevel: 100
       baseGoldCost: 80
       goldCostPerLevel: 40
-    description: "얼음 가시로 적 한 마리를 공격합니다. 명중한 적의 이동 속도를 2초 동안 40% 낮추며 재명중 시 지속시간을 갱신합니다."
+    description: "얼음 가시로 적 한 마리를 공격합니다. 명중 시 이동 속도를 2초간 40% 낮추며 재명중 시 시간을 갱신합니다."
     icon: {fileID: 0}
-    attackRange: 2.2
+    attackRange: 5
     id: cat_shadow
     displayName: "눈꽃 고양이"
     rarity: 2
     attackId: claw_melee
     baseStats:
-      attack: 7
+      attack: 2
       defense: 1
-      attackSpeed: 2.0
+      attackSpeed: 2
       maxHealth: 130
     statsPerLevel:
       attack: 1.5

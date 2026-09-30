@@ -25,17 +25,17 @@ MonoBehaviour:
       maxLevel: 100
       baseGoldCost: 40
       goldCostPerLevel: 20
-    description: "파란 눈을 가진 샴 고양이 궁수입니다. 활을 당겨 사거리 안의 적 한 마리에게 화살을 쏩니다."
+    description: "사거리 7 안의 적 한 마리에게 화살을 쏩니다."
     icon: {fileID: 0}
-    attackRange: 4
+    attackRange: 7
     id: cat_ninja
     displayName: "샴 궁수 고양이"
     rarity: 1
     attackId: claw_melee
     baseStats:
-      attack: 4.5
+      attack: 2
       defense: 0
-      attackSpeed: 1.8
+      attackSpeed: 2
       maxHealth: 100
     statsPerLevel:
       attack: 1.0

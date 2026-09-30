@@ -22,15 +22,15 @@ MonoBehaviour:
       maxLevel: 100
       baseGoldCost: 20
       goldCostPerLevel: 10
-    description: "가까운 적 한 마리를 할퀩니다."
+    description: "가까운 적 한 마리를 공격합니다."
     icon: {fileID: 0}
-    attackRange: 1.7
+    attackRange: 1
     id: cat_starter
     displayName: "기본 고양이"
     rarity: 0
     attackId: claw_melee
     baseStats:
-      attack: 3.5
+      attack: 1
       defense: 0
       attackSpeed: 1
       maxHealth: 100

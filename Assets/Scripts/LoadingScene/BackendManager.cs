@@ -91,24 +91,69 @@ public class BackendManager : MonoBehaviour
                 return;
             }
 
-            loginUI.ShowMessage("데이터베이스에 연결하고 유저 데이터를 준비합니다…");
-            if (!await BackendGameData.Instance.InitializeAndLoadAsync(databaseUuid))
-            {
-                if (this != null) loginUI.ShowMessage(BackendGameData.Instance.LastError);
-                return;
-            }
-            if (this == null) return;
-            loginReady = true;
-            loginUI.ShowCompleted();
+            await CompleteLoginAsync();
         }
         catch (Exception exception)
         {
             Debug.LogException(exception);
             if (this != null) loginUI.ShowMessage("처리 중 오류가 발생했습니다. 잠시 후 다시 시도해주세요.");
-            return;
         }
         finally { submitting = false; }
+    }
 
+    public async Task SubmitGoogleAsync()
+    {
+        if (!initialized || loginReady || submitting) return;
+        submitting = true;
+        try
+        {
+#if UNITY_IOS && !UNITY_EDITOR && CAT_BACKND_GOOGLE_IOS
+            var completion = new TaskCompletionSource<string>();
+            using var cancellation = destroyCancellationToken.Register(() => completion.TrySetCanceled());
+            // 콜백은 토큰만 전달합니다. Unity/뒤끝 처리는 await 이후 메인 스레드에서 진행합니다.
+            TheBackend.ToolKit.GoogleLogin.iOS.GoogleLogin((success, error, token) =>
+                completion.TrySetResult(success ? token : null));
+            var token = await completion.Task;
+            if (this == null) return;
+            if (string.IsNullOrEmpty(token))
+            {
+                loginUI.ShowMessage("구글 로그인이 취소되었거나 실패했습니다. 다시 시도해주세요.");
+                return;
+            }
+            var result = Backend.BMember.AuthorizeFederation(token, FederationType.Google);
+            if (!result.IsSuccess())
+            {
+                loginUI.ShowMessage("뒤끝 구글 로그인에 실패했습니다. 네트워크와 인증 설정을 확인해주세요.");
+                return;
+            }
+            await CompleteLoginAsync();
+#elif UNITY_EDITOR
+            loginUI.ShowMessage("구글 로그인은 iOS 기기 빌드에서 테스트해주세요. 에디터에서는 기존 로그인을 사용할 수 있습니다.");
+            await Task.CompletedTask;
+#else
+            loginUI.ShowMessage("iOS 구글 로그인 SDK 및 CAT_BACKND_GOOGLE_IOS 설정이 필요합니다.");
+            await Task.CompletedTask;
+#endif
+        }
+        catch (Exception)
+        {
+            // 인증 예외에는 토큰 등이 포함될 수 있으므로 원문을 출력하지 않습니다.
+            if (this != null) loginUI.ShowMessage("구글 로그인 처리에 실패했습니다. SDK 설정과 네트워크를 확인해주세요.");
+        }
+        finally { submitting = false; }
+    }
+
+    private async Task CompleteLoginAsync()
+    {
+        loginUI.ShowMessage("데이터베이스에 연결하고 유저 데이터를 준비합니다…");
+        if (!await BackendGameData.Instance.InitializeAndLoadAsync(databaseUuid))
+        {
+            if (this != null) loginUI.ShowMessage(BackendGameData.Instance.LastError);
+            return;
+        }
+        if (this == null) return;
+        loginReady = true;
+        loginUI.ShowCompleted();
         // Inspector에서 로그인 완료 후 씬 전환 등의 동작을 연결합니다.
         onLoginReady.Invoke();
         // 기존 Inspector 씬 전환 이벤트가 있으면 자동 이동과 중복 실행하지 않습니다.
