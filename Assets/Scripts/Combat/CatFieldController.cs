@@ -27,7 +27,8 @@ public class CatFieldController : MonoBehaviour
         square=Sprite.Create(pixels,new Rect(0,0,1,1),new Vector2(.5f,.5f),1);
 
         var cameraObject=new GameObject("Field Camera"); cameraObject.transform.SetParent(transform,false);
-        fieldCamera=cameraObject.AddComponent<Camera>(); fieldCamera.orthographic=true; fieldCamera.orthographicSize=6;
+        // 주변 지형과 적을 더 넓게 볼 수 있도록 전투 카메라를 줌아웃합니다.
+        fieldCamera=cameraObject.AddComponent<Camera>(); fieldCamera.orthographic=true; fieldCamera.orthographicSize=9;
         fieldCamera.clearFlags=CameraClearFlags.SolidColor; fieldCamera.backgroundColor=new Color(.30f,.42f,.34f);
         fieldCamera.cullingMask=1<<2;
         fieldCamera.nearClipPlane=.1f; fieldCamera.farClipPlane=100;
@@ -44,6 +45,7 @@ public class CatFieldController : MonoBehaviour
         }
         var cat = new GameObject("Player Cat"); cat.transform.SetParent(field.transform,false);
         var catArt=Billboard("Cat Artwork",cat.transform);
+        catArt.localScale=Vector3.one*1.2f;
         var fallbackArt=new GameObject("Legacy Cat Artwork").transform;
         fallbackArt.SetParent(catArt,false);
         Paint("Body",fallbackArt,Vector2.zero,new Vector2(.8f,.7f),new Color(1,.85f,.58f),0);
@@ -67,6 +69,7 @@ public class CatFieldController : MonoBehaviour
             var target=new GameObject("Monster "+slot); target.transform.SetParent(field.transform,false); target.transform.localPosition=position;
             Ground("Target Shadow",target.transform,new Vector3(0,.02f,0),new Vector2(.9f,.5f),new Color(.15f,.22f,.13f,.35f),-9000);
             var billboard=Billboard("Enemy Billboard",target.transform);
+            billboard.localScale=Vector3.one*1.2f;
             var art=Paint("Slime",billboard,Vector2.zero,new Vector2(.9f,.7f),new Color(.42f,.58f,.90f),0);
             Paint("Health Background",billboard,new Vector2(0,.65f),new Vector2(.9f,.08f),new Color(.2f,.2f,.2f),1);
             var barOrigin=new GameObject("Health Fill Origin").transform;
