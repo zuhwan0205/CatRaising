@@ -29,8 +29,12 @@ public class LoadingLoginUI : MonoBehaviour
 
     public void Build(BackendManager owner)
     {
-        if (root != null) return;
+        if (root != null)
+            return;
         manager = owner;
+        var projectFont = Resources.Load<Font>("Fonts/Mona12TextKR");
+        if (projectFont != null)
+            uiFont = projectFont;
         if (uiFont == null)
             uiFont = Font.CreateDynamicFontFromOSFont(new[] { "Malgun Gothic", "Apple SD Gothic Neo", "Noto Sans CJK KR", "Arial" }, 24);
 
@@ -57,10 +61,34 @@ public class LoadingLoginUI : MonoBehaviour
         background.anchorMin = Vector2.zero;
         background.anchorMax = Vector2.one;
         background.sizeDelta = Vector2.zero;
-        background.gameObject.AddComponent<Image>().color = new Color(0.08f, 0.10f, 0.16f, 1);
-        Label("고양이 키우기", background, new Vector2(0, 290), new Vector2(600, 70), 36);
+        var backdrop = background.gameObject.AddComponent<Image>();
+        backdrop.color = new Color(.22f, .29f, .20f);
+        backdrop.raycastTarget = false;
+        var artwork = Resources.Load<Texture2D>("LoginArt/CatVillageLogin");
+        if (artwork != null)
+        {
+            var picture = Box("Cat Village Background", background, Vector2.zero, Vector2.zero);
+            var image = picture.gameObject.AddComponent<RawImage>();
+            image.texture = artwork;
+            image.raycastTarget = false;
+            var fit = picture.gameObject.AddComponent<AspectRatioFitter>();
+            fit.aspectMode = AspectRatioFitter.AspectMode.EnvelopeParent;
+            fit.aspectRatio = (float)artwork.width / artwork.height;
+        }
+        var title = Label("고양이 키우기", background, new Vector2(0, 290), new Vector2(600, 70), 44);
+        title.fontStyle = FontStyle.Bold;
+        title.color = new Color(1f, .95f, .78f);
+        var titleShadow = title.gameObject.AddComponent<Shadow>();
+        titleShadow.effectColor = new Color(.20f, .17f, .12f, .95f);
+        titleShadow.effectDistance = new Vector2(3, -3);
+        var headingPlate = Box("Heading Backplate", background, new Vector2(0, 210), new Vector2(600, 60));
+        headingPlate.gameObject.AddComponent<Image>().color = new Color(.16f, .23f, .18f, .8f);
+        headingPlate.GetComponent<Image>().raycastTarget = false;
         heading = Label("서버에 연결 중입니다…", background, new Vector2(0, 210), new Vector2(600, 60), 24);
         message = Label("", background, new Vector2(0, -330), new Vector2(600, 110), 21);
+        var messageShadow = message.gameObject.AddComponent<Outline>();
+        messageShadow.effectColor = new Color(.1f, .16f, .12f, .95f);
+        messageShadow.effectDistance = new Vector2(1.5f, -1.5f);
 
         choice = Box("Choose Account Action", background, Vector2.zero, new Vector2(580, 300)).gameObject;
         choiceGroup = choice.AddComponent<CanvasGroup>();
@@ -68,7 +96,8 @@ public class LoadingLoginUI : MonoBehaviour
         MakeButton("로그인", choice.transform, Vector2.zero, () => SelectMode(false));
         MakeButton("Google로 계속하기", choice.transform, new Vector2(0, -90), () =>
         {
-            if (!busy) StartCoroutine(SubmitRoutine(true));
+            if (!busy)
+                StartCoroutine(SubmitRoutine(true));
         });
 
         form = Box("Account Form", background, Vector2.zero, new Vector2(580, 440)).gameObject;
@@ -88,7 +117,8 @@ public class LoadingLoginUI : MonoBehaviour
     public void ShowInitialization(bool success)
     {
         retry.gameObject.SetActive(!success);
-        if (success) ShowChoice();
+        if (success)
+            ShowChoice();
         else
         {
             choice.SetActive(false);
@@ -100,7 +130,8 @@ public class LoadingLoginUI : MonoBehaviour
 
     private void ShowChoice()
     {
-        if (busy) return;
+        if (busy)
+            return;
         passwordInput.text = "";
         confirmInput.text = "";
         choice.SetActive(true);
@@ -125,7 +156,8 @@ public class LoadingLoginUI : MonoBehaviour
 
     private void Submit()
     {
-        if (busy) return;
+        if (busy)
+            return;
         if (string.IsNullOrWhiteSpace(idInput.text) || string.IsNullOrWhiteSpace(passwordInput.text))
         {
             ShowMessage("아이디와 비밀번호를 입력해주세요.");
@@ -151,7 +183,8 @@ public class LoadingLoginUI : MonoBehaviour
         try
         {
             var request = google ? manager.SubmitGoogleAsync() : manager.SubmitAsync(signUp, idInput.text, passwordInput.text);
-            while (!request.IsCompleted) yield return null;
+            while (!request.IsCompleted)
+                yield return null;
             if (request.IsFaulted)
             {
                 Debug.LogException(request.Exception);
@@ -161,8 +194,10 @@ public class LoadingLoginUI : MonoBehaviour
         finally
         {
             busy = false;
-            if (formGroup != null) formGroup.interactable = true;
-            if (choiceGroup != null) choiceGroup.interactable = true;
+            if (formGroup != null)
+                formGroup.interactable = true;
+            if (choiceGroup != null)
+                choiceGroup.interactable = true;
         }
     }
 
@@ -172,7 +207,10 @@ public class LoadingLoginUI : MonoBehaviour
         ShowMessage("회원가입이 완료되었습니다. 비밀번호를 입력하고 로그인해주세요.");
     }
 
-    public void ShowMessage(string text) { message.text = text; }
+    public void ShowMessage(string text)
+    {
+        message.text = text;
+    }
 
     public void ShowCompleted()
     {
@@ -210,7 +248,7 @@ public class LoadingLoginUI : MonoBehaviour
     {
         var rect = Box(title, parent, position, new Vector2(520, 64));
         var image = rect.gameObject.AddComponent<Image>();
-        image.color = new Color(0.25f, 0.36f, 0.62f);
+        image.color = new Color(.25f, .36f, .26f, .97f);
         var button = rect.gameObject.AddComponent<Button>();
         button.targetGraphic = image;
         button.onClick.AddListener(action);
@@ -222,7 +260,7 @@ public class LoadingLoginUI : MonoBehaviour
     {
         var rect = Box(placeholder, parent, new Vector2(0, y), new Vector2(520, 64));
         var image = rect.gameObject.AddComponent<Image>();
-        image.color = new Color(0.18f, 0.21f, 0.29f);
+        image.color = new Color(.16f, .23f, .18f, .94f);
         var input = rect.gameObject.AddComponent<InputField>();
         var value = Label("", rect, Vector2.zero, new Vector2(484, 60), 24);
         value.alignment = TextAnchor.MiddleLeft;

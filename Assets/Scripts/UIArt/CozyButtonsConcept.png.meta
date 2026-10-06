@@ -1,0 +1,457 @@
+fileFormatVersion: 2
+guid: 46e7d9a6b88075d44ac7b3ebf50ab1b2
+TextureImporter:
+  internalIDToNameTable:
+  - first:
+      213: -5897622066972891287
+    second: CozyButtonsConcept_0
+  - first:
+      213: -7752841975773403248
+    second: CozyButtonsConcept_1
+  - first:
+      213: 2024151586300135566
+    second: CozyButtonsConcept_2
+  - first:
+      213: -3010086903994696390
+    second: CozyButtonsConcept_3
+  - first:
+      213: 137205901589410513
+    second: CozyButtonsConcept_4
+  - first:
+      213: -8826768236608642301
+    second: CozyButtonsConcept_5
+  - first:
+      213: 7297977609608749924
+    second: CozyButtonsConcept_6
+  - first:
+      213: -8677505812325274670
+    second: CozyButtonsConcept_7
+  - first:
+      213: 5351535287757894065
+    second: CozyButtonsConcept_8
+  - first:
+      213: -3229717998243742597
+    second: CozyButtonsConcept_9
+  - first:
+      213: -6773280384853867593
+    second: CozyButtonsConcept_10
+  - first:
+      213: 6475411320582759891
+    second: CozyButtonsConcept_11
+  externalObjects: {}
+  serializedVersion: 13
+  mipmaps:
+    mipMapMode: 0
+    enableMipMap: 0
+    sRGBTexture: 1
+    linearTexture: 0
+    fadeOut: 0
+    borderMipMap: 0
+    mipMapsPreserveCoverage: 0
+    alphaTestReferenceValue: 0.5
+    mipMapFadeDistanceStart: 1
+    mipMapFadeDistanceEnd: 3
+  bumpmap:
+    convertToNormalMap: 0
+    externalNormalMap: 0
+    heightScale: 0.25
+    normalMapFilter: 0
+    flipGreenChannel: 0
+  isReadable: 0
+  streamingMipmaps: 0
+  streamingMipmapsPriority: 0
+  vTOnly: 0
+  ignoreMipmapLimit: 0
+  grayScaleToAlpha: 0
+  generateCubemap: 6
+  cubemapConvolution: 0
+  seamlessCubemap: 0
+  textureFormat: 1
+  maxTextureSize: 2048
+  textureSettings:
+    serializedVersion: 2
+    filterMode: 1
+    aniso: 1
+    mipBias: 0
+    wrapU: 1
+    wrapV: 1
+    wrapW: 1
+  nPOTScale: 0
+  lightmap: 0
+  compressionQuality: 50
+  spriteMode: 2
+  spriteExtrude: 1
+  spriteMeshType: 1
+  alignment: 0
+  spritePivot: {x: 0.5, y: 0.5}
+  spritePixelsToUnits: 100
+  spriteBorder: {x: 0, y: 0, z: 0, w: 0}
+  spriteGenerateFallbackPhysicsShape: 1
+  alphaUsage: 1
+  alphaIsTransparency: 1
+  spriteTessellationMethod: 0
+  spriteTessellationDetail: -1
+  spriteGeometrySubdivision: -1
+  textureType: 8
+  textureShape: 1
+  singleChannelComponent: 0
+  flipbookRows: 1
+  flipbookColumns: 1
+  maxTextureSizeSet: 0
+  compressionQualitySet: 0
+  textureFormatSet: 0
+  ignorePngGamma: 0
+  applyGammaDecoding: 0
+  swizzle: 50462976
+  cookieLightType: 0
+  platformSettings:
+  - serializedVersion: 4
+    buildTarget: DefaultTexturePlatform
+    maxTextureSize: 2048
+    resizeAlgorithm: 0
+    textureFormat: -1
+    textureCompression: 1
+    compressionQuality: 50
+    crunchedCompression: 0
+    allowsAlphaSplitting: 0
+    overridden: 0
+    ignorePlatformSupport: 0
+    androidETC2FallbackOverride: 0
+    forceMaximumCompressionQuality_BC6H_BC7: 0
+  - serializedVersion: 4
+    buildTarget: Standalone
+    maxTextureSize: 2048
+    resizeAlgorithm: 0
+    textureFormat: -1
+    textureCompression: 1
+    compressionQuality: 50
+    crunchedCompression: 0
+    allowsAlphaSplitting: 0
+    overridden: 0
+    ignorePlatformSupport: 0
+    androidETC2FallbackOverride: 0
+    forceMaximumCompressionQuality_BC6H_BC7: 0
+  - serializedVersion: 4
+    buildTarget: Android
+    maxTextureSize: 2048
+    resizeAlgorithm: 0
+    textureFormat: -1
+    textureCompression: 1
+    compressionQuality: 50
+    crunchedCompression: 0
+    allowsAlphaSplitting: 0
+    overridden: 0
+    ignorePlatformSupport: 0
+    androidETC2FallbackOverride: 0
+    forceMaximumCompressionQuality_BC6H_BC7: 0
+  - serializedVersion: 4
+    buildTarget: iOS
+    maxTextureSize: 2048
+    resizeAlgorithm: 0
+    textureFormat: -1
+    textureCompression: 1
+    compressionQuality: 50
+    crunchedCompression: 0
+    allowsAlphaSplitting: 0
+    overridden: 0
+    ignorePlatformSupport: 0
+    androidETC2FallbackOverride: 0
+    forceMaximumCompressionQuality_BC6H_BC7: 0
+  spriteSheet:
+    serializedVersion: 2
+    sprites:
+    - serializedVersion: 2
+      name: CozyButtonsConcept_0
+      rect:
+        serializedVersion: 2
+        x: 45
+        y: 764
+        width: 460
+        height: 199
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 967639e1aff672ea0800000000000000
+      internalID: -5897622066972891287
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: CozyButtonsConcept_1
+      rect:
+        serializedVersion: 2
+        x: 540
+        y: 766
+        width: 457
+        height: 195
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 097e942ac4f586490800000000000000
+      internalID: -7752841975773403248
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: CozyButtonsConcept_2
+      rect:
+        serializedVersion: 2
+        x: 1024
+        y: 765
+        width: 466
+        height: 198
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: e8886f0b42b371c10800000000000000
+      internalID: 2024151586300135566
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: CozyButtonsConcept_3
+      rect:
+        serializedVersion: 2
+        x: 45
+        y: 535
+        width: 464
+        height: 199
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: a3d3750b8e50a36d0800000000000000
+      internalID: -3010086903994696390
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: CozyButtonsConcept_4
+      rect:
+        serializedVersion: 2
+        x: 540
+        y: 535
+        width: 457
+        height: 201
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 1d2f2516a0477e100800000000000000
+      internalID: 137205901589410513
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: CozyButtonsConcept_5
+      rect:
+        serializedVersion: 2
+        x: 1030
+        y: 535
+        width: 461
+        height: 199
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 303ad361e05018580800000000000000
+      internalID: -8826768236608642301
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: CozyButtonsConcept_6
+      rect:
+        serializedVersion: 2
+        x: 45
+        y: 301
+        width: 462
+        height: 206
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 463eb7738ff974560800000000000000
+      internalID: 7297977609608749924
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: CozyButtonsConcept_7
+      rect:
+        serializedVersion: 2
+        x: 540
+        y: 303
+        width: 457
+        height: 204
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 2dbe6f7607e439780800000000000000
+      internalID: -8677505812325274670
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: CozyButtonsConcept_8
+      rect:
+        serializedVersion: 2
+        x: 1030
+        y: 305
+        width: 460
+        height: 200
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 1b1f6c59df8744a40800000000000000
+      internalID: 5351535287757894065
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: CozyButtonsConcept_9
+      rect:
+        serializedVersion: 2
+        x: 47
+        y: 79
+        width: 458
+        height: 196
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: b7cfef5a79cbd23d0800000000000000
+      internalID: -3229717998243742597
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: CozyButtonsConcept_10
+      rect:
+        serializedVersion: 2
+        x: 540
+        y: 79
+        width: 457
+        height: 196
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 7b30aa850697002a0800000000000000
+      internalID: -6773280384853867593
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: CozyButtonsConcept_11
+      rect:
+        serializedVersion: 2
+        x: 1033
+        y: 76
+        width: 457
+        height: 199
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 3d5e0e1b9484dd950800000000000000
+      internalID: 6475411320582759891
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    outline: []
+    customData: 
+    physicsShape: []
+    bones: []
+    spriteID: 
+    internalID: 0
+    vertices: []
+    indices: 
+    edges: []
+    weights: []
+    secondaryTextures: []
+    spriteCustomMetadata:
+      entries: []
+    nameFileIdTable:
+      CozyButtonsConcept_0: -5897622066972891287
+      CozyButtonsConcept_1: -7752841975773403248
+      CozyButtonsConcept_10: -6773280384853867593
+      CozyButtonsConcept_11: 6475411320582759891
+      CozyButtonsConcept_2: 2024151586300135566
+      CozyButtonsConcept_3: -3010086903994696390
+      CozyButtonsConcept_4: 137205901589410513
+      CozyButtonsConcept_5: -8826768236608642301
+      CozyButtonsConcept_6: 7297977609608749924
+      CozyButtonsConcept_7: -8677505812325274670
+      CozyButtonsConcept_8: 5351535287757894065
+      CozyButtonsConcept_9: -3229717998243742597
+  mipmapLimitGroupName: 
+  pSDRemoveMatte: 0
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 

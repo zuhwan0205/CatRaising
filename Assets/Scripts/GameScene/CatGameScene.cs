@@ -25,7 +25,8 @@ public class CatGameScene : MonoBehaviour
             data.relics.Add(new OwnedRelic { relicId = "relic_bell" });
         }
 
-        if (catalog == null) catalog = Resources.Load<CatGameCatalog>("DefaultCatCatalog");
+        if (catalog == null)
+            catalog = Resources.Load<CatGameCatalog>("DefaultCatCatalog");
         if (catalog == null)
         {
             catalog = ScriptableObject.CreateInstance<CatGameCatalog>();
@@ -39,7 +40,6 @@ public class CatGameScene : MonoBehaviour
         view.StickChanged += field.SetStick;
         view.AdventureVisibilityChanged += field.SetVisible;
         view.Build(data, catalog, uiFont, preview, field.Output);
-        view.SaveRequested += Save;
         view.CharacterSelected += SelectCharacter;
         view.RelicSelected += SelectRelic;
         view.CharacterLevelUpRequested += LevelUpCharacter;
@@ -56,47 +56,70 @@ public class CatGameScene : MonoBehaviour
         field.Combat.HealthChanged += view.ShowPlayerHealth;
     }
 
-    private async void Save() { await session.SaveAsync(); }
     private async void AwardGold(long amount)
     {
         var request = session.AwardGoldAsync(amount);
         view.RefreshWallet();
         await request;
     }
-    private async void SelectCharacter(OwnedCharacter character) { await session.SelectCharacterAsync(character); }
+    private async void SelectCharacter(OwnedCharacter character)
+    {
+        await session.SelectCharacterAsync(character);
+    }
     private async void BuyCharacter(string id)
     {
         await session.BuyCharacterAsync(id);
-        if (view != null) view.RefreshShop();
+        if (view != null)
+            view.RefreshShop();
     }
-    private void DrawRelic() { DrawContent(false); }
-    private void DrawCharacter() { DrawContent(true); }
+    private void DrawRelic()
+    {
+        DrawContent(false);
+    }
+    private void DrawCharacter()
+    {
+        DrawContent(true);
+    }
     private async void DrawContent(bool character)
     {
-        if(view==null || !view.BeginRelicDraw(character))return;
-        ContentDrawResult result=null;
-        try { result=character?await session.DrawCharacterAsync():await session.DrawRelicAsync(); }
-        catch(System.Exception exception)
+        if (view == null || !view.BeginRelicDraw(character))
+            return;
+        ContentDrawResult result = null;
+        try
+        {
+            result = character ? await session.DrawCharacterAsync() : await session.DrawRelicAsync();
+        }
+        catch (System.Exception exception)
         {
             Debug.LogException(exception);
-            if(view!=null)view.ShowStatus("뽑기 처리 중 오류가 발생했습니다. 저장 상태를 확인해주세요.");
+            if (view != null)
+                view.ShowStatus("뽑기 처리 중 오류가 발생했습니다. 저장 상태를 확인해주세요.");
         }
-        finally { if(view!=null)view.CompleteRelicDraw(result); }
+        finally { if (view != null) view.CompleteRelicDraw(result); }
     }
     private async void LevelUpCharacter(OwnedCharacter character)
     {
         await session.LevelUpCharacterAsync(character);
-        if (view != null) { view.RefreshWallet(); view.RefreshCharacterDetail(character); }
+        if (view != null)
+        {
+            view.RefreshWallet();
+            view.RefreshCharacterDetail(character);
+        }
     }
     private async void LevelUpRelic(OwnedRelic relic)
     {
         await session.LevelUpRelicAsync(relic);
-        if (view != null) { view.RefreshWallet(); view.RefreshRelicDetail(relic); }
+        if (view != null)
+        {
+            view.RefreshWallet();
+            view.RefreshRelicDetail(relic);
+        }
     }
     private async void SelectRelic(OwnedRelic relic)
     {
         await session.ToggleRelicAsync(relic);
-        if (view != null) view.RefreshRelics();
+        if (view != null)
+            view.RefreshRelics();
     }
 
     private void OnDestroy()
@@ -106,7 +129,6 @@ public class CatGameScene : MonoBehaviour
 
         if (view != null)
         {
-            view.SaveRequested -= Save;
             view.CharacterSelected -= SelectCharacter;
             view.RelicSelected -= SelectRelic;
             view.CharacterLevelUpRequested -= LevelUpCharacter;
@@ -118,7 +140,8 @@ public class CatGameScene : MonoBehaviour
             {
                 session.BusyChanged -= view.SetBusy;
                 session.StatusChanged -= view.ShowStatus;
-                if (field != null) session.GameplayBlockedChanged -= field.SetGameplayBlocked;
+                if (field != null)
+                    session.GameplayBlockedChanged -= field.SetGameplayBlocked;
 
             }
         }
@@ -132,6 +155,7 @@ public class CatGameScene : MonoBehaviour
             field.Combat.RelicMessageChanged -= view.ShowRelicMessage;
             field.Combat.HealthChanged -= view.ShowPlayerHealth;
         }
-        if (ownCatalog && catalog != null) Destroy(catalog);
+        if (ownCatalog && catalog != null)
+            Destroy(catalog);
     }
 }
