@@ -18,7 +18,8 @@ public class BackendManager : MonoBehaviour
     private void Start()
     {
         loginUI = GetComponent<LoadingLoginUI>();
-        if (loginUI == null) loginUI = gameObject.AddComponent<LoadingLoginUI>();
+        if (loginUI == null)
+            loginUI = gameObject.AddComponent<LoadingLoginUI>();
         loginUI.Build(this);
         InitializeBackend();
     }
@@ -30,7 +31,8 @@ public class BackendManager : MonoBehaviour
             var result = Backend.Initialize();
             initialized = result.IsSuccess();
             loginUI.ShowInitialization(initialized);
-            if (!initialized) Debug.LogError("뒤끝 초기화 실패 : " + result);
+            if (!initialized)
+                Debug.LogError("뒤끝 초기화 실패 : " + result);
         }
         catch (Exception exception)
         {
@@ -66,7 +68,8 @@ public class BackendManager : MonoBehaviour
 
     public async Task SubmitAsync(bool signUp, string id, string password)
     {
-        if (!initialized || loginReady || submitting) return;
+        if (!initialized || loginReady || submitting)
+            return;
         if (string.IsNullOrWhiteSpace(id) || string.IsNullOrWhiteSpace(password))
         {
             loginUI.ShowMessage("아이디와 비밀번호를 입력해주세요.");
@@ -96,14 +99,16 @@ public class BackendManager : MonoBehaviour
         catch (Exception exception)
         {
             Debug.LogException(exception);
-            if (this != null) loginUI.ShowMessage("처리 중 오류가 발생했습니다. 잠시 후 다시 시도해주세요.");
+            if (this != null)
+                loginUI.ShowMessage("처리 중 오류가 발생했습니다. 잠시 후 다시 시도해주세요.");
         }
         finally { submitting = false; }
     }
 
     public async Task SubmitGoogleAsync()
     {
-        if (!initialized || loginReady || submitting) return;
+        if (!initialized || loginReady || submitting)
+            return;
         submitting = true;
         try
         {
@@ -138,7 +143,8 @@ public class BackendManager : MonoBehaviour
         catch (Exception)
         {
             // 인증 예외에는 토큰 등이 포함될 수 있으므로 원문을 출력하지 않습니다.
-            if (this != null) loginUI.ShowMessage("구글 로그인 처리에 실패했습니다. SDK 설정과 네트워크를 확인해주세요.");
+            if (this != null)
+                loginUI.ShowMessage("구글 로그인 처리에 실패했습니다. SDK 설정과 네트워크를 확인해주세요.");
         }
         finally { submitting = false; }
     }
@@ -148,10 +154,12 @@ public class BackendManager : MonoBehaviour
         loginUI.ShowMessage("데이터베이스에 연결하고 유저 데이터를 준비합니다…");
         if (!await BackendGameData.Instance.InitializeAndLoadAsync(databaseUuid))
         {
-            if (this != null) loginUI.ShowMessage(BackendGameData.Instance.LastError);
+            if (this != null)
+                loginUI.ShowMessage(BackendGameData.Instance.LastError);
             return;
         }
-        if (this == null) return;
+        if (this == null)
+            return;
         loginReady = true;
         loginUI.ShowCompleted();
         // Inspector에서 로그인 완료 후 씬 전환 등의 동작을 연결합니다.
