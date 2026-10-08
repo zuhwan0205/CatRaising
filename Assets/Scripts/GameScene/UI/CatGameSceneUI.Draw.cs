@@ -1,4 +1,5 @@
 using System.Collections;
+using DG.Tweening;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -56,15 +57,19 @@ public partial class CatGameSceneUI
         var lockPlate = Panel(chest, "Lock", new Vector2(.40f, .39f), new Vector2(.60f, .73f), gold);
         Panel(lockPlate, "Keyhole", new Vector2(.40f, .30f), new Vector2(.60f, .70f), new Color(.18f, .10f, .06f));
         float elapsed = 0;
+        var shake = DOTween.Sequence().SetUpdate(true).SetLink(chest.gameObject, LinkBehaviour.KillOnDisable);
+        shake.Append(DOTween.To(() => chest.localEulerAngles.z, v => chest.localRotation = Quaternion.Euler(0, 0, v), 5f, .08f));
+        shake.Append(DOTween.To(() => 5f, v => chest.localRotation = Quaternion.Euler(0, 0, v), -5f, .16f));
+        shake.Append(DOTween.To(() => -5f, v => chest.localRotation = Quaternion.Euler(0, 0, v), 0f, .08f));
+        shake.SetLoops(-1);
         while (!drawCompleted || (revealedResult != null && elapsed < 1.2f))
         {
             elapsed += Mathf.Min(Time.unscaledDeltaTime, .1f);
-            chest.localRotation = Quaternion.Euler(0, 0, Mathf.Sin(elapsed * 28) * 5);
-            chest.localScale = Vector3.one * (1 + Mathf.Abs(Mathf.Sin(elapsed * 14)) * .04f);
             if (elapsed > 3)
                 hint.text = "저장 결과를 기다리고 있어요…";
             yield return null;
         }
+        shake.Kill();
         chest.localRotation = Quaternion.identity;
         chest.localScale = Vector3.one;
         if (revealedResult == null)
@@ -91,17 +96,20 @@ public partial class CatGameSceneUI
             CharacterPortrait(inner, catalog.FindCharacter(result.id));
         }
         var group = reward.gameObject.AddComponent<CanvasGroup>();
+        if(result.rarity == ItemRarity.Unique || result.rarity == ItemRarity.Legendary)
+            AddRareDrawGlow(reward, rarityColor);
         group.alpha = 0;
         var start = reward.anchoredPosition;
-        for (float time = 0; time < .65f; time += Mathf.Min(Time.unscaledDeltaTime, .1f))
-        {
-            float t = Mathf.Clamp01(time / .65f), ease = 1 - Mathf.Pow(1 - t, 3);
-            lid.localRotation = Quaternion.Euler(-110 * ease, 0, -12 * ease);
-            reward.anchoredPosition = start + Vector2.up * 130 * ease;
-            reward.localScale = Vector3.one * Mathf.Lerp(.25f, 1, ease);
-            group.alpha = ease;
+        reward.localScale = Vector3.one * .25f;
+        var reveal = DOTween.Sequence().SetUpdate(true).SetLink(drawOverlay.gameObject, LinkBehaviour.KillOnDisable);
+        reveal.Append(DOTween.To(() => 0f, v => lid.localRotation = Quaternion.Euler(-110 * v, 0, -12 * v), 1f, .35f).SetEase(Ease.OutCubic));
+        reveal.Insert(.15f, DOTween.To(() => reward.anchoredPosition, v => reward.anchoredPosition = v, start + Vector2.up * 130, .55f).SetEase(Ease.OutCubic));
+        reveal.Insert(.15f, DOTween.To(() => reward.localScale, v => reward.localScale = v, Vector3.one, .55f).SetEase(Ease.OutBack));
+        reveal.Insert(.15f, DOTween.To(() => group.alpha, v => group.alpha = v, 1f, .25f));
+        while (reveal.IsActive() && !reveal.IsComplete())
             yield return null;
-        }
+        if (drawOverlay == null)
+            yield break;
         group.alpha = 1;
         reward.localScale = Vector3.one;
         reward.anchoredPosition = start + Vector2.up * 130;

@@ -23,6 +23,8 @@ public partial class CatGameSceneUI : MonoBehaviour
     private Text status;
     private Text goldAmount;
     private Text gemAmount;
+    private Button upgradeButton;
+    private Func<bool> canAffordUpgrade;
     public event Action<bool> MovementModeChanged;
     public event Action<Vector2> StickChanged;
     public event Action<bool> AdventureVisibilityChanged;
@@ -97,6 +99,7 @@ public partial class CatGameSceneUI : MonoBehaviour
     {
         if (safeArea != null)
             ApplySafeArea();
+        RefreshUpgradeButton();
     }
     private void ApplySafeArea()
     {
@@ -112,7 +115,7 @@ public partial class CatGameSceneUI : MonoBehaviour
 
     private void Show(string tab)
     {
-        if (saving || drawOverlay != null)
+        if (saving || drawOverlay != null || detailOverlay != null)
             return;
         if (joystick != null)
             joystick.ResetInput();
@@ -228,14 +231,12 @@ public partial class CatGameSceneUI : MonoBehaviour
 
     private void CharacterDetail(OwnedCharacter owned)
     {
-        if (joystick != null)
-            joystick.ResetInput();
-        joystick = null;
-        ClearPage();
-        Button(page, "목록", new Vector2(0, .92f), new Vector2(.24f, 1), () => Show("캐릭터"));
+        var page = OpenDetailPopup("캐릭터");
+        Button(page, "닫기", new Vector2(0, .92f), new Vector2(.24f, 1), CloseDetailPopup);
         Label(page, CharacterName(owned.characterId), 30, new Vector2(.26f, .92f), Vector2.one);
         var portrait = Panel(page, "Character Portrait", new Vector2(0, .49f), new Vector2(1, .88f), new Color(.94f, .87f, .77f));
         CharacterPortrait(portrait, catalog.FindCharacter(owned.characterId));
+        upgradePortrait = portrait;
         var definition = catalog.FindCharacter(owned.characterId);
         string details = $"Lv. {owned.level}  ·  돌파 {owned.ascension}  ·  조각 {owned.fragments}\n";
         if (definition != null)
@@ -247,12 +248,14 @@ public partial class CatGameSceneUI : MonoBehaviour
         }
         else
             details += "캐릭터 공통 설정을 연결해주세요.";
-        Label(page, details, 23, new Vector2(0, .19f), new Vector2(1, .47f));
+        upgradeDetails = Label(page, details, 23, new Vector2(0, .19f), new Vector2(1, .47f));
         Button(page, "이 고양이 선택 · 저장", new Vector2(0, .09f), new Vector2(1, .17f), () => CharacterSelected?.Invoke(owned));
         long fragmentCost = 0;
         bool canGrow = definition?.fragmentGrowth != null && definition.fragmentGrowth.TryGetCost(owned.level, out fragmentCost);
         var grow = Button(page, canGrow ? $"Lv. {owned.level} → {owned.level + 1} · 조각 {fragmentCost:N0}개" : "최대 레벨 / 성장 설정 없음", Vector2.zero, new Vector2(1, .07f), () => CharacterLevelUpRequested?.Invoke(owned));
-        grow.interactable = canGrow;
+        upgradeButton = grow;
+        canAffordUpgrade = () => canGrow && owned.fragments >= fragmentCost;
+        RefreshUpgradeButton();
     }
 
     private void Relics()
@@ -280,9 +283,10 @@ public partial class CatGameSceneUI : MonoBehaviour
 
     private void RelicDetail(OwnedRelic owned)
     {
-        ClearPage();
+        var page = OpenDetailPopup("유물");
+        popupRelic = owned;
         var definition = catalog.FindRelic(owned.relicId);
-        Button(page, "목록", new Vector2(0, .92f), new Vector2(.24f, 1), () => Show("유물"));
+        Button(page, "닫기", new Vector2(0, .92f), new Vector2(.24f, 1), CloseDetailPopup);
         Label(page, definition == null ? owned.relicId : definition.displayName, 30, new Vector2(.26f, .92f), Vector2.one);
         string description = definition == null ? "유물 공통 설정을 연결해주세요." :
             $"{Rarity(definition.rarity)} · Lv. {owned.level} · 조각 {owned.fragments}\n{definition.description}\n{definition.trigger} · 확률 {definition.chance:P0}\n효과 {definition.effectValue + definition.effectPerLevel * Math.Max(0, owned.level - 1):0.#} · 재사용 {definition.cooldownSeconds:0.#}초";
@@ -293,16 +297,18 @@ public partial class CatGameSceneUI : MonoBehaviour
         bool equipped = data.loadout.relicIds.Contains(owned.relicId);
         var button = Button(page, equipped ? "유물 해제 · 저장" : "유물 장착 · 저장 (최대 3개)", new Vector2(0, .08f), new Vector2(1, .20f), () => RelicSelected?.Invoke(owned));
         button.interactable = definition != null || equipped;
-        LevelUpButton(definition?.growth, owned.level, Vector2.zero, new Vector2(1, .07f), () => RelicLevelUpRequested?.Invoke(owned));
+        LevelUpButton(definition?.growth, owned.level, Vector2.zero, new Vector2(1, .07f), () => RelicLevelUpRequested?.Invoke(owned), page);
     }
 
-    private void LevelUpButton(LevelUpRules rules, int level, Vector2 min, Vector2 max, UnityAction action)
+    private void LevelUpButton(LevelUpRules rules, int level, Vector2 min, Vector2 max, UnityAction action, Transform parent = null)
     {
         long cost = 0;
         bool available = rules != null && rules.TryGetCost(level, out cost);
         string title = available ? $"Lv. {level} → {level + 1} · {cost:N0} 골드" : rules != null && level >= rules.maxLevel ? "최대 레벨" : "성장 설정 없음";
-        var button = Button(page, title, min, max, action);
-        button.interactable = available;
+        var button = Button(parent != null ? parent : page, title, min, max, action);
+        upgradeButton = button;
+        canAffordUpgrade = () => available && data.wallet.gold >= cost;
+        RefreshUpgradeButton();
     }
 
     public void RefreshCharacterDetail(OwnedCharacter owned)
@@ -316,6 +322,7 @@ public partial class CatGameSceneUI : MonoBehaviour
 
     public void RefreshRelics()
     {
+        if(detailOverlay != null && popupRelic != null) { RelicDetail(popupRelic); return; }
         string message = status.text;
         Show("유물");
         status.text = message;
@@ -332,6 +339,13 @@ public partial class CatGameSceneUI : MonoBehaviour
     public void SetBusy(bool value)
     {
         saving = value;
+        RefreshUpgradeButton();
+    }
+
+    private void RefreshUpgradeButton()
+    {
+        if (upgradeButton != null)
+            upgradeButton.interactable = !saving && canAffordUpgrade != null && canAffordUpgrade();
     }
     public void ShowCombatMessage(string message)
     {
@@ -378,13 +392,13 @@ public partial class CatGameSceneUI : MonoBehaviour
         var text = Rect(parent, "Label", min, max).gameObject.AddComponent<Text>();
         text.font = uiFont;
         text.text = value;
-        text.fontSize = size;
+        text.fontSize = Mathf.RoundToInt(size * 1.1f);
         text.color = ink;
         text.alignment = TextAnchor.MiddleCenter;
         text.raycastTarget = false;
         text.resizeTextForBestFit = true;
         text.resizeTextMinSize = 12;
-        text.resizeTextMaxSize = size;
+        text.resizeTextMaxSize = text.fontSize;
         return text;
     }
     private Button Button(Transform parent, string title, Vector2 min, Vector2 max, UnityAction action)

@@ -42,7 +42,7 @@ public partial class CatGameSceneUI
         value.color = new Color(1f, .97f, .83f);
         value.resizeTextForBestFit = true;
         value.resizeTextMinSize = 16;
-        value.resizeTextMaxSize = 26;
+        value.resizeTextMaxSize = 29;
         var shadow = value.gameObject.AddComponent<Shadow>();
         shadow.effectColor = Color.black;
         shadow.effectDistance = new Vector2(1, -1);

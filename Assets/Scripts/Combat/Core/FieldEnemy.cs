@@ -106,7 +106,7 @@ public class FieldEnemy : MonoBehaviour
             return false;
         LastHitDamage = System.Math.Max(1, damage - Defense);
         bool killed = Health.Damage(LastHitDamage);
-        healthBar.localScale = new Vector3((float)(Health.Current / Health.Maximum), 1, 1);
+        HealthBarTween.Set(healthBar, (float)(Health.Current / Health.Maximum));
         flashRemaining = .15f;
         artwork.color = Color.white;
         if (killed)
