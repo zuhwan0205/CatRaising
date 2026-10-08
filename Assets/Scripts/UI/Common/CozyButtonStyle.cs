@@ -21,6 +21,8 @@ public static class CozyButtonStyle
         button.targetGraphic = face;
         button.transition = Selectable.Transition.ColorTint;
         SetColor(button, faceColor);
+        if (button.GetComponent<ButtonTweenEffect>() == null)
+            button.gameObject.AddComponent<ButtonTweenEffect>();
     }
 
     public static void SetColor(Button button, Color color)

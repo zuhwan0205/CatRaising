@@ -114,6 +114,8 @@ public class CatFieldController : MonoBehaviour
         effects.Initialize(fieldCamera, square, catVisual.ImpactRoot);
         Combat.AttackPerformed += effects.Attack;
         Combat.PlayerHit += effects.Hurt;
+        var damageNumbers = field.AddComponent<FieldDamageNumbers>();
+        damageNumbers.Initialize(fieldCamera, Combat);
         var follow = cameraObject.AddComponent<CatCameraFollow>();
         follow.Target = cat.transform;
         follow.Snap();
@@ -161,7 +163,7 @@ public class CatFieldController : MonoBehaviour
     {
         playerDead = hp <= 0;
         movement.enabled = !gameplayBlocked && !playerDead;
-        playerHealthFill.localScale = new Vector3((float)(hp / maximum), 1, 1);
+        HealthBarTween.Set(playerHealthFill, (float)(hp / maximum));
     }
     public void SetAutomatic(bool value)
     {

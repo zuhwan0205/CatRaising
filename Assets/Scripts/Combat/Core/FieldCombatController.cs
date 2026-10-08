@@ -6,11 +6,13 @@ using UnityEngine;
 public class FieldCombatController : MonoBehaviour
 {
     public event Action<long> GoldEarned;
+    public event Action<Vector3, long> EnemyGoldDropped;
     public event Action<string> MessageChanged;
     public event Action<string> RelicMessageChanged;
     public event Action<double, double> HealthChanged;
     public event Action PlayerHit;
     public event Action<Vector3, Vector3> AttackPerformed;
+    public event Action<Vector3, double> DamageDealt;
     public event Action<Vector3, Vector3> AttackStarted;
     public CombatHealth PlayerHealth
     {
@@ -216,6 +218,7 @@ public class FieldCombatController : MonoBehaviour
             double damage = attack + bonus;
             maxBonus = Math.Max(maxBonus, bonus);
             bool killed = target.Hit(damage);
+            DamageDealt?.Invoke(target.transform.position, target.LastHitDamage);
             minDamage = Math.Min(minDamage, target.LastHitDamage);
             maxDamage = Math.Max(maxDamage, target.LastHitDamage);
             if (!killed && selectedId == "cat_shadow")
@@ -227,6 +230,7 @@ public class FieldCombatController : MonoBehaviour
                 target.RespawnRemaining = RespawnDelay;
                 killsThisFrame++;
                 earnedGold += target.GoldReward;
+                EnemyGoldDropped?.Invoke(target.transform.position, target.GoldReward);
                 TriggerRelics(EffectTrigger.OnKill, null);
             }
         }

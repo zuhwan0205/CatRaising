@@ -61,6 +61,7 @@ public class CatGameScene : MonoBehaviour
         var request = session.AwardGoldAsync(amount);
         view.RefreshWallet();
         await request;
+        if(view != null && !session.HasPendingReward) view.PlayGoldReward();
     }
     private async void SelectCharacter(OwnedCharacter character)
     {
@@ -99,11 +100,13 @@ public class CatGameScene : MonoBehaviour
     }
     private async void LevelUpCharacter(OwnedCharacter character)
     {
+        int previousLevel = character.level;
         await session.LevelUpCharacterAsync(character);
         if (view != null)
         {
             view.RefreshWallet();
             view.RefreshCharacterDetail(character);
+            if(character.level > previousLevel) view.PlayCharacterUpgrade();
         }
     }
     private async void LevelUpRelic(OwnedRelic relic)

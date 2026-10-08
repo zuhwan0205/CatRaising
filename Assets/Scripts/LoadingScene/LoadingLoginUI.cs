@@ -236,7 +236,7 @@ public class LoadingLoginUI : MonoBehaviour
     {
         var text = Box("Label", parent, position, size).gameObject.AddComponent<Text>();
         text.font = uiFont;
-        text.fontSize = fontSize;
+        text.fontSize = Mathf.RoundToInt(fontSize * 1.1f);
         text.text = value;
         text.color = Color.white;
         text.alignment = TextAnchor.MiddleCenter;
@@ -252,6 +252,7 @@ public class LoadingLoginUI : MonoBehaviour
         var button = rect.gameObject.AddComponent<Button>();
         button.targetGraphic = image;
         button.onClick.AddListener(action);
+        button.gameObject.AddComponent<ButtonTweenEffect>();
         Label(title, rect, Vector2.zero, new Vector2(500, 60), 24);
         return button;
     }

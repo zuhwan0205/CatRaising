@@ -26,6 +26,7 @@ public partial class CatGameSceneUI
         var card = Panel(grid, "Character Card " + owned.characterId, Vector2.zero, Vector2.one, rarity);
         var button = card.gameObject.AddComponent<Button>();
         button.targetGraphic = card.GetComponent<Image>();
+        button.gameObject.AddComponent<ButtonTweenEffect>();
         button.onClick.AddListener(() => { if (!saving && drawOverlay == null) CharacterDetail(owned); });
         var portrait = Panel(card, "Portrait", new Vector2(.04f, .30f), new Vector2(.96f, .96f), Color.Lerp(rarity, Color.white, .82f));
         CharacterPortrait(portrait, definition);
@@ -45,6 +46,7 @@ public partial class CatGameSceneUI
         var card = Panel(grid, "Shop Character " + definition.id, Vector2.zero, Vector2.one, rarity);
         var button = card.gameObject.AddComponent<Button>();
         button.targetGraphic = card.GetComponent<Image>();
+        button.gameObject.AddComponent<ButtonTweenEffect>();
         button.onClick.AddListener(() =>
         {
             if (!saving && drawOverlay == null)
@@ -133,6 +135,7 @@ public partial class CatGameSceneUI
         var card = Panel(grid, "Relic Card " + name, Vector2.zero, Vector2.one, rarity);
         var button = card.gameObject.AddComponent<Button>();
         button.targetGraphic = card.GetComponent<Image>();
+        button.gameObject.AddComponent<ButtonTweenEffect>();
         button.onClick.AddListener(() => { if (!saving && drawOverlay == null) action(); });
         var portrait = Panel(card, "Portrait", new Vector2(.04f, .38f), new Vector2(.96f, .97f), Color.Lerp(rarity, Color.white, .55f));
         RelicIcon(portrait, definition);
@@ -184,3 +187,4 @@ public partial class CatGameSceneUI
         }
     }
 }
+
