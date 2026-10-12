@@ -90,7 +90,7 @@ public partial class CatGameSceneUI : MonoBehaviour
         for (int i = 0; i < titles.Length; i++)
         {
             string title = titles[i];
-            tabs[i] = Button(navigation, title, new Vector2(i * .25f, 0), new Vector2(i * .25f + .235f, 1), () => Show(title));
+            tabs[i] = Button(navigation, title, new Vector2(i * .25f, 0), new Vector2(i * .25f + .235f, 1), () => Navigate(title));
         }
         Show("모험");
     }
@@ -100,6 +100,8 @@ public partial class CatGameSceneUI : MonoBehaviour
         if (safeArea != null)
             ApplySafeArea();
         RefreshUpgradeButton();
+        RefreshCrystalAdButton();
+        UpdateRaid();
     }
     private void ApplySafeArea()
     {
@@ -117,6 +119,7 @@ public partial class CatGameSceneUI : MonoBehaviour
     {
         if (saving || drawOverlay != null || detailOverlay != null)
             return;
+        CloseAdventureMenu();
         if (joystick != null)
             joystick.ResetInput();
         joystick = null;
@@ -136,6 +139,10 @@ public partial class CatGameSceneUI : MonoBehaviour
             Shop();
         else if (tab == "캐릭터")
             Characters();
+        else if (tab == "레이드")
+            RaidList();
+        else if (tab == "던전")
+            DungeonMap();
         else
             Relics();
     }

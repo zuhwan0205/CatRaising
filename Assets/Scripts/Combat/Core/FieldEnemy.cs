@@ -29,11 +29,17 @@ public class FieldEnemy : MonoBehaviour
         get; private set;
     }
     private readonly Sprite[] frames = new Sprite[8];
+    private Sprite raidArtwork;
     private float animationTime;
     private Vector3 previousPosition;
 
     public void ConfigureMonster(int kind)
     {
+        if (raidArtwork != null)
+        {
+            Destroy(raidArtwork);
+            raidArtwork = null;
+        }
         if (Kind == kind && frames[0] != null)
             return;
         foreach (var frame in frames)
@@ -68,6 +74,31 @@ public class FieldEnemy : MonoBehaviour
         previousPosition = transform.position;
     }
     public float MovementMultiplier => slowRemaining > 0 ? .6f : 1f;
+    public void ConfigureRaidBoss(int kind, double health)
+    {
+        ConfigureMonster(kind);
+        Health = new CombatHealth(health);
+        GoldReward = 0;
+        ContactDamage = 5 + kind * 3;
+        MoveSpeed = 1.2f;
+    }
+
+    public void SetRaidArtwork(int index)
+    {
+        if (index < 0 || index >= RaidBattle.ArtworkNames.Length) return;
+        var texture = Resources.Load<Texture2D>("RaidArt/" + RaidBattle.ArtworkNames[index]);
+        if (texture == null)
+        {
+            Debug.LogWarning("레이드 보스 이미지가 없습니다: " + RaidBattle.ArtworkNames[index]);
+            return;
+        }
+        if (raidArtwork != null) Destroy(raidArtwork);
+        raidArtwork = Sprite.Create(texture, new Rect(0, 0, texture.width, texture.height),
+            new Vector2(.5f, .07f), texture.height / 1.4f, 0, SpriteMeshType.FullRect);
+        artwork.sprite = raidArtwork;
+        artwork.transform.localScale = Vector3.one;
+        artwork.color = color = Color.white;
+    }
 
     public void ApplyIceSlow()
     {
@@ -94,11 +125,13 @@ public class FieldEnemy : MonoBehaviour
         {
             float horizontal = Vector3.Dot(moved, billboard.ViewCamera.transform.right);
             if (Mathf.Abs(horizontal) > .0001f)
-                artwork.flipX = horizontal < 0;
+                artwork.flipX = raidArtwork != null ? horizontal > 0 : horizontal < 0;
         }
-        if (frames[0] != null)
+        if (raidArtwork != null)
+            artwork.sprite = raidArtwork;
+        else if (frames[0] != null)
             artwork.sprite = frames[flashRemaining > 0 ? 4 + Mathf.Min(3, (int)((.15f - flashRemaining) / .15f * 4)) : (int)(animationTime * 6) % 4];
-        artwork.color = flashRemaining > 0 ? Color.white : slowRemaining > 0 ? Color.Lerp(color, new Color(.35f, .8f, 1), .65f) : color;
+        artwork.color = flashRemaining > 0 ? (raidArtwork != null ? new Color(1, .55f, .55f) : Color.white) : slowRemaining > 0 ? Color.Lerp(color, new Color(.35f, .8f, 1), .65f) : color;
     }
     public bool Hit(double damage)
     {
@@ -127,6 +160,7 @@ public class FieldEnemy : MonoBehaviour
     }
     private void OnDestroy()
     {
+        if (raidArtwork != null) Destroy(raidArtwork);
         foreach (var frame in frames)
             if (frame != null)
                 Destroy(frame);

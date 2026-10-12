@@ -2,7 +2,7 @@ using System.Collections.Generic;
 using UnityEngine;
 
 // XZ 필드와 카메라 출력 구성. 캐릭터는 2D 빌보드입니다.
-public class CatFieldController : MonoBehaviour
+public partial class CatFieldController : MonoBehaviour
 {
     public RenderTexture Output
     {
