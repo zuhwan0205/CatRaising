@@ -42,7 +42,8 @@ public partial class CatGameSceneUI
         bool dedicatedArtwork = texture != null;
         if (texture == null) texture = Resources.Load<Texture2D>("MonsterArt/" + names[index]);
         if (texture == null) return;
-        var portrait = Rect(parent, "Boss Portrait Frame", new Vector2(.53f, .02f), new Vector2(.98f, .98f));
+        var portrait = Panel(parent, "Boss Portrait Frame", new Vector2(.53f, .02f), new Vector2(.98f, .98f), CharacterRarityColor(RaidBattle.Rarities[index]));
+        portrait.GetComponent<Image>().raycastTarget = false;
         var image = Rect(portrait, "Boss Portrait", Vector2.zero, Vector2.one).gameObject.AddComponent<RawImage>();
         image.texture = texture;
         image.uvRect = dedicatedArtwork ? new Rect(0, 0, 1, 1) : new Rect(0, .5f, .25f, .5f);
@@ -91,9 +92,15 @@ public partial class CatGameSceneUI
             if (definition == null) continue;
             var cat = owned;
             bool selected = raidTeam.Contains(cat);
-            var card = Panel(grid, "Raid Cat", Vector2.zero, Vector2.one, selected ? CozyButtonStyle.Green : CharacterRarityColor(definition.rarity));
+            var card = Panel(grid, "Raid Cat", Vector2.zero, Vector2.one, CharacterRarityColor(definition.rarity));
             var portrait = Rect(card, "Portrait", new Vector2(.05f, .24f), new Vector2(.95f, .98f));
             CharacterPortrait(portrait, definition);
+            if (selected)
+            {
+                var badge = Panel(card, "Selected Badge", new Vector2(.45f, .78f), new Vector2(.98f, .98f), CozyButtonStyle.Green);
+                badge.GetComponent<Image>().raycastTarget = false;
+                Label(badge, "선택됨", 15, Vector2.zero, Vector2.one);
+            }
             Label(card, $"Lv.{cat.level}" + (selected ? " · 선택됨" : ""), 18, Vector2.zero, new Vector2(1, .25f));
             var button = card.gameObject.AddComponent<Button>();
             button.targetGraphic = card.GetComponent<Image>();
@@ -133,8 +140,19 @@ public partial class CatGameSceneUI
         var header = Panel(page, "Raid HUD", new Vector2(0, .85f), Vector2.one, new Color(0, 0, 0, .65f));
         raidHealth = Label(header, "", 26, Vector2.zero, Vector2.one);
         raidHealth.color = Color.white;
+        if (!dungeonMode)
+        {
+            var pad = Panel(page, "Raid Movement Joystick", new Vector2(.03f, .12f), new Vector2(.30f, .32f), new Color(.12f, .16f, .20f, .55f));
+            var handle = Panel(pad, "Handle", new Vector2(.35f, .35f), new Vector2(.65f, .65f), new Color(1, 1, 1, .85f));
+            handle.GetComponent<Image>().raycastTarget = false;
+            joystick = pad.gameObject.AddComponent<FieldJoystick>();
+            joystick.Handle = handle;
+            joystick.InputChanged = value => StickChanged?.Invoke(value);
+            Label(page, "수동 이동 고정 · 4마리 함께 조작\nWASD / 방향키 / 조이스틱 · 공격은 자동", 18,
+                new Vector2(.32f, .13f), new Vector2(.98f, .25f)).color = Color.white;
+        }
         Button(page, $"{EncounterTab} 포기", new Vector2(.3f, .01f), new Vector2(.7f, .09f), ExitRaid);
-        ShowStatus(dungeonMode ? "몰려오는 몬스터를 막고 3개 웨이브를 모두 처치하세요." : $"60초 안에 적을 처치하세요. 고양이 {TeamSize}마리가 자동으로 싸웁니다.");
+        ShowStatus(dungeonMode ? "몰려오는 몬스터를 막고 3개 웨이브를 모두 처치하세요." : "직접 이동해 위험 범위를 피하세요. 공격은 자동으로 진행됩니다.");
     }
 
     private void UpdateRaid()
@@ -147,7 +165,7 @@ public partial class CatGameSceneUI
                 (RaidField.DungeonWaveCountdown > 0 ? $" · 다음 웨이브 {RaidField.DungeonWaveCountdown:0.0}초" : "");
             return;
         }
-        raidHealth.text = $"{EncounterTitle} · 남은 시간 {RaidField.RaidSeconds:0.0}초\nHP {boss.Health.Current:0}/{boss.Health.Maximum:0}";
+        raidHealth.text = $"{EncounterTitle} · 남은 시간 {RaidField.RaidSeconds:0.0}초\nHP {boss.Health.Current:0}/{boss.Health.Maximum:0}\n{RaidField.RaidSkillMessage}";
     }
 
     public void ShowRaidResult(bool won)

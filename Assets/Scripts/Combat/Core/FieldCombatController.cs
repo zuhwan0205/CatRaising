@@ -69,6 +69,18 @@ public class FieldCombatController : MonoBehaviour
         relicEffects = new RelicEffectRunner(data, catalog);
     }
 
+    public void ReceiveRaidSkill(double damage)
+    {
+        if (!RaidMode || Blocked || !gameObject.activeInHierarchy) return;
+        ResolveStats();
+        if (PlayerHealth.Dead) return;
+        bool died = PlayerHealth.Damage(Math.Max(1, damage - defense));
+        if (!died) TriggerRelics(EffectTrigger.OnDamaged, null);
+        PlayerHit?.Invoke();
+        HealthChanged?.Invoke(PlayerHealth.Current, PlayerHealth.Maximum);
+        if (died) LockedTarget = null;
+    }
+
     private void Update()
     {
         if (Blocked || player == null)
@@ -127,6 +139,7 @@ public class FieldCombatController : MonoBehaviour
         cooldown = Mathf.Max(0, cooldown - delta);
         bool touching = false;
         double touchingDamage = 0;
+        FieldEnemy contactAttacker = null;
         FieldEnemy closest = null;
         float nearest = Range * Range;
         for (int enemyIndex = 0; enemyIndex < (RaidMode ? enemies.Length : Math.Min(enemies.Length, TargetMonsterCount)); enemyIndex++)
@@ -160,6 +173,7 @@ public class FieldCombatController : MonoBehaviour
             if (clear && sqr <= ContactDistance * ContactDistance)
             {
                 touching = true;
+                if (contactAttacker == null || enemy.ContactDamage > touchingDamage) contactAttacker = enemy;
                 touchingDamage = Math.Max(touchingDamage, enemy.ContactDamage);
             }
             if (clear && sqr <= nearest)
@@ -170,7 +184,22 @@ public class FieldCombatController : MonoBehaviour
         }
         if (touching && contactCooldown <= 0)
         {
+            if (RaidMode && contactAttacker != null && contactAttacker.HasRaidAnimation)
+            {
+                var source = contactAttacker;
+                double damage = touchingDamage;
+                if (source.ScheduleRaidAttack(player.position, () =>
+                {
+                    if (source == null || !source.Alive || player == null || Blocked || !gameObject.activeInHierarchy) return;
+                    if ((source.transform.position - player.position).sqrMagnitude > ContactDistance * ContactDistance) return;
+                    if (Navigation != null && !Navigation.Clear(player.position, source.transform.position)) return;
+                    ReceiveRaidSkill(damage);
+                })) contactCooldown = Mathf.Max(ContactInterval, RaidBossVisual.AttackDuration);
+            }
+            else
+            {
             contactCooldown = Mathf.Max(.1f, ContactInterval);
+            if (contactAttacker != null) contactAttacker.ShowAttack(player.position);
             bool died = PlayerHealth.Damage(Math.Max(1, touchingDamage - defense));
             if (!died)
                 TriggerRelics(EffectTrigger.OnDamaged, null);
@@ -193,17 +222,12 @@ public class FieldCombatController : MonoBehaviour
                 return;
             }
         }
-        // 살아 있는 고정 대상은 거리나 다른 적의 접근으로 교체하지 않습니다.
-        if (LockedTarget != null)
-        {
-            closest = LockedTarget;
-            if ((closest.transform.position - player.position).sqrMagnitude > Range * Range ||
-                (Navigation != null && !Navigation.Clear(player.position, closest.transform.position)))
-                return;
         }
+        // 매 프레임 사거리 안에서 공격 가능한 가장 가까운 적을 선택합니다.
+        // 쿨다운 중에도 범위를 벗어나면 즉시 이전 타겟을 해제합니다.
+        LockedTarget = closest;
         if (!valid || cooldown > 0 || closest == null)
             return;
-        LockedTarget = closest;
         cooldown = (float)(1 / speed);
         // 여러 적을 맞히는 공격도 몸의 방향/모션은 한 번만 시작합니다.
         AttackStarted?.Invoke(player.position, closest.transform.position);

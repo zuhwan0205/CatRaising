@@ -4,6 +4,7 @@ using System;
 public static class DungeonStageRules
 {
     public const int WaveCount = 3;
+    public static ItemRarity MonsterRarity(int kind) => ItemRarity.Common;
     public static readonly string[] MonsterNames = { "먼지 뭉치", "도둑 생쥐", "털실 슬라임", "깡통 게" };
     public static readonly string[] MonsterArt = { "DustBunnyMonster", "CheeseMouseMonster", "YarnSlimeMonster", "TinCanCrabMonster" };
     public static int KindCount(int stage) => Math.Min(4, 2 + (stage - 1) / 5);

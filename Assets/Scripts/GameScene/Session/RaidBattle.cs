@@ -7,6 +7,7 @@ public sealed class RaidBattle
     public static readonly int[] RequiredLevels = { 5, 10, 20 };
     public static readonly string[] Names = { "거대 먼지 뭉치", "도둑 생쥐 대장", "거대 털실 슬라임" };
     public static readonly string[] ArtworkNames = { "RaidDustBoss", "RaidMouseBoss", "RaidYarnBoss" };
+    public static readonly ItemRarity[] Rarities = { ItemRarity.Epic, ItemRarity.Unique, ItemRarity.Legendary };
     // 테스트 종료 후 false로 바꾸면 원래 레벨 제한을 복구합니다.
     public static bool IgnoreLevelRequirementForTesting { get; set; } = true;
 
