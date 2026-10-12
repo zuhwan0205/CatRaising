@@ -30,6 +30,17 @@ public class FieldEnemy : MonoBehaviour
     }
     private readonly Sprite[] frames = new Sprite[8];
     private Sprite raidArtwork;
+    private RaidBossVisual raidVisual;
+    public bool HasRaidAnimation => raidVisual != null;
+    public bool IsPlayingRaidAttack => raidVisual != null && raidVisual.IsAttacking;
+    public bool ScheduleRaidAttack(Vector3 target, System.Action onImpact)
+    {
+        return raidVisual != null && raidVisual.Attack(target, onImpact);
+    }
+    public void ShowAttack(Vector3 target)
+    {
+        if (raidVisual != null) raidVisual.Attack(target);
+    }
     private float animationTime;
     private Vector3 previousPosition;
 
@@ -83,6 +94,13 @@ public class FieldEnemy : MonoBehaviour
         MoveSpeed = 1.2f;
     }
 
+    public void StrengthenRaidBoss()
+    {
+        ContactDamage = 10 + Kind * 6;
+        Defense = 1 + Kind;
+        MoveSpeed = 1.5f;
+    }
+
     public void SetRaidArtwork(int index)
     {
         if (index < 0 || index >= RaidBattle.ArtworkNames.Length) return;
@@ -98,6 +116,8 @@ public class FieldEnemy : MonoBehaviour
         artwork.sprite = raidArtwork;
         artwork.transform.localScale = Vector3.one;
         artwork.color = color = Color.white;
+        if (raidVisual == null) raidVisual = gameObject.AddComponent<RaidBossVisual>();
+        raidVisual.Build(artwork, index);
     }
 
     public void ApplyIceSlow()
@@ -132,6 +152,7 @@ public class FieldEnemy : MonoBehaviour
         else if (frames[0] != null)
             artwork.sprite = frames[flashRemaining > 0 ? 4 + Mathf.Min(3, (int)((.15f - flashRemaining) / .15f * 4)) : (int)(animationTime * 6) % 4];
         artwork.color = flashRemaining > 0 ? (raidArtwork != null ? new Color(1, .55f, .55f) : Color.white) : slowRemaining > 0 ? Color.Lerp(color, new Color(.35f, .8f, 1), .65f) : color;
+        if (raidVisual != null) raidVisual.Step(delta, moved);
     }
     public bool Hit(double damage)
     {
@@ -142,6 +163,7 @@ public class FieldEnemy : MonoBehaviour
         HealthBarTween.Set(healthBar, (float)(Health.Current / Health.Maximum));
         flashRemaining = .15f;
         artwork.color = Color.white;
+        if (raidVisual != null) raidVisual.Hurt();
         if (killed)
             gameObject.SetActive(false);
         return killed;

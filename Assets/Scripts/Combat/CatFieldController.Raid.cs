@@ -12,12 +12,13 @@ public partial class CatFieldController
     private readonly List<FieldCombatController> raidFighters = new List<FieldCombatController>();
     private readonly List<GameObject> hiddenFieldObjects = new List<GameObject>();
     private Transform previousCameraTarget;
+    private RaidPartyFormation raidParty;
 
     public void BeginRaid(int index, IList<OwnedCharacter> team, BackendUserData data, CatGameCatalog catalog)
     {
         // 기존 편성 검증을 사용하되 전투 계산은 필드 컨트롤러가 담당합니다.
         _ = new RaidBattle(index, data.progress.accountLevel, team, data, catalog);
-        BeginEncounter(index, team, data, catalog, new double[] { 350, 1000, 2500 }[index], 1, true);
+        BeginEncounter(index, team, data, catalog, new double[] { 700, 2000, 5000 }[index], 1, true);
     }
 
     public void BeginDungeon(int stage, IList<OwnedCharacter> team, BackendUserData data, CatGameCatalog catalog)
@@ -61,7 +62,11 @@ public partial class CatFieldController
         RaidBoss = bossObject.AddComponent<FieldEnemy>();
         RaidBoss.Initialize(art, bar, 350);
         RaidBoss.ConfigureRaidBoss(index, health);
-        if (dungeonStage == 0) RaidBoss.SetRaidArtwork(index);
+        if (dungeonStage == 0)
+        {
+            RaidBoss.SetRaidArtwork(index);
+            RaidBoss.StrengthenRaidBoss();
+        }
         var targets = new[] { RaidBoss };
         var targetTransforms = new[] { bossObject.transform };
         if (dungeonStage > 0)
@@ -69,6 +74,27 @@ public partial class CatFieldController
             SetupDungeonWaves(dungeonStage);
             targets = dungeonEnemies.ToArray();
             targetTransforms = dungeonEnemies.ConvertAll(enemy => enemy.transform).ToArray();
+        }
+        else
+        {
+            SetupRaidSkills(index);
+            var all = new List<FieldEnemy> { RaidBoss };
+            all.AddRange(raidAdds);
+            targets = all.ToArray();
+            targetTransforms = all.ConvertAll(enemy => enemy.transform).ToArray();
+        }
+        if (dungeonStage == 0)
+        {
+            var center = new GameObject("Raid Party Center");
+            center.transform.SetParent(raidRoot.transform, false);
+            center.transform.position = FindRaidPosition(new Vector3(0, 0, -4));
+            var partyMovement = center.AddComponent<CatMovementController>();
+            partyMovement.Navigation = Combat.Navigation;
+            partyMovement.SetAutomatic(false);
+            raidParty = center.AddComponent<RaidPartyFormation>();
+            raidParty.Field = this;
+            raidParty.Movement = partyMovement;
+            raidParty.Navigation = Combat.Navigation;
         }
         foreach (var owned in team)
         {
@@ -81,6 +107,7 @@ public partial class CatFieldController
             var cat = new GameObject("Raid Cat " + owned.characterId);
             cat.transform.SetParent(raidRoot.transform, false);
             cat.transform.position = FindRaidPosition(new Vector3((raidFighters.Count - (team.Count - 1) * .5f) * 2, 0, -4));
+            if (raidParty != null) cat.transform.position = raidParty.transform.position;
             var catArt = Billboard("Cat Artwork", cat.transform);
             catArt.localScale = Vector3.one * 1.2f;
             var fallback = new GameObject("Fallback").transform;
@@ -97,7 +124,13 @@ public partial class CatFieldController
             mover.Navigation = Combat.Navigation;
             mover.Targets = targetTransforms;
             mover.Combat = fighter;
-            mover.ManualInputEnabled = false;
+            mover.SetAutomatic(dungeonStage > 0);
+            mover.ManualInputEnabled = dungeonStage == 0;
+            if (raidParty != null)
+            {
+                mover.enabled = false;
+                raidParty.Members.Add(cat.transform);
+            }
             fighter.HealthChanged += (current, maximum) =>
             {
                 HealthBarTween.Set(hp, (float)(current / maximum));
@@ -114,7 +147,7 @@ public partial class CatFieldController
         }
         var follow = fieldCamera.GetComponent<CatCameraFollow>();
         previousCameraTarget = follow.Target;
-        follow.Target = bossObject.transform;
+        follow.Target = raidFighters[0].transform;
         if (dungeonStage > 0)
         {
             var focus = new GameObject("Dungeon Camera Focus").transform;
@@ -167,6 +200,7 @@ public partial class CatFieldController
         {
             bool won = !RaidBoss.Alive && encounterWaves == 1 && RaidSeconds > 0;
             RaidRunning = false;
+            if (skillMarker != null) skillMarker.gameObject.SetActive(false);
             foreach (var fighter in raidFighters)
             {
                 fighter.Blocked = true;
@@ -175,6 +209,10 @@ public partial class CatFieldController
             RaidFinished?.Invoke(won);
             return;
         }
+        TickRaidSkills(living);
+        var cameraTarget = living.Find(fighter => fighter.gameObject.activeSelf);
+        if (cameraTarget != null) fieldCamera.GetComponent<CatCameraFollow>().Target = cameraTarget.transform;
+        if (skillWindup > 0 || RaidBoss.IsPlayingRaidAttack) return;
         var nearest = living[0].transform;
         foreach (var fighter in living)
             if ((fighter.transform.position - RaidBoss.transform.position).sqrMagnitude < (nearest.position - RaidBoss.transform.position).sqrMagnitude)
@@ -191,9 +229,12 @@ public partial class CatFieldController
 
     public void EndRaid()
     {
+        raidAdds.Clear();
+        skillMarker = null;
         activeDungeonStage = 0;
         dungeonEnemies.Clear();
         RaidRunning = false;
+        raidParty = null;
         if (raidRoot != null) { raidRoot.SetActive(false); Destroy(raidRoot); }
         raidRoot = null;
         RaidBoss = null;

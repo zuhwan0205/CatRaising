@@ -171,6 +171,20 @@ public partial class CatFieldController : MonoBehaviour
     }
     public void SetStick(Vector2 value)
     {
+        if (RaidRunning && activeDungeonStage == 0)
+        {
+            if (raidParty != null)
+            {
+                raidParty.Movement.StickInput = visible ? value : Vector2.zero;
+                return;
+            }
+            foreach (var fighter in raidFighters)
+            {
+                if (fighter != null)
+                    fighter.GetComponent<CatMovementController>().StickInput = visible ? value : Vector2.zero;
+            }
+            return;
+        }
         if (movement != null)
             movement.StickInput = visible ? value : Vector2.zero;
     }

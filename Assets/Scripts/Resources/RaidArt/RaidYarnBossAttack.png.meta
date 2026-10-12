@@ -1,0 +1,1523 @@
+fileFormatVersion: 2
+guid: a93473b960fd74243b2b589493c69e79
+TextureImporter:
+  internalIDToNameTable:
+  - first:
+      213: -1748259988066806390
+    second: RaidYarnBossAttack_0
+  - first:
+      213: -7093912167539229921
+    second: RaidYarnBossAttack_1
+  - first:
+      213: -4171609787245756103
+    second: RaidYarnBossAttack_2
+  - first:
+      213: -7115272605915743967
+    second: RaidYarnBossAttack_3
+  - first:
+      213: 6506666068151633074
+    second: RaidYarnBossAttack_4
+  - first:
+      213: -1246641203829658818
+    second: RaidYarnBossAttack_5
+  - first:
+      213: -4997016691625014443
+    second: RaidYarnBossAttack_6
+  - first:
+      213: 6055460280161971303
+    second: RaidYarnBossAttack_7
+  - first:
+      213: 8219508306847887032
+    second: RaidYarnBossAttack_8
+  - first:
+      213: -1595652045484676003
+    second: RaidYarnBossAttack_9
+  - first:
+      213: -8348350627885894549
+    second: RaidYarnBossAttack_10
+  - first:
+      213: -6785454303141668754
+    second: RaidYarnBossAttack_11
+  - first:
+      213: -7008649910068726953
+    second: RaidYarnBossAttack_12
+  - first:
+      213: 9107243655038535810
+    second: RaidYarnBossAttack_13
+  - first:
+      213: 8289112277818568198
+    second: RaidYarnBossAttack_14
+  - first:
+      213: 1189352839920753211
+    second: RaidYarnBossAttack_15
+  - first:
+      213: 3352160927384310486
+    second: RaidYarnBossAttack_16
+  - first:
+      213: 7071408761806537204
+    second: RaidYarnBossAttack_17
+  - first:
+      213: -5271532505495146604
+    second: RaidYarnBossAttack_18
+  - first:
+      213: 873673399272089133
+    second: RaidYarnBossAttack_19
+  - first:
+      213: -3575034540003709116
+    second: RaidYarnBossAttack_20
+  - first:
+      213: 369762715284704761
+    second: RaidYarnBossAttack_21
+  - first:
+      213: 8704993385091896138
+    second: RaidYarnBossAttack_22
+  - first:
+      213: 7114733797804191772
+    second: RaidYarnBossAttack_23
+  - first:
+      213: -1357363686360873966
+    second: RaidYarnBossAttack_24
+  - first:
+      213: 7283775421693470039
+    second: RaidYarnBossAttack_25
+  - first:
+      213: 5775520198508792671
+    second: RaidYarnBossAttack_26
+  - first:
+      213: 1432353032797332038
+    second: RaidYarnBossAttack_27
+  - first:
+      213: 4051557382811711657
+    second: RaidYarnBossAttack_28
+  - first:
+      213: 4190782120243197906
+    second: RaidYarnBossAttack_29
+  - first:
+      213: 6064897861289910655
+    second: RaidYarnBossAttack_30
+  - first:
+      213: 7302148677685558219
+    second: RaidYarnBossAttack_31
+  - first:
+      213: 4432705343704933954
+    second: RaidYarnBossAttack_32
+  - first:
+      213: -3973454426433279801
+    second: RaidYarnBossAttack_33
+  - first:
+      213: -1887419557493279062
+    second: RaidYarnBossAttack_34
+  - first:
+      213: 4098117126220885731
+    second: RaidYarnBossAttack_35
+  - first:
+      213: -6938642694736751866
+    second: RaidYarnBossAttack_36
+  - first:
+      213: 8298712588833132351
+    second: RaidYarnBossAttack_37
+  - first:
+      213: -8119965906076333163
+    second: RaidYarnBossAttack_38
+  - first:
+      213: 4947917762180566074
+    second: RaidYarnBossAttack_39
+  - first:
+      213: -7981601259734082196
+    second: RaidYarnBossAttack_40
+  - first:
+      213: -2535478577897378108
+    second: RaidYarnBossAttack_41
+  - first:
+      213: -284871877808108100
+    second: RaidYarnBossAttack_42
+  - first:
+      213: -958315737620130882
+    second: RaidYarnBossAttack_43
+  - first:
+      213: -6718900942859965374
+    second: RaidYarnBossAttack_44
+  - first:
+      213: -5473496110248678929
+    second: RaidYarnBossAttack_45
+  - first:
+      213: 6236932253734717311
+    second: RaidYarnBossAttack_46
+  - first:
+      213: -7654556335460523133
+    second: RaidYarnBossAttack_47
+  - first:
+      213: 3483343032823467857
+    second: RaidYarnBossAttack_48
+  - first:
+      213: 7495653070676827636
+    second: RaidYarnBossAttack_49
+  - first:
+      213: -2806263478731536587
+    second: RaidYarnBossAttack_50
+  - first:
+      213: 3321360229036639334
+    second: RaidYarnBossAttack_51
+  - first:
+      213: 2678453269749612584
+    second: RaidYarnBossAttack_52
+  externalObjects: {}
+  serializedVersion: 13
+  mipmaps:
+    mipMapMode: 0
+    enableMipMap: 0
+    sRGBTexture: 1
+    linearTexture: 0
+    fadeOut: 0
+    borderMipMap: 0
+    mipMapsPreserveCoverage: 0
+    alphaTestReferenceValue: 0.5
+    mipMapFadeDistanceStart: 1
+    mipMapFadeDistanceEnd: 3
+  bumpmap:
+    convertToNormalMap: 0
+    externalNormalMap: 0
+    heightScale: 0.25
+    normalMapFilter: 0
+    flipGreenChannel: 0
+  isReadable: 0
+  streamingMipmaps: 0
+  streamingMipmapsPriority: 0
+  vTOnly: 0
+  ignoreMipmapLimit: 0
+  grayScaleToAlpha: 0
+  generateCubemap: 6
+  cubemapConvolution: 0
+  seamlessCubemap: 0
+  textureFormat: 1
+  maxTextureSize: 2048
+  textureSettings:
+    serializedVersion: 2
+    filterMode: 0
+    aniso: 1
+    mipBias: 0
+    wrapU: 1
+    wrapV: 1
+    wrapW: 1
+  nPOTScale: 0
+  lightmap: 0
+  compressionQuality: 50
+  spriteMode: 2
+  spriteExtrude: 1
+  spriteMeshType: 1
+  alignment: 0
+  spritePivot: {x: 0.5, y: 0.5}
+  spritePixelsToUnits: 100
+  spriteBorder: {x: 0, y: 0, z: 0, w: 0}
+  spriteGenerateFallbackPhysicsShape: 1
+  alphaUsage: 1
+  alphaIsTransparency: 1
+  spriteTessellationMethod: 0
+  spriteTessellationDetail: -1
+  spriteGeometrySubdivision: -1
+  textureType: 0
+  textureShape: 1
+  singleChannelComponent: 0
+  flipbookRows: 1
+  flipbookColumns: 1
+  maxTextureSizeSet: 0
+  compressionQualitySet: 0
+  textureFormatSet: 0
+  ignorePngGamma: 0
+  applyGammaDecoding: 0
+  swizzle: 50462976
+  cookieLightType: 0
+  platformSettings:
+  - serializedVersion: 4
+    buildTarget: DefaultTexturePlatform
+    maxTextureSize: 2048
+    resizeAlgorithm: 0
+    textureFormat: -1
+    textureCompression: 0
+    compressionQuality: 50
+    crunchedCompression: 0
+    allowsAlphaSplitting: 0
+    overridden: 0
+    ignorePlatformSupport: 0
+    androidETC2FallbackOverride: 0
+    forceMaximumCompressionQuality_BC6H_BC7: 0
+  - serializedVersion: 4
+    buildTarget: Standalone
+    maxTextureSize: 2048
+    resizeAlgorithm: 0
+    textureFormat: -1
+    textureCompression: 1
+    compressionQuality: 50
+    crunchedCompression: 0
+    allowsAlphaSplitting: 0
+    overridden: 0
+    ignorePlatformSupport: 0
+    androidETC2FallbackOverride: 0
+    forceMaximumCompressionQuality_BC6H_BC7: 0
+  - serializedVersion: 4
+    buildTarget: Android
+    maxTextureSize: 2048
+    resizeAlgorithm: 0
+    textureFormat: -1
+    textureCompression: 1
+    compressionQuality: 50
+    crunchedCompression: 0
+    allowsAlphaSplitting: 0
+    overridden: 0
+    ignorePlatformSupport: 0
+    androidETC2FallbackOverride: 0
+    forceMaximumCompressionQuality_BC6H_BC7: 0
+  - serializedVersion: 4
+    buildTarget: iOS
+    maxTextureSize: 2048
+    resizeAlgorithm: 0
+    textureFormat: -1
+    textureCompression: 1
+    compressionQuality: 50
+    crunchedCompression: 0
+    allowsAlphaSplitting: 0
+    overridden: 0
+    ignorePlatformSupport: 0
+    androidETC2FallbackOverride: 0
+    forceMaximumCompressionQuality_BC6H_BC7: 0
+  spriteSheet:
+    serializedVersion: 2
+    sprites:
+    - serializedVersion: 2
+      name: RaidYarnBossAttack_0
+      rect:
+        serializedVersion: 2
+        x: 104
+        y: 471
+        width: 540
+        height: 762
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: a85df34bdceecb7e0800000000000000
+      internalID: -1748259988066806390
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: RaidYarnBossAttack_1
+      rect:
+        serializedVersion: 2
+        x: 611
+        y: 1160
+        width: 97
+        height: 86
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: f1bb002087c5d8d90800000000000000
+      internalID: -7093912167539229921
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: RaidYarnBossAttack_2
+      rect:
+        serializedVersion: 2
+        x: 619
+        y: 1169
+        width: 8
+        height: 11
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 9318ca920077b16c0800000000000000
+      internalID: -4171609787245756103
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: RaidYarnBossAttack_3
+      rect:
+        serializedVersion: 2
+        x: 637
+        y: 537
+        width: 606
+        height: 623
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 129f2546349714d90800000000000000
+      internalID: -7115272605915743967
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: RaidYarnBossAttack_4
+      rect:
+        serializedVersion: 2
+        x: 780
+        y: 1151
+        width: 150
+        height: 103
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 2b40440b0525c4a50800000000000000
+      internalID: 6506666068151633074
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: RaidYarnBossAttack_5
+      rect:
+        serializedVersion: 2
+        x: 924
+        y: 1221
+        width: 16
+        height: 11
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: e3b2e5b1e6a03bee0800000000000000
+      internalID: -1246641203829658818
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: RaidYarnBossAttack_6
+      rect:
+        serializedVersion: 2
+        x: 926
+        y: 1152
+        width: 8
+        height: 6
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 55b4ef65bc707aab0800000000000000
+      internalID: -4997016691625014443
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: RaidYarnBossAttack_7
+      rect:
+        serializedVersion: 2
+        x: 930
+        y: 1162
+        width: 16
+        height: 14
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 76caa86aa01590450800000000000000
+      internalID: 6055460280161971303
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: RaidYarnBossAttack_8
+      rect:
+        serializedVersion: 2
+        x: 940
+        y: 1156
+        width: 70
+        height: 74
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 8be6a0a914f811270800000000000000
+      internalID: 8219508306847887032
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: RaidYarnBossAttack_9
+      rect:
+        serializedVersion: 2
+        x: 967
+        y: 1175
+        width: 7
+        height: 9
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: d5ca2c33bea1bd9e0800000000000000
+      internalID: -1595652045484676003
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: RaidYarnBossAttack_10
+      rect:
+        serializedVersion: 2
+        x: 971
+        y: 1173
+        width: 9
+        height: 11
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: b64b37cd553b42c80800000000000000
+      internalID: -8348350627885894549
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: RaidYarnBossAttack_11
+      rect:
+        serializedVersion: 2
+        x: 1011
+        y: 1179
+        width: 45
+        height: 51
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: e68589d134935d1a0800000000000000
+      internalID: -6785454303141668754
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: RaidYarnBossAttack_12
+      rect:
+        serializedVersion: 2
+        x: 1025
+        y: 1156
+        width: 21
+        height: 26
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 753b74b4a064cbe90800000000000000
+      internalID: -7008649910068726953
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: RaidYarnBossAttack_13
+      rect:
+        serializedVersion: 2
+        x: 1043
+        y: 1171
+        width: 19
+        height: 15
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 288808d1add636e70800000000000000
+      internalID: 9107243655038535810
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: RaidYarnBossAttack_14
+      rect:
+        serializedVersion: 2
+        x: 1047
+        y: 1150
+        width: 88
+        height: 84
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 60e64b6f2b7d80370800000000000000
+      internalID: 8289112277818568198
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: RaidYarnBossAttack_15
+      rect:
+        serializedVersion: 2
+        x: 1135
+        y: 1144
+        width: 26
+        height: 10
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: b3a14104b1e618010800000000000000
+      internalID: 1189352839920753211
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: RaidYarnBossAttack_16
+      rect:
+        serializedVersion: 2
+        x: 0
+        y: 982
+        width: 47
+        height: 144
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 6d29faa5a94458e20800000000000000
+      internalID: 3352160927384310486
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: RaidYarnBossAttack_17
+      rect:
+        serializedVersion: 2
+        x: 40
+        y: 1100
+        width: 70
+        height: 27
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 4f1401d8dc0b22260800000000000000
+      internalID: 7071408761806537204
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: RaidYarnBossAttack_18
+      rect:
+        serializedVersion: 2
+        x: 75
+        y: 1068
+        width: 37
+        height: 23
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 49f6904bd11c7d6b0800000000000000
+      internalID: -5271532505495146604
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: RaidYarnBossAttack_19
+      rect:
+        serializedVersion: 2
+        x: 107
+        y: 1065
+        width: 9
+        height: 7
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: d262255e359ef1c00800000000000000
+      internalID: 873673399272089133
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: RaidYarnBossAttack_20
+      rect:
+        serializedVersion: 2
+        x: 40
+        y: 949
+        width: 60
+        height: 101
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 44fa357f60de26ec0800000000000000
+      internalID: -3575034540003709116
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: RaidYarnBossAttack_21
+      rect:
+        serializedVersion: 2
+        x: 74
+        y: 1048
+        width: 24
+        height: 17
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 9fd8abffa39a12500800000000000000
+      internalID: 369762715284704761
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: RaidYarnBossAttack_22
+      rect:
+        serializedVersion: 2
+        x: 24
+        y: 709
+        width: 74
+        height: 131
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: a43178adc595ec870800000000000000
+      internalID: 8704993385091896138
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: RaidYarnBossAttack_23
+      rect:
+        serializedVersion: 2
+        x: 0
+        y: 610
+        width: 37
+        height: 42
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: c10b59191bc9cb260800000000000000
+      internalID: 7114733797804191772
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: RaidYarnBossAttack_24
+      rect:
+        serializedVersion: 2
+        x: 38
+        y: 582
+        width: 62
+        height: 95
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 214027b3beca92de0800000000000000
+      internalID: -1357363686360873966
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: RaidYarnBossAttack_25
+      rect:
+        serializedVersion: 2
+        x: 86
+        y: 639
+        width: 8
+        height: 10
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 755a2c9a72b251560800000000000000
+      internalID: 7283775421693470039
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: RaidYarnBossAttack_26
+      rect:
+        serializedVersion: 2
+        x: 88
+        y: 626
+        width: 10
+        height: 15
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: f5bc5314505c62050800000000000000
+      internalID: 5775520198508792671
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: RaidYarnBossAttack_27
+      rect:
+        serializedVersion: 2
+        x: 102
+        y: 628
+        width: 8
+        height: 9
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 642a6d09e7db0e310800000000000000
+      internalID: 1432353032797332038
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: RaidYarnBossAttack_28
+      rect:
+        serializedVersion: 2
+        x: 68
+        y: 616
+        width: 7
+        height: 9
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 9a87a9d39f50a3830800000000000000
+      internalID: 4051557382811711657
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: RaidYarnBossAttack_29
+      rect:
+        serializedVersion: 2
+        x: 70
+        y: 609
+        width: 11
+        height: 13
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 2d777287226a82a30800000000000000
+      internalID: 4190782120243197906
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: RaidYarnBossAttack_30
+      rect:
+        serializedVersion: 2
+        x: 80
+        y: 608
+        width: 18
+        height: 15
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: f71263db878da2450800000000000000
+      internalID: 6064897861289910655
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: RaidYarnBossAttack_31
+      rect:
+        serializedVersion: 2
+        x: 80
+        y: 610
+        width: 7
+        height: 9
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: bcb398ea881765560800000000000000
+      internalID: 7302148677685558219
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: RaidYarnBossAttack_32
+      rect:
+        serializedVersion: 2
+        x: 72
+        y: 586
+        width: 36
+        height: 19
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 246228d4602248d30800000000000000
+      internalID: 4432705343704933954
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: RaidYarnBossAttack_33
+      rect:
+        serializedVersion: 2
+        x: 86
+        y: 554
+        width: 14
+        height: 20
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 7c8ad3d50447bd8c0800000000000000
+      internalID: -3973454426433279801
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: RaidYarnBossAttack_34
+      rect:
+        serializedVersion: 2
+        x: 721
+        y: 570
+        width: 20
+        height: 10
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: aa6fc7599e98ec5e0800000000000000
+      internalID: -1887419557493279062
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: RaidYarnBossAttack_35
+      rect:
+        serializedVersion: 2
+        x: 747
+        y: 552
+        width: 26
+        height: 31
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 3ee275440df6fd830800000000000000
+      internalID: 4098117126220885731
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: RaidYarnBossAttack_36
+      rect:
+        serializedVersion: 2
+        x: 0
+        y: 514
+        width: 51
+        height: 35
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 6035bdc4b3df4bf90800000000000000
+      internalID: -6938642694736751866
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: RaidYarnBossAttack_37
+      rect:
+        serializedVersion: 2
+        x: 56
+        y: 529
+        width: 42
+        height: 28
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: f3f067e8123fa2370800000000000000
+      internalID: 8298712588833132351
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: RaidYarnBossAttack_38
+      rect:
+        serializedVersion: 2
+        x: 257
+        y: 548
+        width: 7
+        height: 6
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 59b8904a706105f80800000000000000
+      internalID: -8119965906076333163
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: RaidYarnBossAttack_39
+      rect:
+        serializedVersion: 2
+        x: 669
+        y: 536
+        width: 15
+        height: 20
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: a3c4e905df88aa440800000000000000
+      internalID: 4947917762180566074
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: RaidYarnBossAttack_40
+      rect:
+        serializedVersion: 2
+        x: 679
+        y: 533
+        width: 13
+        height: 22
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: c6d5dbe41f7ab3190800000000000000
+      internalID: -7981601259734082196
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: RaidYarnBossAttack_41
+      rect:
+        serializedVersion: 2
+        x: 713
+        y: 546
+        width: 19
+        height: 23
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 4ce60dcbaab20dcd0800000000000000
+      internalID: -2535478577897378108
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: RaidYarnBossAttack_42
+      rect:
+        serializedVersion: 2
+        x: 36
+        y: 503
+        width: 13
+        height: 22
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: cbdcfb4598eeb0cf0800000000000000
+      internalID: -284871877808108100
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: RaidYarnBossAttack_43
+      rect:
+        serializedVersion: 2
+        x: 54
+        y: 505
+        width: 11
+        height: 19
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: eb35c7cf9e063b2f0800000000000000
+      internalID: -958315737620130882
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: RaidYarnBossAttack_44
+      rect:
+        serializedVersion: 2
+        x: 657
+        y: 0
+        width: 580
+        height: 527
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 24c6bc3d03ba1c2a0800000000000000
+      internalID: -6718900942859965374
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: RaidYarnBossAttack_45
+      rect:
+        serializedVersion: 2
+        x: 1091
+        y: 519
+        width: 23
+        height: 22
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: fe9252d994c3a04b0800000000000000
+      internalID: -5473496110248678929
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: RaidYarnBossAttack_46
+      rect:
+        serializedVersion: 2
+        x: 40
+        y: 479
+        width: 39
+        height: 25
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: f77c80017d80e8650800000000000000
+      internalID: 6236932253734717311
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: RaidYarnBossAttack_47
+      rect:
+        serializedVersion: 2
+        x: 88
+        y: 489
+        width: 10
+        height: 9
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 383e8a7819d85c590800000000000000
+      internalID: -7654556335460523133
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: RaidYarnBossAttack_48
+      rect:
+        serializedVersion: 2
+        x: 116
+        y: 496
+        width: 14
+        height: 12
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 15f46466802575030800000000000000
+      internalID: 3483343032823467857
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: RaidYarnBossAttack_49
+      rect:
+        serializedVersion: 2
+        x: 0
+        y: 0
+        width: 694
+        height: 477
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 4fd124d01c8e50860800000000000000
+      internalID: 7495653070676827636
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: RaidYarnBossAttack_50
+      rect:
+        serializedVersion: 2
+        x: 36
+        y: 472
+        width: 23
+        height: 11
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 5370e0cfb362e09d0800000000000000
+      internalID: -2806263478731536587
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: RaidYarnBossAttack_51
+      rect:
+        serializedVersion: 2
+        x: 705
+        y: 73
+        width: 36
+        height: 28
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 664c6dee787d71e20800000000000000
+      internalID: 3321360229036639334
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: RaidYarnBossAttack_52
+      rect:
+        serializedVersion: 2
+        x: 1061
+        y: 55
+        width: 7
+        height: 9
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 820c8eace07cb2520800000000000000
+      internalID: 2678453269749612584
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    outline: []
+    customData: 
+    physicsShape: []
+    bones: []
+    spriteID: 
+    internalID: 0
+    vertices: []
+    indices: 
+    edges: []
+    weights: []
+    secondaryTextures: []
+    spriteCustomMetadata:
+      entries: []
+    nameFileIdTable:
+      RaidYarnBossAttack_0: -1748259988066806390
+      RaidYarnBossAttack_1: -7093912167539229921
+      RaidYarnBossAttack_10: -8348350627885894549
+      RaidYarnBossAttack_11: -6785454303141668754
+      RaidYarnBossAttack_12: -7008649910068726953
+      RaidYarnBossAttack_13: 9107243655038535810
+      RaidYarnBossAttack_14: 8289112277818568198
+      RaidYarnBossAttack_15: 1189352839920753211
+      RaidYarnBossAttack_16: 3352160927384310486
+      RaidYarnBossAttack_17: 7071408761806537204
+      RaidYarnBossAttack_18: -5271532505495146604
+      RaidYarnBossAttack_19: 873673399272089133
+      RaidYarnBossAttack_2: -4171609787245756103
+      RaidYarnBossAttack_20: -3575034540003709116
+      RaidYarnBossAttack_21: 369762715284704761
+      RaidYarnBossAttack_22: 8704993385091896138
+      RaidYarnBossAttack_23: 7114733797804191772
+      RaidYarnBossAttack_24: -1357363686360873966
+      RaidYarnBossAttack_25: 7283775421693470039
+      RaidYarnBossAttack_26: 5775520198508792671
+      RaidYarnBossAttack_27: 1432353032797332038
+      RaidYarnBossAttack_28: 4051557382811711657
+      RaidYarnBossAttack_29: 4190782120243197906
+      RaidYarnBossAttack_3: -7115272605915743967
+      RaidYarnBossAttack_30: 6064897861289910655
+      RaidYarnBossAttack_31: 7302148677685558219
+      RaidYarnBossAttack_32: 4432705343704933954
+      RaidYarnBossAttack_33: -3973454426433279801
+      RaidYarnBossAttack_34: -1887419557493279062
+      RaidYarnBossAttack_35: 4098117126220885731
+      RaidYarnBossAttack_36: -6938642694736751866
+      RaidYarnBossAttack_37: 8298712588833132351
+      RaidYarnBossAttack_38: -8119965906076333163
+      RaidYarnBossAttack_39: 4947917762180566074
+      RaidYarnBossAttack_4: 6506666068151633074
+      RaidYarnBossAttack_40: -7981601259734082196
+      RaidYarnBossAttack_41: -2535478577897378108
+      RaidYarnBossAttack_42: -284871877808108100
+      RaidYarnBossAttack_43: -958315737620130882
+      RaidYarnBossAttack_44: -6718900942859965374
+      RaidYarnBossAttack_45: -5473496110248678929
+      RaidYarnBossAttack_46: 6236932253734717311
+      RaidYarnBossAttack_47: -7654556335460523133
+      RaidYarnBossAttack_48: 3483343032823467857
+      RaidYarnBossAttack_49: 7495653070676827636
+      RaidYarnBossAttack_5: -1246641203829658818
+      RaidYarnBossAttack_50: -2806263478731536587
+      RaidYarnBossAttack_51: 3321360229036639334
+      RaidYarnBossAttack_52: 2678453269749612584
+      RaidYarnBossAttack_6: -4997016691625014443
+      RaidYarnBossAttack_7: 6055460280161971303
+      RaidYarnBossAttack_8: 8219508306847887032
+      RaidYarnBossAttack_9: -1595652045484676003
+  mipmapLimitGroupName: 
+  pSDRemoveMatte: 0
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 

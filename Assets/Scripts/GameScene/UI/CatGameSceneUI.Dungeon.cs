@@ -75,7 +75,7 @@ public partial class CatGameSceneUI
         for (int i = 0; i < kinds; i++)
         {
             float left = .03f + i * .94f / kinds;
-            var portrait = Panel(monsters, "Monster " + i, new Vector2(left, .40f), new Vector2(left + .88f / kinds, .94f), cream);
+            var portrait = Panel(monsters, "Monster " + i, new Vector2(left, .40f), new Vector2(left + .88f / kinds, .94f), CharacterRarityColor(DungeonStageRules.MonsterRarity(i)));
             var texture = Resources.Load<Texture2D>("MonsterArt/" + DungeonStageRules.MonsterArt[i]);
             if (texture != null)
             {
@@ -96,7 +96,8 @@ public partial class CatGameSceneUI
             int slot = i;
             var owned = dungeonSlots[i];
             if (owned != null && !data.characters.Contains(owned)) dungeonSlots[i] = owned = null;
-            var card = Panel(cats, "Cat Slot " + i, new Vector2(.06f + i * .47f, .25f), new Vector2(.47f + i * .47f, .94f), cream);
+            var definition = owned == null ? null : catalog.FindCharacter(owned.characterId);
+            var card = Panel(cats, "Cat Slot " + i, new Vector2(.06f + i * .47f, .25f), new Vector2(.47f + i * .47f, .94f), owned == null ? cream : CharacterRarityColor(definition == null ? ItemRarity.Common : definition.rarity));
             var button = card.gameObject.AddComponent<Button>();
             button.targetGraphic = card.GetComponent<Image>();
             button.onClick.AddListener(() => { if (!saving) DungeonCatPicker(slot); });
