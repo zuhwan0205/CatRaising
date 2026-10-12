@@ -7,6 +7,18 @@ public partial class CatGameSceneUI
     public event Action<string> CharacterPurchaseRequested;
     public event Action RelicDrawRequested;
     public event Action CharacterDrawRequested;
+    public event Action CrystalAdRequested;
+    private UnityEngine.UI.Button crystalAdButton;
+    private UnityEngine.UI.Text crystalAdLabel;
+    public bool PendingAdSave { get; set; }
+
+    private void RefreshCrystalAdButton()
+    {
+        if (crystalAdButton == null) return;
+        int remaining = CrystalAdRewards.Remaining(data.wallet);
+        crystalAdButton.interactable = !saving && (PendingAdSave || remaining > 0);
+        crystalAdLabel.text = PendingAdSave ? "보상 저장 재시도" : $"광고 보고 크리스탈 +10 · {remaining}/5회 남음";
+    }
     private string lastCharacterDrawResult = "캐릭터를 뽑으면 결과가 여기에 표시됩니다.";
     private string lastDrawResult = "유물을 뽑으면 결과가 여기에 표시됩니다.";
     private UnityEngine.UI.Text lastDrawLabel;
@@ -14,7 +26,10 @@ public partial class CatGameSceneUI
 
     private void Shop()
     {
-        var grid = Grid(characterShop ? "캐릭터 상점" : "유물 뽑기", .34f);
+        var grid = Grid("", .34f);
+        crystalAdButton = Button(page, "", new Vector2(0, .90f), Vector2.one, () => CrystalAdRequested?.Invoke());
+        crystalAdLabel = crystalAdButton.GetComponentInChildren<UnityEngine.UI.Text>();
+        RefreshCrystalAdButton();
         if (characterShop)
         {
             var layout = grid.GetComponent<UnityEngine.UI.GridLayoutGroup>();

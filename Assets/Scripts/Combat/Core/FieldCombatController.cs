@@ -26,6 +26,7 @@ public class FieldCombatController : MonoBehaviour
     private float deathRemaining;
     private double defense;
     public bool Blocked;
+    public bool RaidMode;
     public FieldNavigation Navigation
     {
         get; set;
@@ -81,6 +82,7 @@ public class FieldCombatController : MonoBehaviour
         killsThisFrame = 0;
         if (PlayerHealth.Dead)
         {
+            if (RaidMode) return;
             LockedTarget = null;
             deathRemaining -= delta;
             if (deathRemaining <= 0)
@@ -108,7 +110,7 @@ public class FieldCombatController : MonoBehaviour
             return;
         }
         int previousCount = TargetMonsterCount;
-        SurvivalSeconds += delta;
+        if (!RaidMode) SurvivalSeconds += delta;
         if (TargetMonsterCount > previousCount)
             for (int i = previousCount; i < Math.Min(enemies.Length, TargetMonsterCount); i++)
             {
@@ -127,13 +129,14 @@ public class FieldCombatController : MonoBehaviour
         double touchingDamage = 0;
         FieldEnemy closest = null;
         float nearest = Range * Range;
-        for (int enemyIndex = 0; enemyIndex < Math.Min(enemies.Length, TargetMonsterCount); enemyIndex++)
+        for (int enemyIndex = 0; enemyIndex < (RaidMode ? enemies.Length : Math.Min(enemies.Length, TargetMonsterCount)); enemyIndex++)
         {
             var enemy = enemies[enemyIndex];
-            if (enemy == null || enemy.Kind >= UnlockedMonsterKinds)
+            if (enemy == null || (!RaidMode && enemy.Kind >= UnlockedMonsterKinds))
                 continue;
             if (!enemy.Alive)
             {
+                if (RaidMode) continue;
                 enemy.RespawnRemaining -= delta;
                 if (enemy.RespawnRemaining <= 0)
                     enemy.Respawn(SpawnPosition());
@@ -142,7 +145,7 @@ public class FieldCombatController : MonoBehaviour
             Vector3 toward = player.position - enemy.transform.position;
             toward.y = 0;
             float distance = toward.magnitude;
-            if (distance > .9f)
+            if (!RaidMode && distance > .9f)
             {
                 Vector3 start = enemy.transform.position;
                 Vector3 goal = Navigation == null ? player.position : Navigation.Waypoint(start, player.position);
@@ -151,7 +154,7 @@ public class FieldCombatController : MonoBehaviour
                 Vector3 step = direction.normalized * Mathf.Min(enemy.MoveSpeed * enemy.MovementMultiplier * delta, Mathf.Min(direction.magnitude, distance - .9f));
                 enemy.transform.position = Navigation == null ? start + step : Navigation.Move(start, step);
             }
-            enemy.StepVisual(delta);
+            if (!RaidMode) enemy.StepVisual(delta);
             float sqr = (enemy.transform.position - player.position).sqrMagnitude;
             bool clear = Navigation == null || Navigation.Clear(player.position, enemy.transform.position);
             if (clear && sqr <= ContactDistance * ContactDistance)
@@ -175,6 +178,11 @@ public class FieldCombatController : MonoBehaviour
             HealthChanged?.Invoke(PlayerHealth.Current, PlayerHealth.Maximum);
             if (died)
             {
+                if (RaidMode)
+                {
+                    LockedTarget = null;
+                    return;
+                }
                 SurvivalSeconds = 0;
                 foreach (var enemy in enemies)
                     if (enemy != null)

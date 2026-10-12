@@ -19,9 +19,11 @@ public static class CatArtworkImport
         if (EditorApplication.isPlayingOrWillChangePlaymode) return;
         ImportTexture("Assets/Scripts/Content/Resources/CatStarterIsometric.png");
         ImportTexture("Assets/Scripts/Content/Resources/CatCombatFrames.png");
+        foreach (string name in RaidBattle.ArtworkNames)
+            ImportTexture("Assets/Scripts/Resources/RaidArt/" + name + ".png", true);
     }
 
-    private static void ImportTexture(string Path)
+    private static void ImportTexture(string Path, bool pixelArt = false)
     {
         if (!System.IO.File.Exists(Path)) return;
         if (AssetDatabase.LoadAssetAtPath<Texture2D>(Path) == null)
@@ -34,7 +36,8 @@ public static class CatArtworkImport
         }
         bool changed = importer.textureType != TextureImporterType.Default ||
             importer.npotScale != TextureImporterNPOTScale.None || !importer.alphaIsTransparency ||
-            importer.mipmapEnabled || importer.textureCompression != TextureImporterCompression.Uncompressed;
+            importer.mipmapEnabled || importer.textureCompression != TextureImporterCompression.Uncompressed ||
+            (pixelArt && importer.filterMode != FilterMode.Point);
         if (changed)
         {
             importer.textureType = TextureImporterType.Default;
@@ -42,6 +45,7 @@ public static class CatArtworkImport
             importer.alphaIsTransparency = true;
             importer.mipmapEnabled = false;
             importer.textureCompression = TextureImporterCompression.Uncompressed;
+            if (pixelArt) importer.filterMode = FilterMode.Point;
             importer.SaveAndReimport();
         }
         if (AssetDatabase.LoadAssetAtPath<Texture2D>(Path) == null)

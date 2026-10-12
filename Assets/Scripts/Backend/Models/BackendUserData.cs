@@ -33,6 +33,7 @@ public class BackendUserData
 [Serializable]
 public class PlayerProgress
 {
+    public int dungeonClearedStage;
     public int accountLevel = 1;
     public long accountExperience;
     public int currentStage = 1;
@@ -51,6 +52,9 @@ public class ItemAmount
 [Serializable]
 public class PlayerWallet
 {
+    // UTC 기준 일일 광고 보상 기록. 기존 wallet JSON 안에 함께 저장합니다.
+    public string crystalAdDay = "";
+    public int crystalAdCount;
     public long gold;
     public long gems;
     public List<ItemAmount> materials = new List<ItemAmount>();

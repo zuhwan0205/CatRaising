@@ -4,6 +4,28 @@ using System.Threading.Tasks;
 // UI/SDK에 독립적인 비동기 저장 기능입니다. 전송 중 씬이 닫혀도 완료 결과를 처리합니다.
 public class CatGameSession
 {
+    public async Task CompleteDungeonAsync(int stage)
+    {
+        if (IsSaving || HasPendingReward || stage < 1 || stage > 15 || stage != data.progress.dungeonClearedStage + 1) return;
+        data.progress.dungeonClearedStage = stage;
+        HasPendingReward = true;
+        await SaveAsync();
+    }
+    public async Task GrantCrystalAdRewardAsync()
+    {
+        if (IsSaving || HasPendingReward || CrystalAdRewards.Remaining(data.wallet) == 0)
+            return;
+        if (data.wallet.gems > long.MaxValue - CrystalAdRewards.Amount)
+            return;
+        string today = CrystalAdRewards.Today;
+        if (data.wallet.crystalAdDay != today)
+            data.wallet.crystalAdCount = 0;
+        data.wallet.crystalAdDay = today;
+        data.wallet.crystalAdCount++;
+        data.wallet.gems += CrystalAdRewards.Amount;
+        HasPendingReward = true;
+        await SaveAsync();
+    }
     private readonly BackendUserData data;
     private readonly bool preview;
     private readonly Func<Task<bool>> saveData;

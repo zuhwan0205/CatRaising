@@ -12,11 +12,59 @@ public class CatGameScene : MonoBehaviour
     private CatGameSceneUI view;
     private CatGameSession session;
     private CatFieldController field;
+    private bool watchingAd;
+    private bool inRaid;
+    private bool sessionBlocked;
+
+    private void SetSessionBlocked(bool blocked)
+    {
+        sessionBlocked = blocked;
+        if (field != null) field.SetGameplayBlocked(blocked || inRaid || watchingAd);
+    }
+
+    private void SetRaidActive(bool active)
+    {
+        if (!active && field != null) field.EndRaid();
+        inRaid = active;
+        if (field != null) field.SetGameplayBlocked(active || sessionBlocked || watchingAd);
+    }
+    private void BeginFieldRaid(int index, System.Collections.Generic.IList<OwnedCharacter> team)
+    {
+        dungeonStage = 0;
+        SetRaidActive(true);
+        try { field.BeginRaid(index, team, activeData, catalog); }
+        catch { SetRaidActive(false); throw; }
+    }
+    private BackendUserData activeData;
+    private int dungeonStage;
+    private void BeginFieldDungeon(int stage, System.Collections.Generic.IList<OwnedCharacter> team)
+    {
+        if (session.IsSaving || session.HasPendingReward)
+            throw new System.ArgumentException("진행 저장을 먼저 완료해주세요. 상점에서 저장을 재시도할 수 있습니다.");
+        SetRaidActive(true);
+        try
+        {
+            field.BeginDungeon(stage, team, activeData, catalog);
+            dungeonStage = stage;
+        }
+        catch { SetRaidActive(false); throw; }
+    }
+
+    private async void OnEncounterFinished(bool won)
+    {
+        if (won && dungeonStage > 0) await session.CompleteDungeonAsync(dungeonStage);
+        if (view == null) return;
+        view.ShowRaidResult(won);
+        view.PendingAdSave = session.HasPendingReward;
+        if (session.HasPendingReward) view.ShowStatus("진행 저장 실패 · 상점의 보상 저장 재시도를 눌러주세요.");
+    }
 
     private void Start()
     {
         bool preview = BackendGameData.userData == null;
         var data = preview ? BackendUserData.CreateNew() : BackendGameData.userData;
+        adWallet = data.wallet;
+        activeData = data;
         // 씬 단독 미리보기에서만 테스트 보유 목록을 구성합니다.
         if (preview && previewSampleContent)
         {
@@ -47,9 +95,15 @@ public class CatGameScene : MonoBehaviour
         view.CharacterPurchaseRequested += BuyCharacter;
         view.RelicDrawRequested += DrawRelic;
         view.CharacterDrawRequested += DrawCharacter;
+        view.CrystalAdRequested += WatchCrystalAd;
         session.BusyChanged += view.SetBusy;
         session.StatusChanged += view.ShowStatus;
-        session.GameplayBlockedChanged += field.SetGameplayBlocked;
+        session.GameplayBlockedChanged += SetSessionBlocked;
+        view.RaidActiveChanged += SetRaidActive;
+        view.RaidRequested += BeginFieldRaid;
+        view.RaidField = field;
+        field.RaidFinished += OnEncounterFinished;
+        view.DungeonRequested += BeginFieldDungeon;
         field.Combat.GoldEarned += AwardGold;
         field.Combat.MessageChanged += view.ShowCombatMessage;
         field.Combat.RelicMessageChanged += view.ShowRelicMessage;
@@ -63,6 +117,47 @@ public class CatGameScene : MonoBehaviour
         await request;
         if(view != null && !session.HasPendingReward) view.PlayGoldReward();
     }
+    private async void WatchCrystalAd()
+    {
+        if (watchingAd || session.IsSaving) return;
+        watchingAd = true;
+        view.SetBusy(true);
+        field.SetGameplayBlocked(true);
+        try
+        {
+            if (session.HasPendingReward)
+                await session.SaveAsync();
+            else if (CrystalAdRewards.Remaining(adWallet) > 0)
+            {
+                view.ShowStatus("테스트 광고를 불러오는 중…");
+                if (await CrystalRewardedAd.ShowAsync())
+                {
+                    await session.GrantCrystalAdRewardAsync();
+                    if (view != null && !session.HasPendingReward)
+                        view.ShowStatus("크리스탈 10개를 받았습니다!");
+                }
+                else if (view != null)
+                    view.ShowStatus("시청을 완료하지 않아 보상이 지급되지 않았습니다.");
+            }
+        }
+        catch (System.Exception exception)
+        {
+            if (view != null) view.ShowStatus(exception.Message);
+        }
+        finally
+        {
+            watchingAd = false;
+            if (view != null)
+            {
+                view.PendingAdSave = session.HasPendingReward;
+                view.RefreshWallet();
+                view.SetBusy(false);
+                if (session.HasPendingReward) view.ShowStatus("저장 실패 · 상점의 보상 저장 재시도를 눌러주세요.");
+            }
+            if (field != null) field.SetGameplayBlocked(session.HasPendingReward);
+        }
+    }
+    private PlayerWallet adWallet;
     private async void SelectCharacter(OwnedCharacter character)
     {
         await session.SelectCharacterAsync(character);
@@ -139,12 +234,17 @@ public class CatGameScene : MonoBehaviour
             view.CharacterPurchaseRequested -= BuyCharacter;
             view.RelicDrawRequested -= DrawRelic;
             view.CharacterDrawRequested -= DrawCharacter;
+            view.CrystalAdRequested -= WatchCrystalAd;
+            view.RaidActiveChanged -= SetRaidActive;
+            view.RaidRequested -= BeginFieldRaid;
+            view.DungeonRequested -= BeginFieldDungeon;
+            if (field != null) field.RaidFinished -= OnEncounterFinished;
             if (session != null)
             {
                 session.BusyChanged -= view.SetBusy;
                 session.StatusChanged -= view.ShowStatus;
                 if (field != null)
-                    session.GameplayBlockedChanged -= field.SetGameplayBlocked;
+                    session.GameplayBlockedChanged -= SetSessionBlocked;
 
             }
         }
