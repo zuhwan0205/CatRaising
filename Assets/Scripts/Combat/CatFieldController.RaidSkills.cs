@@ -92,10 +92,10 @@ public partial class CatFieldController
             }
             if (nearest == null || distance <= .8f) continue;
             Vector3 start = enemy.transform.position;
-            Vector3 goal = Combat.Navigation == null ? nearest.position : Combat.Navigation.Waypoint(start, nearest.position);
+            Vector3 goal = EncounterNavigation == null ? nearest.position : EncounterNavigation.Waypoint(start, nearest.position);
             Vector3 offset = goal - start;
             Vector3 step = offset.normalized * Mathf.Min(offset.magnitude, enemy.MoveSpeed * enemy.MovementMultiplier * delta);
-            enemy.transform.position = Combat.Navigation == null ? start + step : Combat.Navigation.Move(start, step);
+            enemy.transform.position = EncounterNavigation == null ? start + step : EncounterNavigation.Move(start, step);
         }
         if (skillWindup > 0)
         {
@@ -112,7 +112,7 @@ public partial class CatFieldController
                     if (fighter == null || !fighter.gameObject.activeSelf) continue;
                     Vector3 offset = fighter.transform.position - skillCenter;
                     offset.y = 0;
-                    if (offset.sqrMagnitude <= skillRadius * skillRadius) fighter.ReceiveRaidSkill(16 + skillKind * 8);
+                    if (offset.sqrMagnitude <= skillRadius * skillRadius) fighter.ReceiveRaidSkill(24 + skillKind * 12);
                 }
                 foreach (var fill in skillFill) fill.color = new Color(1, .5f, .1f, .55f);
             });

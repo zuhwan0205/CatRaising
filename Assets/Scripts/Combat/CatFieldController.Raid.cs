@@ -13,12 +13,36 @@ public partial class CatFieldController
     private readonly List<GameObject> hiddenFieldObjects = new List<GameObject>();
     private Transform previousCameraTarget;
     private RaidPartyFormation raidParty;
+    private FieldNavigation raidNavigation;
+    private readonly Dictionary<SpriteRenderer, Color> mapColors = new Dictionary<SpriteRenderer, Color>();
+    private Color normalMapBackground;
+
+    private void CaptureMapColors()
+    {
+        mapColors.Clear();
+        // 캐릭터와 몬스터 생성 전 지형과 장식만 기록합니다.
+        foreach (var sprite in field.GetComponentsInChildren<SpriteRenderer>(true))
+            mapColors.Add(sprite, sprite.color);
+        normalMapBackground = fieldCamera.backgroundColor;
+    }
+
+    private void SetDungeonMapColors(bool autumn, int clearedStage = 0)
+    {
+        // 저장된 보스 스테이지 클리어 진행으로 결정해 재입장 시 색이 누적되지 않게 합니다.
+        float brightness = 1f - Mathf.Clamp(clearedStage / 5, 0, 3) * .12f;
+        var tint = new Color(brightness, .72f * brightness, .40f * brightness, 1f);
+        foreach (var entry in mapColors)
+            if (entry.Key != null) entry.Key.color = autumn ? entry.Value * tint : entry.Value;
+        if (fieldCamera != null)
+            fieldCamera.backgroundColor = autumn ? new Color(.34f * brightness, .25f * brightness, .15f * brightness) : normalMapBackground;
+    }
+    private FieldNavigation EncounterNavigation => raidNavigation ?? Combat.Navigation;
 
     public void BeginRaid(int index, IList<OwnedCharacter> team, BackendUserData data, CatGameCatalog catalog)
     {
         // 기존 편성 검증을 사용하되 전투 계산은 필드 컨트롤러가 담당합니다.
         _ = new RaidBattle(index, data.progress.accountLevel, team, data, catalog);
-        BeginEncounter(index, team, data, catalog, new double[] { 700, 2000, 5000 }[index], 1, true);
+        BeginEncounter(index, team, data, catalog, new double[] { 1000, 3000, 7500 }[index], 1, true);
     }
 
     public void BeginDungeon(int stage, IList<OwnedCharacter> team, BackendUserData data, CatGameCatalog catalog)
@@ -39,6 +63,8 @@ public partial class CatFieldController
     private void BeginEncounter(int index, IList<OwnedCharacter> team, BackendUserData data, CatGameCatalog catalog, double health, int waves, bool largeBoss, int dungeonStage = 0)
     {
         EndRaid();
+        SetDungeonMapColors(dungeonStage > 0, data.progress.dungeonClearedStage);
+        if (dungeonStage == 0) raidNavigation = Combat.Navigation?.CreateRaidNavigation();
         encounterWaves = waves;
         encounterKind = index;
         encounterHealth = health;
@@ -89,12 +115,12 @@ public partial class CatFieldController
             center.transform.SetParent(raidRoot.transform, false);
             center.transform.position = FindRaidPosition(new Vector3(0, 0, -4));
             var partyMovement = center.AddComponent<CatMovementController>();
-            partyMovement.Navigation = Combat.Navigation;
+            partyMovement.Navigation = EncounterNavigation;
             partyMovement.SetAutomatic(false);
             raidParty = center.AddComponent<RaidPartyFormation>();
             raidParty.Field = this;
             raidParty.Movement = partyMovement;
-            raidParty.Navigation = Combat.Navigation;
+            raidParty.Navigation = EncounterNavigation;
         }
         foreach (var owned in team)
         {
@@ -118,10 +144,10 @@ public partial class CatFieldController
             var hp = BillboardHealth(catArt);
             var fighter = cat.AddComponent<FieldCombatController>();
             fighter.RaidMode = true;
-            fighter.Navigation = Combat.Navigation;
+            fighter.Navigation = EncounterNavigation;
             fighter.Initialize(cat.transform, targets, actorData, catalog);
             var mover = cat.AddComponent<CatMovementController>();
-            mover.Navigation = Combat.Navigation;
+            mover.Navigation = EncounterNavigation;
             mover.Targets = targetTransforms;
             mover.Combat = fighter;
             mover.SetAutomatic(dungeonStage > 0);
@@ -172,13 +198,13 @@ public partial class CatFieldController
 
     private Vector3 FindRaidPosition(Vector3 desired)
     {
-        if (Combat.Navigation == null || Combat.Navigation.IsFree(desired)) return desired;
+        if (EncounterNavigation == null || EncounterNavigation.IsFree(desired)) return desired;
         for (int radius = 1; radius < 18; radius++)
             for (int step = 0; step < 16; step++)
             {
                 float angle = step * Mathf.PI / 8;
                 var point = desired + new Vector3(Mathf.Cos(angle), 0, Mathf.Sin(angle)) * radius;
-                if (Mathf.Abs(point.x) < 17 && Mathf.Abs(point.z) < 17 && Combat.Navigation.IsFree(point)) return point;
+                if (Mathf.Abs(point.x) < 17 && Mathf.Abs(point.z) < 17 && EncounterNavigation.IsFree(point)) return point;
             }
         return Vector3.zero;
     }
@@ -218,17 +244,19 @@ public partial class CatFieldController
             if ((fighter.transform.position - RaidBoss.transform.position).sqrMagnitude < (nearest.position - RaidBoss.transform.position).sqrMagnitude)
                 nearest = fighter.transform;
         Vector3 start = RaidBoss.transform.position;
-        Vector3 goal = Combat.Navigation == null ? nearest.position : Combat.Navigation.Waypoint(start, nearest.position);
+        Vector3 goal = EncounterNavigation == null ? nearest.position : EncounterNavigation.Waypoint(start, nearest.position);
         Vector3 offset = goal - start;
         if ((nearest.position - start).sqrMagnitude > .8f)
         {
             Vector3 step = offset.normalized * Mathf.Min(offset.magnitude, RaidBoss.MoveSpeed * RaidBoss.MovementMultiplier * Time.deltaTime);
-            RaidBoss.transform.position = Combat.Navigation == null ? start + step : Combat.Navigation.Move(start, step);
+            RaidBoss.transform.position = EncounterNavigation == null ? start + step : EncounterNavigation.Move(start, step);
         }
     }
 
     public void EndRaid()
     {
+        SetDungeonMapColors(false);
+        raidNavigation = null;
         raidAdds.Clear();
         skillMarker = null;
         activeDungeonStage = 0;

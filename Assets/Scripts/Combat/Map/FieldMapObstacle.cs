@@ -3,6 +3,8 @@ using UnityEngine;
 public sealed class FieldMapObstacle : MonoBehaviour
 {
     [Min(0)] public float Radius = .65f;
+    public bool BlocksRaid = true;
+    public bool BlocksRaidMovement => BlocksRaid && !name.StartsWith("Loose Stone", System.StringComparison.Ordinal);
     private void OnDrawGizmosSelected()
     {
         Gizmos.color = Color.yellow;

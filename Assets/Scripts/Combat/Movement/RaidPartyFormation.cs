@@ -11,20 +11,29 @@ public sealed class RaidPartyFormation : MonoBehaviour
     public readonly List<Transform> Members = new List<Transform>();
     private static readonly Vector3[] Offsets =
     {
-        new Vector3(0, 0, 1.1f), new Vector3(-1.05f, 0, 0),
-        new Vector3(1.05f, 0, 0), new Vector3(0, 0, -1.1f)
+        new Vector3(-.65f, 0, .80f), new Vector3(.65f, 0, .80f),
+        new Vector3(-.65f, 0, -.80f), new Vector3(.65f, 0, -.80f)
     };
+    private Vector3 forward = Vector3.forward;
 
     private void LateUpdate()
     {
         bool running = Field != null && Field.RaidRunning;
         Movement.enabled = running;
         if (!running) { Movement.StickInput = Vector2.zero; return; }
+        if (Field.RaidBoss != null)
+        {
+            Vector3 towardBoss = Field.RaidBoss.transform.position - transform.position;
+            towardBoss.y = 0;
+            if (towardBoss.sqrMagnitude > .01f) forward = towardBoss.normalized;
+        }
+        Vector3 right = new Vector3(forward.z, 0, -forward.x);
         for (int i = 0; i < Members.Count; i++)
         {
             var member = Members[i];
             if (member == null || !member.gameObject.activeSelf) continue;
-            Vector3 offset = Offsets[i % Offsets.Length];
+            Vector3 slot = Offsets[i % Offsets.Length];
+            Vector3 offset = right * slot.x + forward * slot.z;
             Vector3 current = member.position;
             Vector3 destination = transform.position + offset;
             destination.x = Mathf.Clamp(destination.x, -Movement.FieldHalfSize, Movement.FieldHalfSize);

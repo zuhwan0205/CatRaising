@@ -7,7 +7,7 @@ public sealed class FieldNavigation
 {
     private struct Obstacle
     {
-        public Vector3 center; public float radius;
+        public Vector3 center; public float radius; public bool blocksRaid;
     }
     private readonly List<Obstacle> obstacles = new List<Obstacle>();
     private const int Side = 37;
@@ -16,9 +16,18 @@ public sealed class FieldNavigation
     private readonly List<int>[] links = new List<int>[Side * Side];
     private readonly Dictionary<int, int[]> distances = new Dictionary<int, int[]>();
 
-    public void Add(Vector3 center, float radius)
+    public void Add(Vector3 center, float radius, bool blocksRaid = true)
     {
-        obstacles.Add(new Obstacle { center = center, radius = radius });
+        obstacles.Add(new Obstacle { center = center, radius = radius, blocksRaid = blocksRaid });
+    }
+
+    public FieldNavigation CreateRaidNavigation()
+    {
+        var navigation = new FieldNavigation();
+        foreach (var obstacle in obstacles)
+            if (obstacle.blocksRaid) navigation.Add(obstacle.center, obstacle.radius);
+        navigation.Bake();
+        return navigation;
     }
 
     public bool IsFree(Vector3 point)
