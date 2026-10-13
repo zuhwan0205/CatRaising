@@ -7,31 +7,36 @@ using UnityEngine.UI;
 using UnityEngine.InputSystem.UI;
 #endif
 
-// BackendManager가 실행 시 생성하므로 별도의 버튼 연결 없이 사용할 수 있습니다.
+// 씬에 저장된 UI를 사용하며, UI가 없는 씬에서는 기존 생성 방식을 지원합니다.
 public class LoadingLoginUI : MonoBehaviour
 {
     [SerializeField] private Font uiFont;
     private BackendManager manager;
-    private GameObject root;
-    private GameObject choice;
-    private GameObject form;
-    private Button retry;
-    private InputField idInput;
-    private InputField passwordInput;
-    private InputField confirmInput;
-    private Text heading;
-    private Text message;
-    private Text submitLabel;
-    private CanvasGroup formGroup;
-    private CanvasGroup choiceGroup;
+    [SerializeField] private GameObject root;
+    [SerializeField] private GameObject choice;
+    [SerializeField] private GameObject form;
+    [SerializeField] private Button retry;
+    [SerializeField] private InputField idInput;
+    [SerializeField] private InputField passwordInput;
+    [SerializeField] private InputField confirmInput;
+    [SerializeField] private Text heading;
+    [SerializeField] private Text message;
+    [SerializeField] private Text submitLabel;
+    [SerializeField] private CanvasGroup formGroup;
+    [SerializeField] private CanvasGroup choiceGroup;
+    [SerializeField] private Button signUpButton, loginButton, googleButton, submitButton, backButton;
     private bool signUp;
     private bool busy;
 
     public void Build(BackendManager owner)
     {
-        if (root != null)
-            return;
         manager = owner;
+        if (root != null)
+        {
+            BindButtons();
+            PrepareInitialView();
+            return;
+        }
         var projectFont = Resources.Load<Font>("Fonts/Mona12TextKR");
         if (projectFont != null)
             uiFont = projectFont;
@@ -92,9 +97,9 @@ public class LoadingLoginUI : MonoBehaviour
 
         choice = Box("Choose Account Action", background, Vector2.zero, new Vector2(580, 300)).gameObject;
         choiceGroup = choice.AddComponent<CanvasGroup>();
-        MakeButton("회원가입", choice.transform, new Vector2(0, 90), () => SelectMode(true));
-        MakeButton("로그인", choice.transform, Vector2.zero, () => SelectMode(false));
-        MakeButton("Google로 계속하기", choice.transform, new Vector2(0, -90), () =>
+        signUpButton = MakeButton("회원가입", choice.transform, new Vector2(0, 90), () => SelectMode(true));
+        loginButton = MakeButton("로그인", choice.transform, Vector2.zero, () => SelectMode(false));
+        googleButton = MakeButton("Google로 계속하기", choice.transform, new Vector2(0, -90), () =>
         {
             if (!busy)
                 StartCoroutine(SubmitRoutine(true));
@@ -105,15 +110,44 @@ public class LoadingLoginUI : MonoBehaviour
         idInput = MakeInput("아이디", form.transform, 120, false);
         passwordInput = MakeInput("비밀번호", form.transform, 35, true);
         confirmInput = MakeInput("비밀번호 확인", form.transform, -50, true);
-        var submit = MakeButton("로그인", form.transform, new Vector2(0, -140), Submit);
-        submitLabel = submit.GetComponentInChildren<Text>();
-        MakeButton("뒤로", form.transform, new Vector2(0, -215), ShowChoice);
+        submitButton = MakeButton("로그인", form.transform, new Vector2(0, -140), Submit);
+        submitLabel = submitButton.GetComponentInChildren<Text>();
+        backButton = MakeButton("뒤로", form.transform, new Vector2(0, -215), ShowChoice);
         retry = MakeButton("연결 재시도", background, Vector2.zero, manager.InitializeBackend);
-        choice.SetActive(false);
-        form.SetActive(false);
-        retry.gameObject.SetActive(false);
+        BindButtons();
+        PrepareInitialView();
     }
 
+    public bool HasSceneUI => root != null;
+
+    private void BindButtons()
+    {
+        // 재초기화에서도 런타임 이벤트가 중복되지 않도록 합니다.
+        signUpButton.onClick.RemoveAllListeners();
+        loginButton.onClick.RemoveAllListeners();
+        googleButton.onClick.RemoveAllListeners();
+        submitButton.onClick.RemoveAllListeners();
+        backButton.onClick.RemoveAllListeners();
+        retry.onClick.RemoveAllListeners();
+        signUpButton.onClick.AddListener(() => SelectMode(true));
+        loginButton.onClick.AddListener(() => SelectMode(false));
+        googleButton.onClick.AddListener(() => { if (!busy) StartCoroutine(SubmitRoutine(true)); });
+        submitButton.onClick.AddListener(Submit);
+        backButton.onClick.AddListener(ShowChoice);
+        retry.onClick.AddListener(manager.InitializeBackend);
+    }
+
+    private void PrepareInitialView()
+    {
+        busy = false;
+        idInput.text = passwordInput.text = confirmInput.text = "";
+        choiceGroup.interactable = formGroup.interactable = true;
+        choice.SetActive(!Application.isPlaying);
+        form.SetActive(false);
+        retry.gameObject.SetActive(false);
+        heading.text = Application.isPlaying ? "서버에 연결 중입니다…" : "회원가입 또는 로그인을 선택해주세요";
+        message.text = "";
+    }
     public void ShowInitialization(bool success)
     {
         retry.gameObject.SetActive(!success);
@@ -251,7 +285,7 @@ public class LoadingLoginUI : MonoBehaviour
         image.color = new Color(.25f, .36f, .26f, .97f);
         var button = rect.gameObject.AddComponent<Button>();
         button.targetGraphic = image;
-        button.onClick.AddListener(action);
+        // 이벤트는 Build에서 저장된 참조에 연결합니다.
         button.gameObject.AddComponent<ButtonTweenEffect>();
         Label(title, rect, Vector2.zero, new Vector2(500, 60), 24);
         return button;

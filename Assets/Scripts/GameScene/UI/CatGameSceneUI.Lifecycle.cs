@@ -30,7 +30,10 @@ public partial class CatGameSceneUI
         playerHpLabel = null;
         lastDrawLabel = null;
         foreach (Transform child in page)
-            RemoveUI(child.gameObject);
+        {
+            if (child.gameObject == adventureRoot) child.gameObject.SetActive(false);
+            else RemoveUI(child.gameObject);
+        }
     }
 
     private void RemoveUI(GameObject target)
