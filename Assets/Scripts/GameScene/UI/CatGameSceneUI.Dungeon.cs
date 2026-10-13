@@ -15,9 +15,31 @@ public partial class CatGameSceneUI
     private void DungeonMap()
     {
         dungeonMode = true;
-        var map = Panel(page, "Dungeon Village Map", Vector2.zero, Vector2.one, new Color(.67f, .47f, .27f));
-        Label(map, "CHAPTER 1 · 고양이 마을", 30, new Vector2(0, .91f), Vector2.one).color = Color.white;
-        Label(map, "고양이 2마리 · 5 / 10 / 15 보스", 20, new Vector2(0, .85f), new Vector2(1, .92f)).color = Color.white;
+        var frame = MapDecoration(page, "Map Wooden Frame", Vector2.zero, Vector2.one, new Color(.25f, .19f, .14f));
+        var map = MapDecoration(frame, "Dungeon Village Map", new Vector2(.015f, .008f), new Vector2(.985f, .992f), new Color(.58f, .43f, .28f));
+        // 작은 색면과 나무를 배경에 먼저 그려 경로와 스테이지를 가리지 않습니다.
+        for (int i = 0; i < 48; i++)
+        {
+            float x = .03f + (i * 37 % 93) / 100f;
+            float y = .09f + (i * 19 % 72) / 100f;
+            MapDecoration(map, "Fallen Leaves", new Vector2(x, y), new Vector2(x + .015f, y + .006f),
+                i % 2 == 0 ? new Color(.72f, .51f, .28f) : new Color(.49f, .37f, .25f));
+        }
+        for (int i = 0; i < 10; i++)
+        {
+            float x = i % 2 == 0 ? .045f : .91f;
+            float y = .16f + i / 2 * .14f;
+            var tree = MapDecoration(map, "Autumn Tree", new Vector2(x - .035f, y), new Vector2(x + .035f, y + .065f), Color.clear);
+            MapDecoration(tree, "Trunk", new Vector2(.42f, 0), new Vector2(.58f, .5f), new Color(.29f, .21f, .15f));
+            MapDecoration(tree, "Crown Shadow", new Vector2(0, .35f), new Vector2(1, .82f), new Color(.43f, .29f, .16f));
+            MapDecoration(tree, "Crown", new Vector2(.08f, .43f), new Vector2(.92f, .9f), i % 3 == 0 ? new Color(.66f, .34f, .20f) : new Color(.73f, .53f, .24f));
+            MapDecoration(tree, "Crown Top", new Vector2(.24f, .85f), new Vector2(.76f, 1), new Color(.80f, .61f, .31f));
+        }
+        var header = MapDecoration(map, "Chapter Plaque", new Vector2(.025f, .855f), new Vector2(.975f, .985f), new Color(.24f, .29f, .24f));
+        Label(header, "CHAPTER 1 · 고양이 마을", 28, new Vector2(.02f, .48f), new Vector2(.98f, .96f)).color = new Color(1, .91f, .70f);
+        Label(header, $"고양이 2마리 · 클리어 {Mathf.Clamp(data.progress.dungeonClearedStage, 0, 15)} / 15", 18, new Vector2(.02f, .08f), new Vector2(.98f, .48f)).color = new Color(.87f, .88f, .77f);
+        var footer = MapDecoration(map, "Map Legend", new Vector2(.025f, .014f), new Vector2(.975f, .065f), new Color(.32f, .26f, .19f));
+        Label(footer, "길을 따라 도전하세요 · 5 / 10 / 15 보스", 17, Vector2.zero, Vector2.one).color = new Color(1, .89f, .68f);
         // 종횡비에 관계없이 5행으로 진행 경로를 배치합니다.
         var points = new Vector2[15];
         for (int i = 0; i < points.Length; i++)
@@ -26,13 +48,14 @@ public partial class CatGameSceneUI
             int column = row % 2 == 0 ? i % 3 : 2 - i % 3;
             points[i] = new Vector2(.19f + column * .31f, .12f + row * .155f + (column == 1 ? .035f : 0));
         }
-        for (int i = 0; i < 8; i++)
+        for (int i = 0; i < 4; i++)
         {
             float x = i % 2 == 0 ? .025f : .88f;
-            float y = .08f + (i / 2) * .21f;
+            float y = .09f + (i / 2) * .43f;
             var house = Panel(map, "Village House", new Vector2(x, y), new Vector2(x + .09f, y + .07f), new Color(.83f, .66f, .40f));
             Panel(house, "Roof", new Vector2(-.1f, .7f), new Vector2(1.1f, 1.2f), new Color(.39f, .23f, .15f));
             Panel(house, "Door", new Vector2(.35f, 0), new Vector2(.65f, .5f), new Color(.25f, .17f, .12f));
+            MapDecoration(house, "Lit Window", new Vector2(.10f, .36f), new Vector2(.27f, .58f), new Color(1, .80f, .41f));
         }
         for (int i = 1; i < points.Length; i++)
         {
@@ -40,7 +63,9 @@ public partial class CatGameSceneUI
             for (int step = 0; step <= 18; step++)
             {
                 Vector2 p = Vector2.Lerp(points[i - 1], points[i], step / 18f);
-                var tile = Panel(map, "Path Tile", p - new Vector2(.014f, .007f), p + new Vector2(.014f, .007f), new Color(.92f, .77f, .48f));
+                MapDecoration(map, "Path Edge", p - new Vector2(.021f, .010f), p + new Vector2(.021f, .010f), new Color(.39f, .29f, .19f));
+                var tile = Panel(map, "Path Tile", p - new Vector2(.014f, .007f), p + new Vector2(.014f, .007f),
+                    i <= data.progress.dungeonClearedStage ? new Color(.93f, .76f, .46f) : new Color(.68f, .55f, .38f));
                 tile.GetComponent<Image>().raycastTarget = false;
             }
         }
@@ -51,6 +76,9 @@ public partial class CatGameSceneUI
             bool unlocked = stage <= data.progress.dungeonClearedStage + 1;
             bool boss = stage % 5 == 0;
             Vector2 p = points[i];
+            bool current = stage == data.progress.dungeonClearedStage + 1;
+            MapDecoration(map, "Stage Border", p - new Vector2(.099f, .038f), p + new Vector2(.099f, .038f),
+                current ? new Color(1, .87f, .48f) : boss ? new Color(.55f, .27f, .15f) : new Color(.34f, .30f, .21f));
             var button = Button(map, unlocked ? $"1-{stage}" : "잠금", p - new Vector2(.09f, .033f), p + new Vector2(.09f, .033f), () =>
             {
                 selectedDungeon = stage;
@@ -58,9 +86,17 @@ public partial class CatGameSceneUI
             });
             CozyButtonStyle.SetColor(button, !unlocked ? new Color(.45f, .45f, .45f) : boss ? new Color(1, .74f, .2f) : CozyButtonStyle.Green);
             button.interactable = unlocked;
-            Label(map, cleared ? "★ 클리어" : boss ? "BOSS" : unlocked ? "도전 가능" : "", 15,
-                p + new Vector2(-.12f, -.065f), p + new Vector2(.12f, -.034f)).color = Color.white;
+            var caption = MapDecoration(map, "Stage Caption", p + new Vector2(-.115f, -.065f), p + new Vector2(.115f, -.039f), new Color(.28f, .24f, .18f));
+            Label(caption, cleared ? "★ 클리어" : current ? (boss ? "BOSS · 도전" : "도전 가능") : boss ? "BOSS" : "미개방", 14,
+                Vector2.zero, Vector2.one).color = current ? new Color(1, .87f, .48f) : new Color(.94f, .89f, .77f);
         }
+    }
+
+    private RectTransform MapDecoration(Transform parent, string name, Vector2 min, Vector2 max, Color color)
+    {
+        var panel = Panel(parent, name, min, max, color);
+        panel.GetComponent<Image>().raycastTarget = false;
+        return panel;
     }
 
     private readonly OwnedCharacter[] dungeonSlots = new OwnedCharacter[2];
@@ -120,8 +156,14 @@ public partial class CatGameSceneUI
 
     private void DungeonCatPicker(int slot)
     {
+        OpenTeamCatPicker(dungeonSlots, slot, "던전", DungeonPreparation);
+    }
+
+    private void OpenTeamCatPicker(OwnedCharacter[] slots, int slot, string title, Action refresh)
+    {
         var overlay = Panel(page, "Owned Cat Picker", Vector2.zero, Vector2.one, cream);
-        Label(overlay, $"{slot + 1}번 슬롯 · 보유 고양이", 28, new Vector2(0, .88f), Vector2.one);
+        Label(overlay, $"{title} · 보유 고양이 선택", 28, new Vector2(0, .88f), Vector2.one);
+        Button(overlay, "슬롯 비우기", new Vector2(.02f, .02f), new Vector2(.45f, .10f), () => { slots[slot] = null; refresh(); });
         Button(overlay, "닫기", new Vector2(.70f, .02f), new Vector2(.98f, .10f), () => RemoveUI(overlay.gameObject));
         var viewport = Panel(overlay, "Picker Viewport", new Vector2(.02f, .13f), new Vector2(.98f, .86f), cream);
         viewport.gameObject.AddComponent<RectMask2D>();
@@ -146,7 +188,9 @@ public partial class CatGameSceneUI
             var definition = catalog.FindCharacter(owned.characterId);
             if (definition == null) continue;
             var cat = owned;
-            bool otherSlot = dungeonSlots[1 - slot]?.characterId == cat.characterId;
+            bool otherSlot = false;
+            for (int i = 0; i < slots.Length; i++)
+                if (i != slot && slots[i]?.characterId == cat.characterId) otherSlot = true;
             var card = Panel(content, "Owned Cat", Vector2.zero, Vector2.one, CharacterRarityColor(definition.rarity));
             CharacterPortrait(Rect(card, "Portrait", new Vector2(0, .23f), Vector2.one), definition);
             Label(card, otherSlot ? "다른 슬롯 편성 중" : $"Lv.{cat.level}", 16, Vector2.zero, new Vector2(1, .23f));
@@ -156,8 +200,8 @@ public partial class CatGameSceneUI
             button.onClick.AddListener(() =>
             {
                 if (saving) return;
-                dungeonSlots[slot] = cat;
-                DungeonPreparation();
+                slots[slot] = cat;
+                refresh();
             });
         }
     }

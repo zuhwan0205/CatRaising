@@ -96,9 +96,9 @@ public class FieldEnemy : MonoBehaviour
 
     public void StrengthenRaidBoss()
     {
-        ContactDamage = 10 + Kind * 6;
-        Defense = 1 + Kind;
-        MoveSpeed = 1.5f;
+        ContactDamage = 15 + Kind * 9;
+        Defense = 2 + Kind;
+        MoveSpeed = 1.65f;
     }
 
     public void SetRaidArtwork(int index)

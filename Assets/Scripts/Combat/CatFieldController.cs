@@ -58,6 +58,7 @@ public partial class CatFieldController : MonoBehaviour
             Ground("Boundary X", field.transform, new Vector3(sign * 18, .01f, 0), new Vector2(.1f, 36), new Color(.42f, .54f, .34f), -9998);
             Ground("Boundary Z", field.transform, new Vector3(0, .01f, sign * 18), new Vector2(36, .1f), new Color(.42f, .54f, .34f), -9998);
         }
+        CaptureMapColors();
         var cat = new GameObject("Player Cat");
         cat.transform.SetParent(field.transform, false);
         var catArt = Billboard("Cat Artwork", cat.transform);
