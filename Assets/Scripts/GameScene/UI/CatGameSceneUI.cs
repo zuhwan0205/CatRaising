@@ -18,11 +18,11 @@ public partial class CatGameSceneUI : MonoBehaviour
     public event Action<OwnedRelic> RelicLevelUpRequested;
     private bool saving;
     private BackendUserData data;
-    private RectTransform page;
-    private RectTransform safeArea;
-    private Text status;
-    private Text goldAmount;
-    private Text gemAmount;
+    [SerializeField] private RectTransform page;
+    [SerializeField] private RectTransform safeArea;
+    [SerializeField] private Text status;
+    [SerializeField] private Text goldAmount;
+    [SerializeField] private Text gemAmount;
     private Button upgradeButton;
     private Func<bool> canAffordUpgrade;
     public event Action<bool> MovementModeChanged;
@@ -36,7 +36,7 @@ public partial class CatGameSceneUI : MonoBehaviour
     private Text playerHpLabel;
     private string playerHpText = "HP 준비 중";
     private string combatMessage = "자동 공격 준비 중";
-    private Button[] tabs;
+    [SerializeField] private Button[] tabs;
     private Rect lastSafeArea;
     private Vector2 lastScreen;
     private readonly Color ink = new Color(0.20f, 0.18f, 0.29f);
@@ -54,6 +54,7 @@ public partial class CatGameSceneUI : MonoBehaviour
         preview = isPreview;
         if (uiFont == null)
             uiFont = Font.CreateDynamicFontFromOSFont(new[] { "Malgun Gothic", "Apple SD Gothic Neo", "Noto Sans CJK KR", "Arial" }, 24);
+        if (HasSceneUI) { BindTabs(); Show("모험"); return; }
         if (Camera.main == null)
         {
             var camera = new GameObject("Game Camera", typeof(Camera)).GetComponent<Camera>();
@@ -93,6 +94,19 @@ public partial class CatGameSceneUI : MonoBehaviour
             tabs[i] = Button(navigation, title, new Vector2(i * .25f, 0), new Vector2(i * .25f + .235f, 1), () => Navigate(title));
         }
         Show("모험");
+    }
+
+    public bool HasSceneUI => page != null && tabs != null && tabs.Length == 4;
+
+    private void BindTabs()
+    {
+        string[] names = { "모험", "상점", "캐릭터", "유물" };
+        for (int i = 0; i < tabs.Length; i++)
+        {
+            string title = names[i];
+            tabs[i].onClick.RemoveAllListeners();
+            tabs[i].onClick.AddListener(() => Navigate(title));
+        }
     }
 
     private void Update()
@@ -149,12 +163,13 @@ public partial class CatGameSceneUI : MonoBehaviour
 
     private void Adventure()
     {
+        if (adventureRoot != null) { RestoreAdventure(); return; }
         var field = Panel(page, "Field", Vector2.zero, Vector2.one, new Color(.30f, .42f, .30f));
         var image = Rect(field, "Field Camera View", Vector2.zero, Vector2.one).gameObject.AddComponent<RawImage>();
         image.texture = fieldTexture;
         image.raycastTarget = false;
         image.gameObject.AddComponent<FieldViewportSize>().Target = fieldTexture;
-        Label(field, $"STAGE {data.progress.currentStage:00} · 2.5D 필드", 25, new Vector2(.03f, .91f), new Vector2(.97f, 1));
+        adventureStage = Label(field, $"STAGE {data.progress.currentStage:00} · 2.5D 필드", 25, new Vector2(.03f, .91f), new Vector2(.97f, 1));
         var mode = Button(field, "", new Vector2(.52f, .80f), new Vector2(.96f, .89f), () => { });
         var modeText = mode.GetComponentInChildren<Text>();
         modeText.text = automatic ? "자동 이동 ON" : "수동 이동";
@@ -167,7 +182,7 @@ public partial class CatGameSceneUI : MonoBehaviour
             equippedNames.Add(!owned ? $"{id} (미보유)" : definition == null ? $"{id} (설정 없음)" : definition.displayName);
         }
         string equippedText = equippedNames.Count == 0 ? "장착 유물 없음 · 유물 메뉴에서 장착하세요" : "장착: " + string.Join(" / ", equippedNames);
-        Label(field, equippedText, 18, new Vector2(.02f, .71f), new Vector2(.98f, .79f));
+        adventureEquipment = Label(field, equippedText, 18, new Vector2(.02f, .71f), new Vector2(.98f, .79f));
         relicEffectLabel = Label(field, "유물 발동 대기", 20, new Vector2(.02f, .32f), new Vector2(.98f, .41f));
         relicEffectLabel.color = new Color(.9f, 1, .65f);
         var pad = Panel(field, "Movement Joystick", new Vector2(.04f, .05f), new Vector2(.34f, .27f), new Color(.2f, .2f, .3f, .45f));
@@ -189,7 +204,16 @@ public partial class CatGameSceneUI : MonoBehaviour
         });
         combatLabel = Label(field, combatMessage, 20, new Vector2(.36f, .18f), new Vector2(.98f, .30f));
         Label(field, "공격은 두 모드 모두 자동\n수동 이동: WASD / 방향키 / 조이스틱", 18, new Vector2(.36f, .03f), new Vector2(.98f, .17f));
-        MovementModeChanged?.Invoke(automatic);
+        adventureRoot = field.gameObject;
+        adventureImage = image;
+        adventureMode = mode;
+        adventureJoystick = joystick;
+        adventureHp = playerHpLabel;
+        adventureCombat = combatLabel;
+        adventureRelic = relicEffectLabel;
+
+
+        RestoreAdventure();
     }
     // 보유 목록은 스크롤 가능하며 시안의 3열 배치를 사용합니다.
     private Transform Grid(string title, float top = .87f)

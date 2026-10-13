@@ -9,6 +9,21 @@ public class CatGameScene : MonoBehaviour
     [SerializeField] private bool previewSampleContent = true;
 
     private bool ownCatalog;
+    [SerializeField] private GameObject sceneMap;
+    [SerializeField] private Camera editorMapCamera;
+
+    public void PrepareSceneUI(GameObject map, Camera previewCamera)
+    {
+        sceneMap = map;
+        editorMapCamera = previewCamera;
+        var definitions = catalog != null ? catalog : Resources.Load<CatGameCatalog>("DefaultCatCatalog");
+        bool temporary = definitions == null;
+        if (temporary) definitions = ScriptableObject.CreateInstance<CatGameCatalog>();
+        var ui = GetComponent<CatGameSceneUI>();
+        if (ui == null) ui = gameObject.AddComponent<CatGameSceneUI>();
+        ui.Build(BackendUserData.CreateNew(), definitions, uiFont, true, previewCamera != null ? previewCamera.targetTexture : null);
+        if (temporary) DestroyImmediate(definitions);
+    }
     private CatGameSceneUI view;
     private CatGameSession session;
     private CatFieldController field;
@@ -81,9 +96,11 @@ public class CatGameScene : MonoBehaviour
             ownCatalog = true;
         }
         session = new CatGameSession(data, preview, () => BackendGameData.Instance.GameDataUpdateAsync(), catalog);
-        view = gameObject.AddComponent<CatGameSceneUI>();
+        if (editorMapCamera != null) editorMapCamera.gameObject.SetActive(false);
+        view = GetComponent<CatGameSceneUI>();
+        if (view == null) view = gameObject.AddComponent<CatGameSceneUI>();
         field = gameObject.AddComponent<CatFieldController>();
-        field.Build(data, catalog);
+        field.Build(data, catalog, sceneMap);
         view.MovementModeChanged += field.SetAutomatic;
         view.StickChanged += field.SetStick;
         view.AdventureVisibilityChanged += field.SetVisible;

@@ -25,7 +25,7 @@ public partial class CatFieldController : MonoBehaviour
     private bool playerDead;
     private Transform playerHealthFill;
 
-    public void Build(BackendUserData data, CatGameCatalog catalog)
+    public void Build(BackendUserData data, CatGameCatalog catalog, GameObject sceneMap = null)
     {
         field = new GameObject("2.5D Cat Field");
         field.transform.SetParent(transform, false);
@@ -51,7 +51,7 @@ public partial class CatFieldController : MonoBehaviour
 
         Ground("Grass", field.transform, Vector3.zero, new Vector2(40, 40), new Color(.76f, .84f, .62f), -10000);
         var scenery = field.AddComponent<FieldScenery>();
-        scenery.Build(square, fieldCamera);
+        scenery.Build(square, fieldCamera, sceneMap);
         // 바닥에 놓인 경계선으로 이동 가능한 영역을 표시합니다.
         for (int sign = -1; sign <= 1; sign += 2)
         {

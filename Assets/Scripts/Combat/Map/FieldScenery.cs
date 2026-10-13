@@ -13,17 +13,18 @@ public sealed class FieldScenery : MonoBehaviour
     private readonly List<Sprite> ownedSprites = new List<Sprite>();
     private readonly List<Texture2D> ownedTextures = new List<Texture2D>();
 
-    public void Build(Sprite tile, Camera camera)
+    public void Build(Sprite tile, Camera camera, GameObject sceneMap = null)
     {
         square = tile;
         view = camera;
         Navigation = new FieldNavigation();
         if (Application.isPlaying)
         {
-            var map = Resources.Load<GameObject>("BattleMap");
+            var map = sceneMap != null ? sceneMap : Resources.Load<GameObject>("BattleMap");
             if (map != null)
             {
-                var instance = Instantiate(map, transform, false);
+                var instance = sceneMap != null ? sceneMap : Instantiate(map, transform, false);
+                if (sceneMap != null) instance.transform.SetParent(transform, true);
                 foreach (var billboard in instance.GetComponentsInChildren<FieldBillboard>(true))
                     billboard.ViewCamera = camera;
                 foreach (var obstacle in instance.GetComponentsInChildren<FieldMapObstacle>())
