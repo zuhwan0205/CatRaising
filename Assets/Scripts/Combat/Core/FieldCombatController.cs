@@ -27,6 +27,7 @@ public class FieldCombatController : MonoBehaviour
     private double defense;
     public bool Blocked;
     public bool RaidMode;
+    public FieldEnemyPool Pool { get; set; }
     public FieldNavigation Navigation
     {
         get; set;
@@ -57,8 +58,11 @@ public class FieldCombatController : MonoBehaviour
     }
     // 종류는 1분마다, 개체 수는 그 절반인 30초마다 증가합니다.
     private const float MonsterKindIntervalSeconds = 60f;
+    public const int InitialMonsterCount = 20;
+    public const int MaximumMonsterCount = 200;
+    public float SpawnDistance => Mathf.Min(25f, 7f + SurvivalSeconds / 60f * 2f);
     public int UnlockedMonsterKinds => Math.Min(4, 1 + (int)(SurvivalSeconds / MonsterKindIntervalSeconds));
-    public int TargetMonsterCount => Math.Min(40, 4 + 2 * (int)(SurvivalSeconds / (MonsterKindIntervalSeconds / 2f)));
+    public int TargetMonsterCount => Math.Min(MaximumMonsterCount, InitialMonsterCount + 10 * (int)(SurvivalSeconds / (MonsterKindIntervalSeconds / 2f)));
 
     public void Initialize(Transform target, FieldEnemy[] targets, BackendUserData playerData, CatGameCatalog definitions)
     {
@@ -105,7 +109,7 @@ public class FieldCombatController : MonoBehaviour
                     var enemy = enemies[i];
                     if (enemy == null)
                         continue;
-                    if (i < 4)
+                    if (i < InitialMonsterCount)
                     {
                         enemy.ConfigureMonster(0);
                         enemy.Respawn(SpawnPosition());
@@ -123,13 +127,14 @@ public class FieldCombatController : MonoBehaviour
         }
         int previousCount = TargetMonsterCount;
         if (!RaidMode) SurvivalSeconds += delta;
+        if (!RaidMode && Pool != null) Pool.Grow(TargetMonsterCount);
         if (TargetMonsterCount > previousCount)
             for (int i = previousCount; i < Math.Min(enemies.Length, TargetMonsterCount); i++)
             {
                 var enemy = enemies[i];
                 if (enemy == null)
                     continue;
-                int step = (i - 4) / 2 + 1;
+                int step = (i - InitialMonsterCount) / 10 + 1;
                 // 새 종류 해금 시 해당 종류를 먼저 추가하고 이후에는 네 종류를 순환합니다.
                 int kind = step <= 6 ? Math.Min(3, step / 2) : step % 4;
                 enemy.ConfigureMonster(kind);
@@ -161,7 +166,7 @@ public class FieldCombatController : MonoBehaviour
             if (!RaidMode && distance > .9f)
             {
                 Vector3 start = enemy.transform.position;
-                Vector3 goal = Navigation == null ? player.position : Navigation.Waypoint(start, player.position);
+                Vector3 goal = enemy.NextWaypoint(Navigation, player.position);
                 Vector3 direction = goal - start;
                 direction.y = 0;
                 Vector3 step = direction.normalized * Mathf.Min(enemy.MoveSpeed * enemy.MovementMultiplier * delta, Mathf.Min(direction.magnitude, distance - .9f));
@@ -169,7 +174,7 @@ public class FieldCombatController : MonoBehaviour
             }
             if (!RaidMode) enemy.StepVisual(delta);
             float sqr = (enemy.transform.position - player.position).sqrMagnitude;
-            bool clear = Navigation == null || Navigation.Clear(player.position, enemy.transform.position);
+            bool clear = sqr <= Mathf.Max(ContactDistance * ContactDistance, nearest) && (Navigation == null || Navigation.Clear(player.position, enemy.transform.position));
             if (clear && sqr <= ContactDistance * ContactDistance)
             {
                 touching = true;
@@ -260,6 +265,7 @@ public class FieldCombatController : MonoBehaviour
                 if (target == LockedTarget)
                     LockedTarget = null;
                 target.RespawnRemaining = RespawnDelay;
+                if (!RaidMode && Pool != null) Pool.Release(target);
                 killsThisFrame++;
                 earnedGold += target.GoldReward;
                 EnemyGoldDropped?.Invoke(target.transform.position, target.GoldReward);
@@ -342,13 +348,20 @@ public class FieldCombatController : MonoBehaviour
             Vector2 direction = UnityEngine.Random.insideUnitCircle.normalized;
             if (direction.sqrMagnitude < .1f)
                 direction = Vector2.right;
-            Vector3 position = player.position + new Vector3(direction.x, 0, direction.y) * 7;
-            position.x = Mathf.Clamp(position.x, -17, 17);
-            position.z = Mathf.Clamp(position.z, -17, 17);
+            Vector3 position = player.position + new Vector3(direction.x, 0, direction.y) * UnityEngine.Random.Range(SpawnDistance, SpawnDistance + 3f);
+            if (Mathf.Abs(position.x) > 53 || Mathf.Abs(position.z) > 53) continue;
             if (Navigation == null || Navigation.IsFree(position))
                 return position;
         }
-        // 중앙 통로는 구조물이 없는 고정 재등장 지점입니다.
-        return Vector3.zero;
+        // 무작위 위치가 막혔으면 먼 거리부터 안쪽으로 빈 지점을 찾습니다.
+        for (float radius = SpawnDistance; radius >= 3; radius -= 2)
+            for (int i = 0; i < 64; i++)
+            {
+                float angle = i * Mathf.PI * 2 / 64;
+                var position = player.position + new Vector3(Mathf.Cos(angle), 0, Mathf.Sin(angle)) * radius;
+                if (Mathf.Abs(position.x) > 53 || Mathf.Abs(position.z) > 53) continue;
+                if (Navigation == null || Navigation.IsFree(position)) return position;
+            }
+        return player.position;
     }
 }

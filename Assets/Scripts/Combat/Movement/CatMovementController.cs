@@ -25,7 +25,7 @@ public class CatMovementController : MonoBehaviour
     }
     public float Speed = 3;
     public float StopDistance = 1.5f;
-    public float FieldHalfSize = 18;
+    public float FieldHalfSize = FieldMapSize.HalfSize;
 
     public void SetAutomatic(bool automatic)
     {

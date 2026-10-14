@@ -25,12 +25,14 @@ public sealed class FieldScenery : MonoBehaviour
             {
                 var instance = sceneMap != null ? sceneMap : Instantiate(map, transform, false);
                 if (sceneMap != null) instance.transform.SetParent(transform, true);
+                FieldMapSize.Expand(instance);
                 foreach (var billboard in instance.GetComponentsInChildren<FieldBillboard>(true))
                     billboard.ViewCamera = camera;
                 foreach (var obstacle in instance.GetComponentsInChildren<FieldMapObstacle>())
                     if (obstacle.enabled)
                         Navigation.Add(obstacle.transform.position, obstacle.Radius * Mathf.Max(Mathf.Abs(obstacle.transform.lossyScale.x), Mathf.Abs(obstacle.transform.lossyScale.z)), obstacle.BlocksRaidMovement);
                 Navigation.Bake();
+                gameObject.AddComponent<FieldGroundTilemap>().Build(instance);
                 return;
             }
         }
@@ -166,7 +168,7 @@ public sealed class FieldScenery : MonoBehaviour
                 || (p.x > 5 && p.x < 13 && p.z > -13 && p.z < -4))
                 continue;
             if (i % 7 == 0)
-                GardenProp("Loose Stone", p, rubble, .45f, .18f);
+                continue;
             else
             {
                 var art = new GameObject("Grass Detail").transform;

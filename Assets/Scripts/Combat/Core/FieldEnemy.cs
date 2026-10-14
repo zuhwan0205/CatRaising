@@ -28,7 +28,27 @@ public class FieldEnemy : MonoBehaviour
     {
         get; private set;
     }
-    private readonly Sprite[] frames = new Sprite[8];
+    private Sprite[] frames = new Sprite[8];
+    private static readonly System.Collections.Generic.Dictionary<int, Sprite[]> sharedFrames = new System.Collections.Generic.Dictionary<int, Sprite[]>();
+    [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.SubsystemRegistration)]
+    private static void ResetSharedFrames()
+    {
+        foreach (var set in sharedFrames.Values)
+            foreach (var sprite in set) if (sprite != null) Destroy(sprite);
+        sharedFrames.Clear();
+    }
+    private float nextPathTime;
+    private Vector3 pathGoal;
+    public Vector3 NextWaypoint(FieldNavigation navigation, Vector3 target)
+    {
+        if (navigation == null) return target;
+        if (Time.time >= nextPathTime || (pathGoal - transform.position).sqrMagnitude < .16f)
+        {
+            pathGoal = navigation.Waypoint(transform.position, target);
+            nextPathTime = Time.time + .25f + UnityEngine.Random.Range(0f, .1f);
+        }
+        return pathGoal;
+    }
     private Sprite raidArtwork;
     private RaidBossVisual raidVisual;
     public bool HasRaidAnimation => raidVisual != null;
@@ -53,13 +73,11 @@ public class FieldEnemy : MonoBehaviour
         }
         if (Kind == kind && frames[0] != null)
             return;
-        foreach (var frame in frames)
-            if (frame != null)
-                Destroy(frame);
-        System.Array.Clear(frames, 0, frames.Length);
+
+        frames = new Sprite[8];
         Kind = kind;
         double[] health = { 4, 6, 24, 14 };
-        float[] speed = { .7f, 1.8f, .8f, .6f };
+        float[] speed = { 1.05f, 2.7f, 1.2f, .9f };
         double[] contact = { 2, 3, 4, 5 };
         long[] gold = { 10, 15, 25, 40 };
         GoldReward = gold[kind];
@@ -72,9 +90,14 @@ public class FieldEnemy : MonoBehaviour
         var sheet = Resources.Load<Texture2D>("MonsterArt/" + names[kind]);
         if (sheet == null)
             return;
+        if (!sharedFrames.TryGetValue(kind, out frames))
+        {
+        frames = new Sprite[8];
         float w = sheet.width / 4f, h = sheet.height / 2f;
         for (int i = 0; i < 8; i++)
             frames[i] = Sprite.Create(sheet, new Rect(i % 4 * w, (1 - i / 4) * h, w, h), new Vector2(.5f, .07f), h / 1.15f, 0, SpriteMeshType.FullRect);
+        sharedFrames[kind] = frames;
+        }
         artwork.sprite = frames[0];
         artwork.transform.localScale = Vector3.one;
         color = Color.white;
@@ -171,6 +194,7 @@ public class FieldEnemy : MonoBehaviour
     public void Respawn(Vector3 position)
     {
         transform.position = position;
+        nextPathTime = 0;
         Health.Reset();
         flashRemaining = 0;
         slowRemaining = 0;
@@ -183,8 +207,6 @@ public class FieldEnemy : MonoBehaviour
     private void OnDestroy()
     {
         if (raidArtwork != null) Destroy(raidArtwork);
-        foreach (var frame in frames)
-            if (frame != null)
-                Destroy(frame);
+
     }
 }

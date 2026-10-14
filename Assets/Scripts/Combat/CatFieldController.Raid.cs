@@ -16,10 +16,14 @@ public partial class CatFieldController
     private FieldNavigation raidNavigation;
     private readonly Dictionary<SpriteRenderer, Color> mapColors = new Dictionary<SpriteRenderer, Color>();
     private Color normalMapBackground;
+    private readonly Dictionary<UnityEngine.Tilemaps.Tilemap, Color> tilemapColors = new Dictionary<UnityEngine.Tilemaps.Tilemap, Color>();
 
     private void CaptureMapColors()
     {
         mapColors.Clear();
+        tilemapColors.Clear();
+        foreach (var tilemap in field.GetComponentsInChildren<UnityEngine.Tilemaps.Tilemap>(true))
+            tilemapColors.Add(tilemap, tilemap.color);
         // 캐릭터와 몬스터 생성 전 지형과 장식만 기록합니다.
         foreach (var sprite in field.GetComponentsInChildren<SpriteRenderer>(true))
             mapColors.Add(sprite, sprite.color);
@@ -32,6 +36,8 @@ public partial class CatFieldController
         float brightness = 1f - Mathf.Clamp(clearedStage / 5, 0, 3) * .12f;
         var tint = new Color(brightness, .72f * brightness, .40f * brightness, 1f);
         foreach (var entry in mapColors)
+            if (entry.Key != null) entry.Key.color = autumn ? entry.Value * tint : entry.Value;
+        foreach (var entry in tilemapColors)
             if (entry.Key != null) entry.Key.color = autumn ? entry.Value * tint : entry.Value;
         if (fieldCamera != null)
             fieldCamera.backgroundColor = autumn ? new Color(.34f * brightness, .25f * brightness, .15f * brightness) : normalMapBackground;
@@ -199,12 +205,12 @@ public partial class CatFieldController
     private Vector3 FindRaidPosition(Vector3 desired)
     {
         if (EncounterNavigation == null || EncounterNavigation.IsFree(desired)) return desired;
-        for (int radius = 1; radius < 18; radius++)
+        for (int radius = 1; radius < FieldMapSize.HalfSize; radius++)
             for (int step = 0; step < 16; step++)
             {
                 float angle = step * Mathf.PI / 8;
                 var point = desired + new Vector3(Mathf.Cos(angle), 0, Mathf.Sin(angle)) * radius;
-                if (Mathf.Abs(point.x) < 17 && Mathf.Abs(point.z) < 17 && EncounterNavigation.IsFree(point)) return point;
+                if (Mathf.Abs(point.x) < 53 && Mathf.Abs(point.z) < 53 && EncounterNavigation.IsFree(point)) return point;
             }
         return Vector3.zero;
     }
