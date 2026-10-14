@@ -49,14 +49,14 @@ public partial class CatFieldController : MonoBehaviour
         Output.Create();
         fieldCamera.targetTexture = Output;
 
-        Ground("Grass", field.transform, Vector3.zero, new Vector2(40, 40), new Color(.76f, .84f, .62f), -10000);
+        Ground("Grass", field.transform, Vector3.zero, new Vector2(120, 120), new Color(.76f, .84f, .62f), -10000);
         var scenery = field.AddComponent<FieldScenery>();
         scenery.Build(square, fieldCamera, sceneMap);
         // 바닥에 놓인 경계선으로 이동 가능한 영역을 표시합니다.
         for (int sign = -1; sign <= 1; sign += 2)
         {
-            Ground("Boundary X", field.transform, new Vector3(sign * 18, .01f, 0), new Vector2(.1f, 36), new Color(.42f, .54f, .34f), -9998);
-            Ground("Boundary Z", field.transform, new Vector3(0, .01f, sign * 18), new Vector2(36, .1f), new Color(.42f, .54f, .34f), -9998);
+            Ground("Boundary X", field.transform, new Vector3(sign * FieldMapSize.HalfSize, .01f, 0), new Vector2(.1f, FieldMapSize.HalfSize * 2), new Color(.42f, .54f, .34f), -9998);
+            Ground("Boundary Z", field.transform, new Vector3(0, .01f, sign * FieldMapSize.HalfSize), new Vector2(FieldMapSize.HalfSize * 2, .1f), new Color(.42f, .54f, .34f), -9998);
         }
         CaptureMapColors();
         var cat = new GameObject("Player Cat");
@@ -79,35 +79,13 @@ public partial class CatFieldController : MonoBehaviour
         Paint("Cat HP Fill", playerHealthFill, new Vector2(.5f, 0), new Vector2(1, .09f), new Color(.25f, .9f, .4f), 4);
         movement = cat.AddComponent<CatMovementController>();
         movement.Navigation = scenery.Navigation;
-        var targets = new List<Transform>();
-        var enemies = new List<FieldEnemy>();
-        for (int slot = 0; slot < 40; slot++)
-        {
-            var position = new Vector3(Mathf.Cos(slot * Mathf.PI / 2) * 7, 0, Mathf.Sin(slot * Mathf.PI / 2) * 7);
-            var target = new GameObject("Monster " + slot);
-            target.transform.SetParent(field.transform, false);
-            target.transform.localPosition = position;
-            Ground("Target Shadow", target.transform, new Vector3(0, .02f, 0), new Vector2(.9f, .5f), new Color(.15f, .22f, .13f, .35f), -9000);
-            var billboard = Billboard("Enemy Billboard", target.transform);
-            billboard.localScale = Vector3.one * 1.2f;
-            var art = Paint("Slime", billboard, Vector2.zero, new Vector2(.9f, .7f), new Color(.42f, .58f, .90f), 0);
-            Paint("Health Background", billboard, new Vector2(0, .65f), new Vector2(.9f, .08f), new Color(.2f, .2f, .2f), 1);
-            var barOrigin = new GameObject("Health Fill Origin").transform;
-            barOrigin.SetParent(billboard, false);
-            barOrigin.localPosition = new Vector3(-.45f, .65f, 0);
-            Paint("Health Fill", barOrigin, new Vector2(.45f, 0), new Vector2(.9f, .08f), new Color(.9f, .25f, .3f), 2);
-            var enemy = target.AddComponent<FieldEnemy>();
-            enemy.Initialize(art, barOrigin, 14);
-            enemy.ConfigureMonster(0);
-            if (slot >= 4)
-                target.SetActive(false);
-            enemies.Add(enemy);
-            targets.Add(target.transform);
-        }
-        movement.Targets = targets.ToArray();
-        Combat = field.AddComponent<FieldCombatController>();
+        var pool = field.AddComponent<FieldEnemyPool>();
+        pool.Initialize(CreatePooledEnemy, FieldCombatController.MaximumMonsterCount);
+        pool.Grow(FieldCombatController.InitialMonsterCount, FieldCombatController.InitialMonsterCount);
+        movement.Targets = pool.Targets;        Combat = field.AddComponent<FieldCombatController>();
         Combat.Navigation = scenery.Navigation;
-        Combat.Initialize(cat.transform, enemies.ToArray(), data, catalog);
+        Combat.Initialize(cat.transform, pool.Enemies, data, catalog);
+        Combat.Pool = pool;
         movement.Combat = Combat;
         Combat.AttackStarted += catVisual.Attack;
         Combat.HealthChanged += OnPlayerHealthChanged;
@@ -121,6 +99,26 @@ public partial class CatFieldController : MonoBehaviour
         follow.Target = cat.transform;
         follow.Snap();
         SetVisible(true);
+    }
+
+    private FieldEnemy CreatePooledEnemy(int slot)
+    {
+            var target = new GameObject("Monster " + slot);
+            target.transform.SetParent(field.transform, false);
+            target.SetActive(false);
+            Ground("Target Shadow", target.transform, new Vector3(0, .02f, 0), new Vector2(.9f, .5f), new Color(.15f, .22f, .13f, .35f), -9000);
+            var billboard = Billboard("Enemy Billboard", target.transform);
+            billboard.localScale = Vector3.one * 1.2f;
+            var art = Paint("Slime", billboard, Vector2.zero, new Vector2(.9f, .7f), new Color(.42f, .58f, .90f), 0);
+            Paint("Health Background", billboard, new Vector2(0, .65f), new Vector2(.9f, .08f), new Color(.2f, .2f, .2f), 1);
+            var barOrigin = new GameObject("Health Fill Origin").transform;
+            barOrigin.SetParent(billboard, false);
+            barOrigin.localPosition = new Vector3(-.45f, .65f, 0);
+            Paint("Health Fill", barOrigin, new Vector2(.45f, 0), new Vector2(.9f, .08f), new Color(.9f, .25f, .3f), 2);
+            var enemy = target.AddComponent<FieldEnemy>();
+            enemy.Initialize(art, barOrigin, 14);
+            enemy.ConfigureMonster(0);
+        return enemy;
     }
 
     private Transform Billboard(string name, Transform feet)

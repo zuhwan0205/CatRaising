@@ -20,8 +20,24 @@ public static class GameSceneUISetup
         {
             var scene = entry.gameObject.scene;
             if (!scene.IsValid() || !scene.isLoaded || EditorSceneManager.IsPreviewScene(scene)) continue;
+            var existingMap = entry.transform.Find("Editable Battle Map");
+            if (existingMap != null && FieldMapSize.RemovePebbles(existingMap.gameObject))
+                EditorSceneManager.MarkSceneDirty(scene);
+            if (existingMap != null && (existingMap.GetComponent<FieldMapSize>() == null || existingMap.GetComponent<FieldMapSize>().NeedsExpansion))
+            {
+                FieldMapSize.Expand(existingMap.gameObject);
+                EditorSceneManager.MarkSceneDirty(scene);
+            }
             var ui = entry.GetComponent<CatGameSceneUI>();
-            if (ui != null && ui.HasSceneUI) continue;
+            if (ui != null && ui.HasSceneUI)
+            {
+                if (ui.UpgradeCurrencyHeader() | ui.UpgradeBackground())
+                {
+                    EditorUtility.SetDirty(ui);
+                    EditorSceneManager.MarkSceneDirty(scene);
+                }
+                continue;
+            }
             var prefab = Resources.Load<GameObject>("BattleMap");
             if (prefab == null)
             {
@@ -30,6 +46,7 @@ public static class GameSceneUISetup
             }
             var map = (GameObject)PrefabUtility.InstantiatePrefab(prefab, entry.transform);
             map.name = "Editable Battle Map";
+            FieldMapSize.Expand(map);
             var cameraObject = new GameObject("Editor Map Preview Camera", typeof(Camera));
             cameraObject.transform.SetParent(entry.transform, false);
             var camera = cameraObject.GetComponent<Camera>();

@@ -71,8 +71,8 @@ public partial class CatFieldController
                 if (enemy.Alive) continue;
                 float angle = spawned * Mathf.PI * 2 / 3 + RaidSeconds;
                 var desired = RaidBoss.transform.position + new Vector3(Mathf.Cos(angle), 0, Mathf.Sin(angle)) * 3;
-                desired.x = Mathf.Clamp(desired.x, -16, 16);
-                desired.z = Mathf.Clamp(desired.z, -16, 16);
+                desired.x = Mathf.Clamp(desired.x, -52, 52);
+                desired.z = Mathf.Clamp(desired.z, -52, 52);
                 enemy.Respawn(FindRaidPosition(desired));
                 if (++spawned == 3) break;
             }

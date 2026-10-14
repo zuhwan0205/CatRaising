@@ -23,23 +23,19 @@ public partial class CatGameSceneUI
     private void CharacterCard(Transform grid, OwnedCharacter owned, CharacterDefinition definition)
     {
         Color rarity = CharacterRarityColor(definition == null ? ItemRarity.Common : definition.rarity);
-        var card = Panel(grid, "Character Card " + owned.characterId, Vector2.zero, Vector2.one, rarity);
+        var card = CollectionFrame(grid, "Character Card " + owned.characterId, rarity);
         var button = card.gameObject.AddComponent<Button>();
         button.targetGraphic = card.GetComponent<Image>();
         button.gameObject.AddComponent<ButtonTweenEffect>();
         button.onClick.AddListener(() => { if (!saving && drawOverlay == null) CharacterDetail(owned); });
-        var portrait = Panel(card, "Portrait", new Vector2(.04f, .30f), new Vector2(.96f, .96f), Color.Lerp(rarity, Color.white, .82f));
-        CharacterPortrait(portrait, definition);
-        var footer = Panel(card, "Growth", new Vector2(.04f, .04f), new Vector2(.96f, .29f), new Color(.16f, .14f, .22f));
-        Label(footer, $"Lv. {owned.level}", 18, new Vector2(0, 0), new Vector2(.46f, 1)).color = Color.white;
-        Label(footer, $"강화 {owned.ascension}", 18, new Vector2(.46f, 0), Vector2.one).color = Color.white;
-        if (data.loadout.characterId == owned.characterId)
-        {
-            var selected = Panel(card, "Selected", new Vector2(.45f, .79f), new Vector2(.95f, .95f), new Color(.18f, .16f, .27f, .9f));
-            Label(selected, "선택 중", 14, Vector2.zero, Vector2.one).color = Color.white;
-        }
-    }
+        CharacterPortrait(Rect(card, "Large Portrait", new Vector2(.07f, .23f), new Vector2(.93f, .94f)), definition);
 
+        if (data.loadout.characterId == owned.characterId)
+            CollectionBadge(card, "선택", new Vector2(.65f, .81f), new Vector2(.92f, .94f), new Color(.28f, .64f, .42f));
+        var footer = Panel(card, "Growth", new Vector2(.055f, .06f), new Vector2(.945f, .30f), new Color(.06f, .05f, .10f, .92f));
+        Label(footer, $"Lv.{owned.level}", 18, new Vector2(.04f, .05f), new Vector2(.49f, .95f)).color = Color.white;
+        Label(footer, $"강화 {owned.ascension}", 17, new Vector2(.50f, .05f), new Vector2(.98f, .95f)).color = new Color(1, .82f, .36f);
+    }
     private void CharacterShopCard(Transform grid, CharacterDefinition definition, string purchase, string odds)
     {
         Color rarity = CharacterRarityColor(definition.rarity);
@@ -132,18 +128,17 @@ public partial class CatGameSceneUI
     private void RelicCard(Transform grid, RelicDefinition definition, string name, string detail, UnityEngine.Events.UnityAction action)
     {
         var rarity = CharacterRarityColor(definition == null ? ItemRarity.Common : definition.rarity);
-        var card = Panel(grid, "Relic Card " + name, Vector2.zero, Vector2.one, rarity);
+        var card = CollectionFrame(grid, "Relic Card " + name, rarity);
         var button = card.gameObject.AddComponent<Button>();
         button.targetGraphic = card.GetComponent<Image>();
         button.gameObject.AddComponent<ButtonTweenEffect>();
         button.onClick.AddListener(() => { if (!saving && drawOverlay == null) action(); });
-        var portrait = Panel(card, "Portrait", new Vector2(.04f, .38f), new Vector2(.96f, .97f), Color.Lerp(rarity, Color.white, .55f));
-        RelicIcon(portrait, definition);
-        var footer = Panel(card, "Info", new Vector2(.04f, .03f), new Vector2(.96f, .37f), new Color(.16f, .14f, .22f));
-        Label(footer, name, 18, new Vector2(.02f, .55f), new Vector2(.98f, 1)).color = Color.white;
-        Label(footer, detail, 15, new Vector2(.02f, 0), new Vector2(.98f, .55f)).color = Color.white;
+        RelicIcon(Rect(card, "Large Relic", new Vector2(.08f, .29f), new Vector2(.92f, .94f)), definition);
+        CollectionBadge(card, "유물", new Vector2(.08f, .81f), new Vector2(.36f, .94f), rarity);
+        var footer = Panel(card, "Info", new Vector2(.055f, .06f), new Vector2(.945f, .32f), new Color(.06f, .05f, .10f, .92f));
+        Label(footer, name, 17, new Vector2(.03f, .48f), new Vector2(.97f, 1)).color = Color.white;
+        Label(footer, detail, 15, new Vector2(.03f, .02f), new Vector2(.97f, .50f)).color = new Color(1, .84f, .45f);
     }
-
     private void CharacterPortrait(Transform parent, CharacterDefinition definition)
     {
         var rect = Rect(parent, "Character Image", new Vector2(.06f, .02f), new Vector2(.94f, .98f));

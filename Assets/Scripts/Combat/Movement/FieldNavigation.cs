@@ -10,15 +10,26 @@ public sealed class FieldNavigation
         public Vector3 center; public float radius; public bool blocksRaid;
     }
     private readonly List<Obstacle> obstacles = new List<Obstacle>();
-    private const int Side = 37;
-    private const float Half = 18, BodyRadius = .42f;
+    private const float BucketSize = 4;
+    private readonly Dictionary<Vector2Int, List<Obstacle>> buckets = new Dictionary<Vector2Int, List<Obstacle>>();
+    private const int Side = 109;
+    private const float Half = FieldMapSize.HalfSize, BodyRadius = .42f;
     private readonly Vector3[] nodes = new Vector3[Side * Side];
     private readonly List<int>[] links = new List<int>[Side * Side];
     private readonly Dictionary<int, int[]> distances = new Dictionary<int, int[]>();
 
     public void Add(Vector3 center, float radius, bool blocksRaid = true)
     {
-        obstacles.Add(new Obstacle { center = center, radius = radius, blocksRaid = blocksRaid });
+        var obstacle = new Obstacle { center = center, radius = radius, blocksRaid = blocksRaid };
+        obstacles.Add(obstacle);
+        float extent = radius + BodyRadius;
+        for (int z = Mathf.FloorToInt((center.z - extent) / BucketSize); z <= Mathf.FloorToInt((center.z + extent) / BucketSize); z++)
+            for (int x = Mathf.FloorToInt((center.x - extent) / BucketSize); x <= Mathf.FloorToInt((center.x + extent) / BucketSize); x++)
+            {
+                var key = new Vector2Int(x, z);
+                if (!buckets.TryGetValue(key, out var list)) buckets[key] = list = new List<Obstacle>();
+                list.Add(obstacle);
+            }
     }
 
     public FieldNavigation CreateRaidNavigation()
@@ -34,7 +45,8 @@ public sealed class FieldNavigation
     {
         if (Math.Abs(point.x) > Half || Math.Abs(point.z) > Half)
             return false;
-        foreach (var obstacle in obstacles)
+        if (!buckets.TryGetValue(new Vector2Int(Mathf.FloorToInt(point.x / BucketSize), Mathf.FloorToInt(point.z / BucketSize)), out var nearby)) return true;
+        foreach (var obstacle in nearby)
         {
             float dx = point.x - obstacle.center.x, dz = point.z - obstacle.center.z;
             float radius = obstacle.radius + BodyRadius;
@@ -51,8 +63,12 @@ public sealed class FieldNavigation
         Vector3 line = to - from;
         line.y = 0;
         float length = line.sqrMagnitude;
-        foreach (var obstacle in obstacles)
+        for (int z = Mathf.FloorToInt(Mathf.Min(from.z, to.z) / BucketSize); z <= Mathf.FloorToInt(Mathf.Max(from.z, to.z) / BucketSize); z++)
+        for (int x = Mathf.FloorToInt(Mathf.Min(from.x, to.x) / BucketSize); x <= Mathf.FloorToInt(Mathf.Max(from.x, to.x) / BucketSize); x++)
         {
+            if (!buckets.TryGetValue(new Vector2Int(x, z), out var nearby)) continue;
+            foreach (var obstacle in nearby)
+            {
             Vector3 offset = obstacle.center - from;
             offset.y = 0;
             float t = length <= .00001f ? 0 : Mathf.Clamp01(Vector3.Dot(offset, line) / length);
@@ -61,6 +77,7 @@ public sealed class FieldNavigation
             float radius = obstacle.radius + BodyRadius;
             if (delta.sqrMagnitude < radius * radius)
                 return false;
+        }
         }
         return true;
     }

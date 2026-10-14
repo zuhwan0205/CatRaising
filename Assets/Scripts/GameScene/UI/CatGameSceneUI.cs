@@ -54,7 +54,7 @@ public partial class CatGameSceneUI : MonoBehaviour
         preview = isPreview;
         if (uiFont == null)
             uiFont = Font.CreateDynamicFontFromOSFont(new[] { "Malgun Gothic", "Apple SD Gothic Neo", "Noto Sans CJK KR", "Arial" }, 24);
-        if (HasSceneUI) { BindTabs(); Show("모험"); return; }
+        if (HasSceneUI) { UpgradeBackground(); UpgradeCurrencyHeader(); BindTabs(); Show("모험"); return; }
         if (Camera.main == null)
         {
             var camera = new GameObject("Game Camera", typeof(Camera)).GetComponent<Camera>();
@@ -82,8 +82,9 @@ public partial class CatGameSceneUI : MonoBehaviour
         Panel(canvas.transform, "Background", Vector2.zero, Vector2.one, cream);
         safeArea = Rect(canvas.transform, "Safe Area", Vector2.zero, Vector2.one);
         ApplySafeArea();
+        UpgradeBackground();
         BuildCurrencyHeader();
-        page = Rect(safeArea, "Page", new Vector2(.04f, .16f), new Vector2(.96f, .93f));
+        page = Rect(safeArea, "Page", new Vector2(.04f, .16f), new Vector2(.96f, .9015f));
         status = Label(safeArea, "", 18, new Vector2(.05f, .10f), new Vector2(.95f, .15f));
         var navigation = Rect(safeArea, "Navigation", new Vector2(.04f, .02f), new Vector2(.96f, .09f));
         string[] titles = { "모험", "상점", "캐릭터", "유물" };
@@ -216,17 +217,18 @@ public partial class CatGameSceneUI : MonoBehaviour
         RestoreAdventure();
     }
     // 보유 목록은 스크롤 가능하며 시안의 3열 배치를 사용합니다.
-    private Transform Grid(string title, float top = .87f)
+    private Transform Grid(string title, float top = .87f, bool transparent = false)
     {
         Label(page, title, 32, new Vector2(0, .90f), Vector2.one);
-        var viewport = Panel(page, "Inventory Viewport", new Vector2(0, .02f), new Vector2(1, top), new Color(.94f, .92f, .97f));
+        var viewport = Panel(page, "Inventory Viewport", new Vector2(0, .02f), new Vector2(1, top), transparent ? Color.clear : new Color(.94f, .92f, .97f));
         viewport.gameObject.AddComponent<RectMask2D>();
         var content = Rect(viewport, "Inventory Items", new Vector2(0, 1), Vector2.one);
         content.pivot = new Vector2(.5f, 1);
         var grid = content.gameObject.AddComponent<GridLayoutGroup>();
         Canvas.ForceUpdateCanvases();
         float width = viewport.rect.width;
-        grid.cellSize = new Vector2(Mathf.Max(80, (width - 48) / 3), 155);
+        float cardWidth = Mathf.Max(80, (width - 48) / 3);
+        grid.cellSize = new Vector2(cardWidth, transparent ? cardWidth * 1.28f : 155);
         grid.spacing = new Vector2(12, 12);
         grid.padding = new RectOffset(12, 12, 12, 12);
         grid.constraint = GridLayoutGroup.Constraint.FixedColumnCount;
@@ -244,7 +246,7 @@ public partial class CatGameSceneUI : MonoBehaviour
 
     private void Characters()
     {
-        var grid = Grid("캐릭터  ·  " + data.characters.Count);
+        var grid = Grid("캐릭터  ·  " + data.characters.Count, transparent: true);
         foreach (var owned in data.characters)
         {
             if (owned == null)
@@ -297,7 +299,7 @@ public partial class CatGameSceneUI : MonoBehaviour
             Label(page, "아직 보유한 유물이 없어요.\n유물을 획득하면 이곳에 표시됩니다.", 25, new Vector2(.04f, .30f), new Vector2(.96f, .70f));
             return;
         }
-        var grid = Grid("유물  ·  " + data.relics.Count);
+        var grid = Grid("유물  ·  " + data.relics.Count, transparent: true);
         var layout = grid.GetComponent<GridLayoutGroup>();
         layout.cellSize = new Vector2(layout.cellSize.x, 220);
         foreach (var owned in data.relics)
@@ -361,6 +363,7 @@ public partial class CatGameSceneUI : MonoBehaviour
 
     public void RefreshWallet()
     {
+        RefreshProfile();
         if (goldAmount != null)
             goldAmount.text = CompactCurrency(data.wallet.gold);
         if (gemAmount != null)
