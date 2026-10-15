@@ -11,36 +11,50 @@ public partial class CatGameSceneUI
 
     public bool UpgradeCurrencyHeader()
     {
-        if (safeArea == null || headerVersion >= 3) return false;
-        if (headerVersion == 2)
+        if (safeArea == null) return false;
+        var header = safeArea.Find("Currency Bar");
+        if (headerVersion >= 2 && header != null)
         {
-            var existing = safeArea.Find("Currency Bar") as RectTransform;
-            if (existing != null)
-            {
-                existing.anchorMin = new Vector2(.025f, .9095f);
-                existing.anchorMax = new Vector2(.975f, .995f);
-                if (page != null) page.anchorMax = new Vector2(page.anchorMax.x, .9015f);
-                headerVersion = 3;
-                return true;
-            }
+            bool changed = headerVersion < 5;
+            ConfigureProfileHeader(header);
+            return changed;
         }
-        var old = safeArea.Find("Currency Bar");
-        if (old != null)
+        if (header != null)
         {
-            old.gameObject.SetActive(false);
-            if (Application.isPlaying) Destroy(old.gameObject);
-            else DestroyImmediate(old.gameObject);
+            header.gameObject.SetActive(false);
+            if (Application.isPlaying) Destroy(header.gameObject); else DestroyImmediate(header.gameObject);
         }
         if (uiFont == null) uiFont = Resources.Load<Font>("Fonts/Mona12TextKR");
         BuildCurrencyHeader();
-        if (page != null) page.anchorMax = new Vector2(page.anchorMax.x, .9015f);
         return true;
     }
 
+    private void ConfigureProfileHeader(Transform header)
+    {
+        header.GetComponent<Image>().color = Color.clear;
+        var trim = header.Find("Bottom Trim");
+        if (trim != null) trim.gameObject.SetActive(false);
+        foreach (Transform child in header)
+        {
+            if (child.GetComponent<Text>() != null) child.gameObject.SetActive(false);
+            if (child.name == "Diamond Row" || child.name == "Gold Row")
+                child.GetComponent<Image>().color = new Color(.10f, .17f, .17f, .40f);
+        }
+        var frame = header.Find("Profile Frame");
+        if (frame != null)
+        {
+            frame.GetComponent<Image>().raycastTarget = true;
+            var button = frame.GetComponent<Button>();
+            if (button == null) button = frame.gameObject.AddComponent<Button>();
+            button.targetGraphic = frame.GetComponent<Image>();
+            button.onClick.RemoveListener(ShowProfilePopup);
+            button.onClick.AddListener(ShowProfilePopup);
+        }
+        headerVersion = 5;
+    }
     private void BuildCurrencyHeader()
     {
-        var frame = Panel(safeArea, "Currency Bar", new Vector2(.025f, .9095f), new Vector2(.975f, .995f), new Color(.18f, .25f, .23f));
-        Panel(frame, "Bottom Trim", Vector2.zero, new Vector2(1, .035f), new Color(.80f, .64f, .33f));
+        var frame = Panel(safeArea, "Currency Bar", new Vector2(.025f, .9095f), new Vector2(.975f, .995f), Color.clear);
         var portraitFrame = Panel(frame, "Profile Frame", new Vector2(.015f, .09f), new Vector2(.18f, .91f), new Color(.88f, .69f, .35f));
         profilePortrait = Panel(portraitFrame, "Profile Portrait", new Vector2(.045f, .045f), new Vector2(.955f, .955f), new Color(.31f, .40f, .32f));
         Label(frame, "고양이 집사", 23, new Vector2(.20f, .48f), new Vector2(.57f, .90f)).color = new Color(1, .94f, .77f);
@@ -50,10 +64,12 @@ public partial class CatGameSceneUI
         var gold = Panel(frame, "Gold Row", new Vector2(.61f, .06f), new Vector2(.98f, .47f), new Color(.10f, .17f, .17f));
         gemAmount = CurrencyCell(diamond, "Diamond", 0, true);
         goldAmount = CurrencyCell(gold, "Gold", 0, false);
-        headerVersion = 3;
+        headerVersion = 4;
+        AddProfileTextOutline(frame);
         profileCharacterId = null;
         RefreshProfile();
         foreach (var graphic in frame.GetComponentsInChildren<Graphic>()) graphic.raycastTarget = false;
+        ConfigureProfileHeader(frame);
     }
 
     private void RefreshProfile()
@@ -71,6 +87,17 @@ public partial class CatGameSceneUI
         var definitions = catalog != null ? catalog : Resources.Load<CatGameCatalog>("DefaultCatCatalog");
         CharacterPortrait(profilePortrait, definitions == null ? null : definitions.FindCharacter(id));
         profileCharacterId = id;
+    }
+
+    private void AddProfileTextOutline(Transform header)
+    {
+        foreach (var text in header.GetComponentsInChildren<Text>(true))
+        {
+            if (text.transform.parent != header || text.GetComponent<Outline>() != null) continue;
+            var outline = text.gameObject.AddComponent<Outline>();
+            outline.effectColor = new Color(.06f, .08f, .06f, .85f);
+            outline.effectDistance = new Vector2(1, -1);
+        }
     }
     private Text CurrencyCell(RectTransform parent, string name, float left, bool diamond)
     {
@@ -96,8 +123,8 @@ public partial class CatGameSceneUI
         value.alignment = TextAnchor.MiddleRight;
         value.color = new Color(1f, .97f, .83f);
         value.resizeTextForBestFit = true;
-        value.resizeTextMinSize = 12;
-        value.resizeTextMaxSize = 29;
+        value.resizeTextMinSize = 16;
+        value.resizeTextMaxSize = value.fontSize;
         var shadow = value.gameObject.AddComponent<Shadow>();
         shadow.effectColor = Color.black;
         shadow.effectDistance = new Vector2(1, -1);

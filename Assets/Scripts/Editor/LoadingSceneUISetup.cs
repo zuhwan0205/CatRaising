@@ -22,7 +22,15 @@ public static class LoadingSceneUISetup
             var scene = manager.gameObject.scene;
             if (!scene.IsValid() || !scene.isLoaded || EditorSceneManager.IsPreviewScene(scene)) continue;
             var ui = manager.GetComponent<LoadingLoginUI>();
-            if (ui != null && ui.HasSceneUI) continue;
+            if (ui != null && ui.HasSceneUI)
+            {
+                if (ui.UpgradeTextSize())
+                {
+                    EditorUtility.SetDirty(ui);
+                    EditorSceneManager.MarkSceneDirty(scene);
+                }
+                continue;
+            }
             int group = Undo.GetCurrentGroup();
             Undo.SetCurrentGroupName("Prepare Loading Scene UI");
             Undo.RegisterFullObjectHierarchyUndo(manager.gameObject, "Prepare Loading Scene UI");

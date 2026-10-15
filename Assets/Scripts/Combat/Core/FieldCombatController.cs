@@ -7,6 +7,7 @@ public class FieldCombatController : MonoBehaviour
 {
     public event Action<long> GoldEarned;
     public event Action<Vector3, long> EnemyGoldDropped;
+    public event Action<Vector3, int> ExperienceDropped;
     public event Action<string> MessageChanged;
     public event Action<string> RelicMessageChanged;
     public event Action<double, double> HealthChanged;
@@ -42,7 +43,7 @@ public class FieldCombatController : MonoBehaviour
     private CatGameCatalog catalog;
     private float cooldown;
     private string selectedId;
-    private int selectedLevel;
+    private int selectedLevel, selectedStars, selectedSkills;
     private double attack, speed;
     private bool valid;
     private ICharacterAttack attackBehavior;
@@ -267,6 +268,7 @@ public class FieldCombatController : MonoBehaviour
                 target.RespawnRemaining = RespawnDelay;
                 if (!RaidMode && Pool != null) Pool.Release(target);
                 killsThisFrame++;
+                if (!RaidMode) ExperienceDropped?.Invoke(target.transform.position, CatProgression.DropExperience(target.Kind));
                 earnedGold += target.GoldReward;
                 EnemyGoldDropped?.Invoke(target.transform.position, target.GoldReward);
                 TriggerRelics(EffectTrigger.OnKill, null);
@@ -306,15 +308,18 @@ public class FieldCombatController : MonoBehaviour
     {
         var owned = data.characters.Find(x => x != null && x.characterId == data.loadout.characterId);
         int level = owned == null ? 0 : owned.level;
-        if (PlayerHealth != null && selectedId == data.loadout.characterId && selectedLevel == level)
+        if (PlayerHealth != null && selectedId == data.loadout.characterId && selectedLevel == level && selectedStars == (owned == null ? 0 : owned.ascension) && selectedSkills == CatSkillTree.Signature(owned))
             return;
         selectedId = data.loadout.characterId;
         selectedLevel = level;
+        selectedSkills = CatSkillTree.Signature(owned);
+        selectedStars = owned == null ? 0 : owned.ascension;
         cooldown = 0;
         valid = false;
         var definition = catalog.FindCharacter(selectedId);
         attackBehavior = CharacterAttackFactory.Create(definition == null ? null : definition.attackId);
         Range = definition != null && definition.attackRange > 0 && !float.IsInfinity(definition.attackRange) ? definition.attackRange : 1.7f;
+        Range *= CatSkillTree.Range(owned);
         double maxHp = 100;
         defense = 0;
         if (owned != null && definition != null && definition.baseStats != null && definition.statsPerLevel != null)
@@ -323,6 +328,8 @@ public class FieldCombatController : MonoBehaviour
             maxHp = definition.baseStats.maxHealth + (double)definition.statsPerLevel.maxHealth * growth;
             defense = definition.baseStats.defense + (double)definition.statsPerLevel.defense * growth;
         }
+        maxHp *= CatProgression.StarMultiplier(selectedStars) * CatSkillTree.Health(owned);
+        defense = defense * CatProgression.StarMultiplier(selectedStars) + CatSkillTree.Defense(owned);
         if (double.IsNaN(maxHp) || double.IsInfinity(maxHp) || maxHp <= 0)
             maxHp = 100;
         if (double.IsNaN(defense) || double.IsInfinity(defense))
@@ -335,7 +342,9 @@ public class FieldCombatController : MonoBehaviour
         {
             int growth = Math.Max(0, level - 1);
             attack = definition.baseStats.attack + (double)definition.statsPerLevel.attack * growth;
+            attack *= CatProgression.StarMultiplier(selectedStars) * CatSkillTree.Attack(owned);
             speed = definition.baseStats.attackSpeed + (double)definition.statsPerLevel.attackSpeed * growth;
+            speed *= CatSkillTree.Speed(owned);
             valid = attack > 0 && speed > 0 && !double.IsNaN(attack) && !double.IsInfinity(attack) && !double.IsNaN(speed) && !double.IsInfinity(speed);
         }
         MessageChanged?.Invoke(valid ? "자동 공격 중" : "공격 설정이 없습니다. 캐릭터의 Attack Id를 확인해주세요.");

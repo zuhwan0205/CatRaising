@@ -9,9 +9,31 @@ public partial class CatGameSceneUI
     [SerializeField] private FieldJoystick adventureJoystick;
     [SerializeField] private Text adventureHp, adventureCombat, adventureRelic, adventureStage, adventureEquipment;
 
+    public bool UpgradeFullScreenBattle()
+    {
+        if (safeArea == null || adventureImage == null || adventureRoot == null) return false;
+        if (adventureImage.transform.parent == safeArea.parent) return false;
+        // 전투 영상은 화면 끝까지, 조작 UI는 노치 안전 영역 안에 유지합니다.
+        var rect = adventureImage.rectTransform;
+        rect.SetParent(safeArea.parent, false);
+        rect.anchorMin = Vector2.zero;
+        rect.anchorMax = Vector2.one;
+        rect.offsetMin = rect.offsetMax = Vector2.zero;
+        rect.SetSiblingIndex(safeArea.GetSiblingIndex());
+        adventureRoot.GetComponent<Image>().color = Color.clear;
+        adventureRoot.GetComponent<Image>().raycastTarget = false;
+        var header = safeArea.Find("Currency Bar");
+        if (header != null) header.SetAsLastSibling();
+        var navigation = safeArea.Find("Navigation");
+        if (navigation != null) navigation.SetAsLastSibling();
+        return true;
+    }
+
     private void RestoreAdventure()
     {
         adventureRoot.SetActive(true);
+        UpgradeFullScreenBattle();
+        adventureImage.gameObject.SetActive(true);
         adventureImage.texture = fieldTexture;
         adventureImage.GetComponent<FieldViewportSize>().Target = fieldTexture;
         joystick = adventureJoystick;

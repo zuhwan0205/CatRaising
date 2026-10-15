@@ -24,6 +24,7 @@ public partial class CatFieldController : MonoBehaviour
     private bool gameplayBlocked;
     private bool playerDead;
     private Transform playerHealthFill;
+    public FieldExperienceCrystals ExperienceCrystals { get; private set; }
 
     public void Build(BackendUserData data, CatGameCatalog catalog, GameObject sceneMap = null)
     {
@@ -39,7 +40,7 @@ public partial class CatFieldController : MonoBehaviour
         // 주변 지형과 적을 더 넓게 볼 수 있도록 전투 카메라를 줌아웃합니다.
         fieldCamera = cameraObject.AddComponent<Camera>();
         fieldCamera.orthographic = true;
-        fieldCamera.orthographicSize = 9;
+        fieldCamera.orthographicSize = 10.5f;
         fieldCamera.clearFlags = CameraClearFlags.SolidColor;
         fieldCamera.backgroundColor = new Color(.30f, .42f, .34f);
         fieldCamera.cullingMask = 1 << 2;
@@ -86,6 +87,8 @@ public partial class CatFieldController : MonoBehaviour
         Combat.Navigation = scenery.Navigation;
         Combat.Initialize(cat.transform, pool.Enemies, data, catalog);
         Combat.Pool = pool;
+        ExperienceCrystals = field.AddComponent<FieldExperienceCrystals>();
+        ExperienceCrystals.Initialize(cat.transform, fieldCamera, square, Combat, this);
         movement.Combat = Combat;
         Combat.AttackStarted += catVisual.Attack;
         Combat.HealthChanged += OnPlayerHealthChanged;

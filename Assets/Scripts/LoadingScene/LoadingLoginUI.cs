@@ -10,6 +10,14 @@ using UnityEngine.InputSystem.UI;
 // 씬에 저장된 UI를 사용하며, UI가 없는 씬에서는 기존 생성 방식을 지원합니다.
 public class LoadingLoginUI : MonoBehaviour
 {
+    [SerializeField] private int textSizeVersion;
+    public bool UpgradeTextSize()
+    {
+        if (textSizeVersion >= 1 || root == null) return false;
+        ReadableUIText.Upgrade(root.transform);
+        textSizeVersion = 1;
+        return true;
+    }
     [SerializeField] private Font uiFont;
     private BackendManager manager;
     [SerializeField] private GameObject root;
@@ -33,6 +41,7 @@ public class LoadingLoginUI : MonoBehaviour
         manager = owner;
         if (root != null)
         {
+            UpgradeTextSize();
             BindButtons();
             PrepareInitialView();
             return;
@@ -116,6 +125,7 @@ public class LoadingLoginUI : MonoBehaviour
         retry = MakeButton("연결 재시도", background, Vector2.zero, manager.InitializeBackend);
         BindButtons();
         PrepareInitialView();
+        textSizeVersion = 1;
     }
 
     public bool HasSceneUI => root != null;
@@ -270,7 +280,7 @@ public class LoadingLoginUI : MonoBehaviour
     {
         var text = Box("Label", parent, position, size).gameObject.AddComponent<Text>();
         text.font = uiFont;
-        text.fontSize = Mathf.RoundToInt(fontSize * 1.1f);
+        ReadableUIText.Configure(text, Mathf.RoundToInt(fontSize * 1.3f));
         text.text = value;
         text.color = Color.white;
         text.alignment = TextAnchor.MiddleCenter;

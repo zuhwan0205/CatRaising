@@ -312,11 +312,11 @@ MonoBehaviour:
       m_Calls: []
   m_FontData:
     m_Font: {fileID: 12800000, guid: ffe40219fd8a4b929b2c14b585ce072a, type: 3}
-    m_FontSize: 26
+    m_FontSize: 31
     m_FontStyle: 0
-    m_BestFit: 0
-    m_MinSize: 10
-    m_MaxSize: 40
+    m_BestFit: 1
+    m_MinSize: 16
+    m_MaxSize: 31
     m_Alignment: 4
     m_AlignByGeometry: 0
     m_RichText: 1
@@ -391,11 +391,11 @@ MonoBehaviour:
       m_Calls: []
   m_FontData:
     m_Font: {fileID: 12800000, guid: ffe40219fd8a4b929b2c14b585ce072a, type: 3}
-    m_FontSize: 26
+    m_FontSize: 31
     m_FontStyle: 0
-    m_BestFit: 0
-    m_MinSize: 10
-    m_MaxSize: 40
+    m_BestFit: 1
+    m_MinSize: 16
+    m_MaxSize: 31
     m_Alignment: 4
     m_AlignByGeometry: 0
     m_RichText: 1
@@ -478,11 +478,11 @@ MonoBehaviour:
       m_Calls: []
   m_FontData:
     m_Font: {fileID: 12800000, guid: ffe40219fd8a4b929b2c14b585ce072a, type: 3}
-    m_FontSize: 26
+    m_FontSize: 31
     m_FontStyle: 0
-    m_BestFit: 0
-    m_MinSize: 10
-    m_MaxSize: 40
+    m_BestFit: 1
+    m_MinSize: 16
+    m_MaxSize: 31
     m_Alignment: 4
     m_AlignByGeometry: 0
     m_RichText: 1
@@ -686,11 +686,11 @@ MonoBehaviour:
       m_Calls: []
   m_FontData:
     m_Font: {fileID: 12800000, guid: ffe40219fd8a4b929b2c14b585ce072a, type: 3}
-    m_FontSize: 26
+    m_FontSize: 31
     m_FontStyle: 0
-    m_BestFit: 0
-    m_MinSize: 10
-    m_MaxSize: 40
+    m_BestFit: 1
+    m_MinSize: 16
+    m_MaxSize: 31
     m_Alignment: 3
     m_AlignByGeometry: 0
     m_RichText: 1
@@ -873,11 +873,11 @@ MonoBehaviour:
       m_Calls: []
   m_FontData:
     m_Font: {fileID: 12800000, guid: ffe40219fd8a4b929b2c14b585ce072a, type: 3}
-    m_FontSize: 26
+    m_FontSize: 31
     m_FontStyle: 0
-    m_BestFit: 0
-    m_MinSize: 10
-    m_MaxSize: 40
+    m_BestFit: 1
+    m_MinSize: 16
+    m_MaxSize: 31
     m_Alignment: 4
     m_AlignByGeometry: 0
     m_RichText: 1
@@ -1295,11 +1295,11 @@ MonoBehaviour:
       m_Calls: []
   m_FontData:
     m_Font: {fileID: 12800000, guid: ffe40219fd8a4b929b2c14b585ce072a, type: 3}
-    m_FontSize: 26
+    m_FontSize: 31
     m_FontStyle: 0
-    m_BestFit: 0
-    m_MinSize: 10
-    m_MaxSize: 40
+    m_BestFit: 1
+    m_MinSize: 16
+    m_MaxSize: 31
     m_Alignment: 3
     m_AlignByGeometry: 0
     m_RichText: 1
@@ -1501,11 +1501,11 @@ MonoBehaviour:
       m_Calls: []
   m_FontData:
     m_Font: {fileID: 12800000, guid: ffe40219fd8a4b929b2c14b585ce072a, type: 3}
-    m_FontSize: 23
+    m_FontSize: 27
     m_FontStyle: 0
-    m_BestFit: 0
-    m_MinSize: 10
-    m_MaxSize: 40
+    m_BestFit: 1
+    m_MinSize: 16
+    m_MaxSize: 27
     m_Alignment: 4
     m_AlignByGeometry: 0
     m_RichText: 1
@@ -1572,11 +1572,11 @@ MonoBehaviour:
       m_Calls: []
   m_FontData:
     m_Font: {fileID: 12800000, guid: ffe40219fd8a4b929b2c14b585ce072a, type: 3}
-    m_FontSize: 26
+    m_FontSize: 31
     m_FontStyle: 0
-    m_BestFit: 0
-    m_MinSize: 10
-    m_MaxSize: 40
+    m_BestFit: 1
+    m_MinSize: 16
+    m_MaxSize: 31
     m_Alignment: 3
     m_AlignByGeometry: 0
     m_RichText: 1
@@ -1785,11 +1785,11 @@ MonoBehaviour:
       m_Calls: []
   m_FontData:
     m_Font: {fileID: 12800000, guid: ffe40219fd8a4b929b2c14b585ce072a, type: 3}
-    m_FontSize: 26
+    m_FontSize: 31
     m_FontStyle: 0
-    m_BestFit: 0
-    m_MinSize: 10
-    m_MaxSize: 40
+    m_BestFit: 1
+    m_MinSize: 16
+    m_MaxSize: 31
     m_Alignment: 3
     m_AlignByGeometry: 0
     m_RichText: 1
@@ -2132,11 +2132,11 @@ MonoBehaviour:
       m_Calls: []
   m_FontData:
     m_Font: {fileID: 12800000, guid: ffe40219fd8a4b929b2c14b585ce072a, type: 3}
-    m_FontSize: 26
+    m_FontSize: 31
     m_FontStyle: 0
-    m_BestFit: 0
-    m_MinSize: 10
-    m_MaxSize: 40
+    m_BestFit: 1
+    m_MinSize: 16
+    m_MaxSize: 31
     m_Alignment: 4
     m_AlignByGeometry: 0
     m_RichText: 1
@@ -2211,11 +2211,11 @@ MonoBehaviour:
       m_Calls: []
   m_FontData:
     m_Font: {fileID: 12800000, guid: ffe40219fd8a4b929b2c14b585ce072a, type: 3}
-    m_FontSize: 26
+    m_FontSize: 31
     m_FontStyle: 0
-    m_BestFit: 0
-    m_MinSize: 10
-    m_MaxSize: 40
+    m_BestFit: 1
+    m_MinSize: 16
+    m_MaxSize: 31
     m_Alignment: 3
     m_AlignByGeometry: 0
     m_RichText: 1
@@ -2377,11 +2377,11 @@ MonoBehaviour:
       m_Calls: []
   m_FontData:
     m_Font: {fileID: 12800000, guid: ffe40219fd8a4b929b2c14b585ce072a, type: 3}
-    m_FontSize: 26
+    m_FontSize: 31
     m_FontStyle: 0
-    m_BestFit: 0
-    m_MinSize: 10
-    m_MaxSize: 40
+    m_BestFit: 1
+    m_MinSize: 16
+    m_MaxSize: 31
     m_Alignment: 4
     m_AlignByGeometry: 0
     m_RichText: 1
@@ -2740,11 +2740,11 @@ MonoBehaviour:
       m_Calls: []
   m_FontData:
     m_Font: {fileID: 12800000, guid: ffe40219fd8a4b929b2c14b585ce072a, type: 3}
-    m_FontSize: 26
+    m_FontSize: 31
     m_FontStyle: 0
-    m_BestFit: 0
-    m_MinSize: 10
-    m_MaxSize: 40
+    m_BestFit: 1
+    m_MinSize: 16
+    m_MaxSize: 31
     m_Alignment: 4
     m_AlignByGeometry: 0
     m_RichText: 1
@@ -2819,11 +2819,11 @@ MonoBehaviour:
       m_Calls: []
   m_FontData:
     m_Font: {fileID: 12800000, guid: ffe40219fd8a4b929b2c14b585ce072a, type: 3}
-    m_FontSize: 26
+    m_FontSize: 31
     m_FontStyle: 0
-    m_BestFit: 0
-    m_MinSize: 10
-    m_MaxSize: 40
+    m_BestFit: 1
+    m_MinSize: 16
+    m_MaxSize: 31
     m_Alignment: 3
     m_AlignByGeometry: 0
     m_RichText: 1
@@ -3194,11 +3194,11 @@ MonoBehaviour:
       m_Calls: []
   m_FontData:
     m_Font: {fileID: 12800000, guid: ffe40219fd8a4b929b2c14b585ce072a, type: 3}
-    m_FontSize: 48
+    m_FontSize: 57
     m_FontStyle: 1
-    m_BestFit: 0
-    m_MinSize: 10
-    m_MaxSize: 40
+    m_BestFit: 1
+    m_MinSize: 16
+    m_MaxSize: 57
     m_Alignment: 4
     m_AlignByGeometry: 0
     m_RichText: 1
@@ -3418,6 +3418,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 62e5ad0cb3a949099bb069b6432769f1, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::LoadingLoginUI
+  textSizeVersion: 1
   uiFont: {fileID: 12800000, guid: ffe40219fd8a4b929b2c14b585ce072a, type: 3}
   root: {fileID: 939176403}
   choice: {fileID: 784993284}

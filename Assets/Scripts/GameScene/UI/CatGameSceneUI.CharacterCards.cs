@@ -34,7 +34,7 @@ public partial class CatGameSceneUI
             CollectionBadge(card, "선택", new Vector2(.65f, .81f), new Vector2(.92f, .94f), new Color(.28f, .64f, .42f));
         var footer = Panel(card, "Growth", new Vector2(.055f, .06f), new Vector2(.945f, .30f), new Color(.06f, .05f, .10f, .92f));
         Label(footer, $"Lv.{owned.level}", 18, new Vector2(.04f, .05f), new Vector2(.49f, .95f)).color = Color.white;
-        Label(footer, $"강화 {owned.ascension}", 17, new Vector2(.50f, .05f), new Vector2(.98f, .95f)).color = new Color(1, .82f, .36f);
+        Label(footer, $"{owned.ascension}성", 17, new Vector2(.50f, .05f), new Vector2(.98f, .95f)).color = new Color(1, .82f, .36f);
     }
     private void CharacterShopCard(Transform grid, CharacterDefinition definition, string purchase, string odds)
     {
