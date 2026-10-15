@@ -1,0 +1,1679 @@
+fileFormatVersion: 2
+guid: 27e8f3703c086c040a9d6f5a3b86d8bd
+TextureImporter:
+  internalIDToNameTable:
+  - first:
+      213: -6763880494166463375
+    second: NavigationIcons_0
+  - first:
+      213: -5428444243841825273
+    second: NavigationIcons_1
+  - first:
+      213: -9121091239532276482
+    second: NavigationIcons_2
+  - first:
+      213: -3683131394235240642
+    second: NavigationIcons_3
+  - first:
+      213: 3851742396622647323
+    second: NavigationIcons_4
+  - first:
+      213: -8771193894071302548
+    second: NavigationIcons_5
+  - first:
+      213: 3843178282739545219
+    second: NavigationIcons_6
+  - first:
+      213: -4790148183628052173
+    second: NavigationIcons_7
+  - first:
+      213: -6621062937737034700
+    second: NavigationIcons_8
+  - first:
+      213: 1216482369604702010
+    second: NavigationIcons_9
+  - first:
+      213: 3743420904588515511
+    second: NavigationIcons_10
+  - first:
+      213: 2679311588076965041
+    second: NavigationIcons_11
+  - first:
+      213: -2629909688511567176
+    second: NavigationIcons_12
+  - first:
+      213: -4503018634559030043
+    second: NavigationIcons_13
+  - first:
+      213: -1580769929936109064
+    second: NavigationIcons_14
+  - first:
+      213: 4132635658257218800
+    second: NavigationIcons_15
+  - first:
+      213: 9086808812040024882
+    second: NavigationIcons_16
+  - first:
+      213: -6225756798618713638
+    second: NavigationIcons_17
+  - first:
+      213: -3524384352079717942
+    second: NavigationIcons_18
+  - first:
+      213: -7574552171414883675
+    second: NavigationIcons_19
+  - first:
+      213: 5267006143149580177
+    second: NavigationIcons_20
+  - first:
+      213: -4450942720064383975
+    second: NavigationIcons_21
+  - first:
+      213: 2621804631349564748
+    second: NavigationIcons_22
+  - first:
+      213: 2205121516809884461
+    second: NavigationIcons_23
+  - first:
+      213: -4699443393028524112
+    second: NavigationIcons_24
+  - first:
+      213: 3724733727036530539
+    second: NavigationIcons_25
+  - first:
+      213: 5341578772201949346
+    second: NavigationIcons_26
+  - first:
+      213: 8324141359005945201
+    second: NavigationIcons_27
+  - first:
+      213: 4493414884136411914
+    second: NavigationIcons_28
+  - first:
+      213: -7136052908272896732
+    second: NavigationIcons_29
+  - first:
+      213: -1558323369593633280
+    second: NavigationIcons_30
+  - first:
+      213: 6424464315131900101
+    second: NavigationIcons_31
+  - first:
+      213: -4961447186939759424
+    second: NavigationIcons_32
+  - first:
+      213: -6521028639363584348
+    second: NavigationIcons_33
+  - first:
+      213: -3431146667265818896
+    second: NavigationIcons_34
+  - first:
+      213: -6405955741657155464
+    second: NavigationIcons_35
+  - first:
+      213: -7002782598431032812
+    second: NavigationIcons_36
+  - first:
+      213: -1139840170824372174
+    second: NavigationIcons_37
+  - first:
+      213: -6483989817357876737
+    second: NavigationIcons_38
+  - first:
+      213: -5510150695588187248
+    second: NavigationIcons_39
+  - first:
+      213: -8763363466407005491
+    second: NavigationIcons_40
+  - first:
+      213: -4174265818064383582
+    second: NavigationIcons_41
+  - first:
+      213: -2223292168273613476
+    second: NavigationIcons_42
+  - first:
+      213: 1402636974345790648
+    second: NavigationIcons_43
+  - first:
+      213: 11412875670297886
+    second: NavigationIcons_44
+  - first:
+      213: 3142174871214758293
+    second: NavigationIcons_45
+  - first:
+      213: -7502030245540169970
+    second: NavigationIcons_46
+  - first:
+      213: -5189829676632557389
+    second: NavigationIcons_47
+  - first:
+      213: -3138313363685697834
+    second: NavigationIcons_48
+  - first:
+      213: 1298698174102247295
+    second: NavigationIcons_49
+  - first:
+      213: 6808813557544636751
+    second: NavigationIcons_50
+  - first:
+      213: 426077467377619486
+    second: NavigationIcons_51
+  - first:
+      213: 2945323394900761254
+    second: NavigationIcons_52
+  - first:
+      213: 3894542398130687676
+    second: NavigationIcons_53
+  - first:
+      213: -6630397042240800014
+    second: NavigationIcons_54
+  - first:
+      213: 4315550335333562931
+    second: NavigationIcons_55
+  - first:
+      213: -2738046631343357505
+    second: NavigationIcons_56
+  - first:
+      213: 7192242114303014419
+    second: NavigationIcons_57
+  - first:
+      213: -4126830129089175290
+    second: NavigationIcons_58
+  externalObjects: {}
+  serializedVersion: 13
+  mipmaps:
+    mipMapMode: 0
+    enableMipMap: 0
+    sRGBTexture: 1
+    linearTexture: 0
+    fadeOut: 0
+    borderMipMap: 0
+    mipMapsPreserveCoverage: 0
+    alphaTestReferenceValue: 0.5
+    mipMapFadeDistanceStart: 1
+    mipMapFadeDistanceEnd: 3
+  bumpmap:
+    convertToNormalMap: 0
+    externalNormalMap: 0
+    heightScale: 0.25
+    normalMapFilter: 0
+    flipGreenChannel: 0
+  isReadable: 0
+  streamingMipmaps: 0
+  streamingMipmapsPriority: 0
+  vTOnly: 0
+  ignoreMipmapLimit: 0
+  grayScaleToAlpha: 0
+  generateCubemap: 6
+  cubemapConvolution: 0
+  seamlessCubemap: 0
+  textureFormat: 1
+  maxTextureSize: 2048
+  textureSettings:
+    serializedVersion: 2
+    filterMode: 1
+    aniso: 1
+    mipBias: 0
+    wrapU: 1
+    wrapV: 1
+    wrapW: 1
+  nPOTScale: 0
+  lightmap: 0
+  compressionQuality: 50
+  spriteMode: 2
+  spriteExtrude: 1
+  spriteMeshType: 1
+  alignment: 0
+  spritePivot: {x: 0.5, y: 0.5}
+  spritePixelsToUnits: 100
+  spriteBorder: {x: 0, y: 0, z: 0, w: 0}
+  spriteGenerateFallbackPhysicsShape: 1
+  alphaUsage: 1
+  alphaIsTransparency: 1
+  spriteTessellationMethod: 0
+  spriteTessellationDetail: -1
+  spriteGeometrySubdivision: -1
+  textureType: 8
+  textureShape: 1
+  singleChannelComponent: 0
+  flipbookRows: 1
+  flipbookColumns: 1
+  maxTextureSizeSet: 0
+  compressionQualitySet: 0
+  textureFormatSet: 0
+  ignorePngGamma: 0
+  applyGammaDecoding: 0
+  swizzle: 50462976
+  cookieLightType: 0
+  platformSettings:
+  - serializedVersion: 4
+    buildTarget: DefaultTexturePlatform
+    maxTextureSize: 2048
+    resizeAlgorithm: 0
+    textureFormat: -1
+    textureCompression: 1
+    compressionQuality: 50
+    crunchedCompression: 0
+    allowsAlphaSplitting: 0
+    overridden: 0
+    ignorePlatformSupport: 0
+    androidETC2FallbackOverride: 0
+    forceMaximumCompressionQuality_BC6H_BC7: 0
+  - serializedVersion: 4
+    buildTarget: Standalone
+    maxTextureSize: 2048
+    resizeAlgorithm: 0
+    textureFormat: -1
+    textureCompression: 1
+    compressionQuality: 50
+    crunchedCompression: 0
+    allowsAlphaSplitting: 0
+    overridden: 0
+    ignorePlatformSupport: 0
+    androidETC2FallbackOverride: 0
+    forceMaximumCompressionQuality_BC6H_BC7: 0
+  - serializedVersion: 4
+    buildTarget: Android
+    maxTextureSize: 2048
+    resizeAlgorithm: 0
+    textureFormat: -1
+    textureCompression: 1
+    compressionQuality: 50
+    crunchedCompression: 0
+    allowsAlphaSplitting: 0
+    overridden: 0
+    ignorePlatformSupport: 0
+    androidETC2FallbackOverride: 0
+    forceMaximumCompressionQuality_BC6H_BC7: 0
+  - serializedVersion: 4
+    buildTarget: iOS
+    maxTextureSize: 2048
+    resizeAlgorithm: 0
+    textureFormat: -1
+    textureCompression: 1
+    compressionQuality: 50
+    crunchedCompression: 0
+    allowsAlphaSplitting: 0
+    overridden: 0
+    ignorePlatformSupport: 0
+    androidETC2FallbackOverride: 0
+    forceMaximumCompressionQuality_BC6H_BC7: 0
+  spriteSheet:
+    serializedVersion: 2
+    sprites:
+    - serializedVersion: 2
+      name: NavigationIcons_0
+      rect:
+        serializedVersion: 2
+        x: 0
+        y: 1140
+        width: 53
+        height: 111
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 17ca302f68ed122a0800000000000000
+      internalID: -6763880494166463375
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: NavigationIcons_1
+      rect:
+        serializedVersion: 2
+        x: 0
+        y: 584
+        width: 597
+        height: 639
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 7064bcaa8ba4aa4b0800000000000000
+      internalID: -5428444243841825273
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: NavigationIcons_2
+      rect:
+        serializedVersion: 2
+        x: 575
+        y: 417
+        width: 668
+        height: 830
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: ef450cfd7df5b6180800000000000000
+      internalID: -9121091239532276482
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: NavigationIcons_3
+      rect:
+        serializedVersion: 2
+        x: 989
+        y: 1197
+        width: 25
+        height: 27
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: e3fe481d283e2ecc0800000000000000
+      internalID: -3683131394235240642
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: NavigationIcons_4
+      rect:
+        serializedVersion: 2
+        x: 1143
+        y: 1205
+        width: 14
+        height: 17
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: b1031056d43247530800000000000000
+      internalID: 3851742396622647323
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: NavigationIcons_5
+      rect:
+        serializedVersion: 2
+        x: 1147
+        y: 1221
+        width: 8
+        height: 9
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: c660ec700a5764680800000000000000
+      internalID: -8771193894071302548
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: NavigationIcons_6
+      rect:
+        serializedVersion: 2
+        x: 1153
+        y: 1216
+        width: 8
+        height: 8
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 384bf2f3946b55530800000000000000
+      internalID: 3843178282739545219
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: NavigationIcons_7
+      rect:
+        serializedVersion: 2
+        x: 110
+        y: 1187
+        width: 6
+        height: 8
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 3390e553b99f58db0800000000000000
+      internalID: -4790148183628052173
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: NavigationIcons_8
+      rect:
+        serializedVersion: 2
+        x: 115
+        y: 1181
+        width: 13
+        height: 19
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 4340ea886524d14a0800000000000000
+      internalID: -6621062937737034700
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: NavigationIcons_9
+      rect:
+        serializedVersion: 2
+        x: 311
+        y: 1191
+        width: 6
+        height: 7
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: a3f40db1540d1e010800000000000000
+      internalID: 1216482369604702010
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: NavigationIcons_10
+      rect:
+        serializedVersion: 2
+        x: 1015
+        y: 1080
+        width: 154
+        height: 125
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 7b815ceaa7d43f330800000000000000
+      internalID: 3743420904588515511
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: NavigationIcons_11
+      rect:
+        serializedVersion: 2
+        x: 1075
+        y: 1195
+        width: 17
+        height: 16
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 1bc4ae991b3de2520800000000000000
+      internalID: 2679311588076965041
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: NavigationIcons_12
+      rect:
+        serializedVersion: 2
+        x: 1125
+        y: 1191
+        width: 7
+        height: 15
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 8bae8e8721fa08bd0800000000000000
+      internalID: -2629909688511567176
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: NavigationIcons_13
+      rect:
+        serializedVersion: 2
+        x: 1162
+        y: 1172
+        width: 11
+        height: 12
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 5ecf42ee8601281c0800000000000000
+      internalID: -4503018634559030043
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: NavigationIcons_14
+      rect:
+        serializedVersion: 2
+        x: 1188
+        y: 1177
+        width: 15
+        height: 14
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 8f10a8ebf1aff0ae0800000000000000
+      internalID: -1580769929936109064
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: NavigationIcons_15
+      rect:
+        serializedVersion: 2
+        x: 48
+        y: 1162
+        width: 13
+        height: 13
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 0fcb88c4c321a5930800000000000000
+      internalID: 4132635658257218800
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: NavigationIcons_16
+      rect:
+        serializedVersion: 2
+        x: 524
+        y: 1164
+        width: 8
+        height: 8
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 233f8877874da1e70800000000000000
+      internalID: 9086808812040024882
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: NavigationIcons_17
+      rect:
+        serializedVersion: 2
+        x: 40
+        y: 1143
+        width: 25
+        height: 17
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: ad1cb585d2ba999a0800000000000000
+      internalID: -6225756798618713638
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: NavigationIcons_18
+      rect:
+        serializedVersion: 2
+        x: 346
+        y: 1142
+        width: 7
+        height: 7
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: ac9d752da1fd61fc0800000000000000
+      internalID: -3524384352079717942
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: NavigationIcons_19
+      rect:
+        serializedVersion: 2
+        x: 641
+        y: 1044
+        width: 25
+        height: 19
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 5a2f62a8ee8c1e690800000000000000
+      internalID: -7574552171414883675
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: NavigationIcons_20
+      rect:
+        serializedVersion: 2
+        x: 303
+        y: 600
+        width: 8
+        height: 12
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 19f1b307e2a281940800000000000000
+      internalID: 5267006143149580177
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: NavigationIcons_21
+      rect:
+        serializedVersion: 2
+        x: 0
+        y: 0
+        width: 668
+        height: 563
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 91493fe9d231b32c0800000000000000
+      internalID: -4450942720064383975
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: NavigationIcons_22
+      rect:
+        serializedVersion: 2
+        x: 725
+        y: 0
+        width: 516
+        height: 579
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: c45901adb65826420800000000000000
+      internalID: 2621804631349564748
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: NavigationIcons_23
+      rect:
+        serializedVersion: 2
+        x: 733
+        y: 525
+        width: 10
+        height: 13
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: d231608165a2a9e10800000000000000
+      internalID: 2205121516809884461
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: NavigationIcons_24
+      rect:
+        serializedVersion: 2
+        x: 1163
+        y: 537
+        width: 22
+        height: 20
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 0b77a7cf12938ceb0800000000000000
+      internalID: -4699443393028524112
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: NavigationIcons_25
+      rect:
+        serializedVersion: 2
+        x: 681
+        y: 503
+        width: 13
+        height: 14
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: b6fddea1799e0b330800000000000000
+      internalID: 3724733727036530539
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: NavigationIcons_26
+      rect:
+        serializedVersion: 2
+        x: 647
+        y: 469
+        width: 7
+        height: 13
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 2a84dd8a799112a40800000000000000
+      internalID: 5341578772201949346
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: NavigationIcons_27
+      rect:
+        serializedVersion: 2
+        x: 648
+        y: 465
+        width: 10
+        height: 17
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 17dcfab767a458370800000000000000
+      internalID: 8324141359005945201
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: NavigationIcons_28
+      rect:
+        serializedVersion: 2
+        x: 737
+        y: 373
+        width: 93
+        height: 112
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: a03676da701db5e30800000000000000
+      internalID: 4493414884136411914
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: NavigationIcons_29
+      rect:
+        serializedVersion: 2
+        x: 647
+        y: 176
+        width: 94
+        height: 222
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 425300830b5a7fc90800000000000000
+      internalID: -7136052908272896732
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: NavigationIcons_30
+      rect:
+        serializedVersion: 2
+        x: 666
+        y: 154
+        width: 38
+        height: 28
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 0068e26d629bf5ae0800000000000000
+      internalID: -1558323369593633280
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: NavigationIcons_31
+      rect:
+        serializedVersion: 2
+        x: 681
+        y: 180
+        width: 9
+        height: 12
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 5c03c9f9148482950800000000000000
+      internalID: 6424464315131900101
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: NavigationIcons_32
+      rect:
+        serializedVersion: 2
+        x: 685
+        y: 367
+        width: 36
+        height: 37
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 0c438920216652bb0800000000000000
+      internalID: -4961447186939759424
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: NavigationIcons_33
+      rect:
+        serializedVersion: 2
+        x: 745
+        y: 150
+        width: 12
+        height: 29
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 4aea59c9007a085a0800000000000000
+      internalID: -6521028639363584348
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: NavigationIcons_34
+      rect:
+        serializedVersion: 2
+        x: 1172
+        y: 369
+        width: 29
+        height: 31
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 0fefa5df84e1260d0800000000000000
+      internalID: -3431146667265818896
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: NavigationIcons_35
+      rect:
+        serializedVersion: 2
+        x: 1172
+        y: 331
+        width: 49
+        height: 45
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 878b6a371397917a0800000000000000
+      internalID: -6405955741657155464
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: NavigationIcons_36
+      rect:
+        serializedVersion: 2
+        x: 1181
+        y: 260
+        width: 58
+        height: 56
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 41a3b3d345e11de90800000000000000
+      internalID: -7002782598431032812
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: NavigationIcons_37
+      rect:
+        serializedVersion: 2
+        x: 1190
+        y: 324
+        width: 9
+        height: 6
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 230fa4d57697e20f0800000000000000
+      internalID: -1139840170824372174
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: NavigationIcons_38
+      rect:
+        serializedVersion: 2
+        x: 709
+        y: 150
+        width: 24
+        height: 23
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: ff142216d9d3406a0800000000000000
+      internalID: -6483989817357876737
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: NavigationIcons_39
+      rect:
+        serializedVersion: 2
+        x: 40
+        y: 119
+        width: 15
+        height: 27
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 093389ae2230883b0800000000000000
+      internalID: -5510150695588187248
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: NavigationIcons_40
+      rect:
+        serializedVersion: 2
+        x: 657
+        y: 119
+        width: 11
+        height: 27
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: dc2bc2b8b57426680800000000000000
+      internalID: -8763363466407005491
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: NavigationIcons_41
+      rect:
+        serializedVersion: 2
+        x: 659
+        y: 33
+        width: 70
+        height: 88
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 2a1973cca570216c0800000000000000
+      internalID: -4174265818064383582
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: NavigationIcons_42
+      rect:
+        serializedVersion: 2
+        x: 673
+        y: 120
+        width: 13
+        height: 19
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: c5da42e6d874521e0800000000000000
+      internalID: -2223292168273613476
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: NavigationIcons_43
+      rect:
+        serializedVersion: 2
+        x: 735
+        y: 95
+        width: 28
+        height: 34
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 8b4a5bc85ea277310800000000000000
+      internalID: 1402636974345790648
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: NavigationIcons_44
+      rect:
+        serializedVersion: 2
+        x: 719
+        y: 71
+        width: 20
+        height: 28
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: e1d913033fb882000800000000000000
+      internalID: 11412875670297886
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: NavigationIcons_45
+      rect:
+        serializedVersion: 2
+        x: 731
+        y: 99
+        width: 8
+        height: 6
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 5991aecb56f3b9b20800000000000000
+      internalID: 3142174871214758293
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: NavigationIcons_46
+      rect:
+        serializedVersion: 2
+        x: 731
+        y: 95
+        width: 6
+        height: 6
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: e0777583d3f63e790800000000000000
+      internalID: -7502030245540169970
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: NavigationIcons_47
+      rect:
+        serializedVersion: 2
+        x: 88
+        y: 55
+        width: 24
+        height: 27
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 3b8398fe7650af7b0800000000000000
+      internalID: -5189829676632557389
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: NavigationIcons_48
+      rect:
+        serializedVersion: 2
+        x: 504
+        y: 72
+        width: 10
+        height: 15
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 6d617ab8f987274d0800000000000000
+      internalID: -3138313363685697834
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: NavigationIcons_49
+      rect:
+        serializedVersion: 2
+        x: 511
+        y: 69
+        width: 12
+        height: 13
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: f7710d9cb17e50210800000000000000
+      internalID: 1298698174102247295
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: NavigationIcons_50
+      rect:
+        serializedVersion: 2
+        x: 681
+        y: 49
+        width: 15
+        height: 33
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: f41df4f1bd3cd7e50800000000000000
+      internalID: 6808813557544636751
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: NavigationIcons_51
+      rect:
+        serializedVersion: 2
+        x: 88
+        y: 53
+        width: 15
+        height: 14
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: e1257d9f23bb9e500800000000000000
+      internalID: 426077467377619486
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: NavigationIcons_52
+      rect:
+        serializedVersion: 2
+        x: 1109
+        y: 39
+        width: 15
+        height: 11
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 6aa15bdc504efd820800000000000000
+      internalID: 2945323394900761254
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: NavigationIcons_53
+      rect:
+        serializedVersion: 2
+        x: 1139
+        y: 39
+        width: 12
+        height: 11
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: cbe074b4da13c0630800000000000000
+      internalID: 3894542398130687676
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: NavigationIcons_54
+      rect:
+        serializedVersion: 2
+        x: 868
+        y: 23
+        width: 15
+        height: 12
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 2fabf69f4091cf3a0800000000000000
+      internalID: -6630397042240800014
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: NavigationIcons_55
+      rect:
+        serializedVersion: 2
+        x: 1141
+        y: 18
+        width: 30
+        height: 16
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 33affdb4a2ae3eb30800000000000000
+      internalID: 4315550335333562931
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: NavigationIcons_56
+      rect:
+        serializedVersion: 2
+        x: 1147
+        y: 29
+        width: 10
+        height: 9
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: fb103587811800ad0800000000000000
+      internalID: -2738046631343357505
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: NavigationIcons_57
+      rect:
+        serializedVersion: 2
+        x: 466
+        y: 9
+        width: 9
+        height: 11
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 316b2a9c81affc360800000000000000
+      internalID: 7192242114303014419
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: NavigationIcons_58
+      rect:
+        serializedVersion: 2
+        x: 1141
+        y: 18
+        width: 6
+        height: 6
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 601a24bccdd8ab6c0800000000000000
+      internalID: -4126830129089175290
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    outline: []
+    customData: 
+    physicsShape: []
+    bones: []
+    spriteID: 
+    internalID: 0
+    vertices: []
+    indices: 
+    edges: []
+    weights: []
+    secondaryTextures: []
+    spriteCustomMetadata:
+      entries: []
+    nameFileIdTable:
+      NavigationIcons_0: -6763880494166463375
+      NavigationIcons_1: -5428444243841825273
+      NavigationIcons_10: 3743420904588515511
+      NavigationIcons_11: 2679311588076965041
+      NavigationIcons_12: -2629909688511567176
+      NavigationIcons_13: -4503018634559030043
+      NavigationIcons_14: -1580769929936109064
+      NavigationIcons_15: 4132635658257218800
+      NavigationIcons_16: 9086808812040024882
+      NavigationIcons_17: -6225756798618713638
+      NavigationIcons_18: -3524384352079717942
+      NavigationIcons_19: -7574552171414883675
+      NavigationIcons_2: -9121091239532276482
+      NavigationIcons_20: 5267006143149580177
+      NavigationIcons_21: -4450942720064383975
+      NavigationIcons_22: 2621804631349564748
+      NavigationIcons_23: 2205121516809884461
+      NavigationIcons_24: -4699443393028524112
+      NavigationIcons_25: 3724733727036530539
+      NavigationIcons_26: 5341578772201949346
+      NavigationIcons_27: 8324141359005945201
+      NavigationIcons_28: 4493414884136411914
+      NavigationIcons_29: -7136052908272896732
+      NavigationIcons_3: -3683131394235240642
+      NavigationIcons_30: -1558323369593633280
+      NavigationIcons_31: 6424464315131900101
+      NavigationIcons_32: -4961447186939759424
+      NavigationIcons_33: -6521028639363584348
+      NavigationIcons_34: -3431146667265818896
+      NavigationIcons_35: -6405955741657155464
+      NavigationIcons_36: -7002782598431032812
+      NavigationIcons_37: -1139840170824372174
+      NavigationIcons_38: -6483989817357876737
+      NavigationIcons_39: -5510150695588187248
+      NavigationIcons_4: 3851742396622647323
+      NavigationIcons_40: -8763363466407005491
+      NavigationIcons_41: -4174265818064383582
+      NavigationIcons_42: -2223292168273613476
+      NavigationIcons_43: 1402636974345790648
+      NavigationIcons_44: 11412875670297886
+      NavigationIcons_45: 3142174871214758293
+      NavigationIcons_46: -7502030245540169970
+      NavigationIcons_47: -5189829676632557389
+      NavigationIcons_48: -3138313363685697834
+      NavigationIcons_49: 1298698174102247295
+      NavigationIcons_5: -8771193894071302548
+      NavigationIcons_50: 6808813557544636751
+      NavigationIcons_51: 426077467377619486
+      NavigationIcons_52: 2945323394900761254
+      NavigationIcons_53: 3894542398130687676
+      NavigationIcons_54: -6630397042240800014
+      NavigationIcons_55: 4315550335333562931
+      NavigationIcons_56: -2738046631343357505
+      NavigationIcons_57: 7192242114303014419
+      NavigationIcons_58: -4126830129089175290
+      NavigationIcons_6: 3843178282739545219
+      NavigationIcons_7: -4790148183628052173
+      NavigationIcons_8: -6621062937737034700
+      NavigationIcons_9: 1216482369604702010
+  mipmapLimitGroupName: 
+  pSDRemoveMatte: 0
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 

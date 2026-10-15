@@ -20,6 +20,13 @@ public static class GameSceneUISetup
         {
             var scene = entry.gameObject.scene;
             if (!scene.IsValid() || !scene.isLoaded || EditorSceneManager.IsPreviewScene(scene)) continue;
+            var previewCamera = entry.transform.Find("Editor Map Preview Camera")?.GetComponent<Camera>();
+            if (previewCamera != null && Mathf.Approximately(previewCamera.orthographicSize, 9))
+            {
+                previewCamera.orthographicSize = 10.5f;
+                EditorUtility.SetDirty(previewCamera);
+                EditorSceneManager.MarkSceneDirty(scene);
+            }
             var existingMap = entry.transform.Find("Editable Battle Map");
             if (existingMap != null && FieldMapSize.RemovePebbles(existingMap.gameObject))
                 EditorSceneManager.MarkSceneDirty(scene);
@@ -31,7 +38,7 @@ public static class GameSceneUISetup
             var ui = entry.GetComponent<CatGameSceneUI>();
             if (ui != null && ui.HasSceneUI)
             {
-                if (ui.UpgradeCurrencyHeader() | ui.UpgradeBackground())
+                if (ui.UpgradeTextSize() | ui.UpgradeCurrencyHeader() | ui.UpgradeBackground() | ui.UpgradeFullScreenBattle() | ui.UpgradeNavigationIcons())
                 {
                     EditorUtility.SetDirty(ui);
                     EditorSceneManager.MarkSceneDirty(scene);
@@ -51,7 +58,7 @@ public static class GameSceneUISetup
             cameraObject.transform.SetParent(entry.transform, false);
             var camera = cameraObject.GetComponent<Camera>();
             camera.orthographic = true;
-            camera.orthographicSize = 9;
+            camera.orthographicSize = 10.5f;
             camera.clearFlags = CameraClearFlags.SolidColor;
             camera.backgroundColor = new Color(.30f, .42f, .34f);
             camera.cullingMask = 1 << 2;

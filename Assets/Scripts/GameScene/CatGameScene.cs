@@ -101,11 +101,13 @@ public class CatGameScene : MonoBehaviour
         if (view == null) view = gameObject.AddComponent<CatGameSceneUI>();
         field = gameObject.AddComponent<CatFieldController>();
         field.Build(data, catalog, sceneMap);
+        field.ExperienceCrystals.Collect = CollectExperience;
         view.MovementModeChanged += field.SetAutomatic;
         view.StickChanged += field.SetStick;
         view.AdventureVisibilityChanged += field.SetVisible;
         view.Build(data, catalog, uiFont, preview, field.Output);
         view.CharacterSelected += SelectCharacter;
+        view.SkillRequested += LearnSkill;
         view.RelicSelected += SelectRelic;
         view.CharacterLevelUpRequested += LevelUpCharacter;
         view.RelicLevelUpRequested += LevelUpRelic;
@@ -125,6 +127,34 @@ public class CatGameScene : MonoBehaviour
         field.Combat.MessageChanged += view.ShowCombatMessage;
         field.Combat.RelicMessageChanged += view.ShowRelicMessage;
         field.Combat.HealthChanged += view.ShowPlayerHealth;
+        StartCoroutine(SaveExperiencePeriodically());
+    }
+
+    private bool CollectExperience(long amount)
+    {
+        if (!session.TryAwardExperience(amount)) return false;
+        RefreshExperienceDisplay();
+        return true;
+    }
+
+    private void RefreshExperienceDisplay()
+    {
+        view.RefreshWallet();
+        var cat = activeData.characters.Find(x => x.characterId == activeData.loadout.characterId);
+        view.ShowCombatMessage($"경험치 획득 · Lv.{cat.level} · EXP {cat.experience}/{CatProgression.RequiredExperience(cat.level)}");
+    }
+
+    private System.Collections.IEnumerator SaveExperiencePeriodically()
+    {
+        var wait = new WaitForSecondsRealtime(5);
+        while (true)
+        {
+            yield return wait;
+            var save = session.SaveExperienceAsync();
+            while (!save.IsCompleted) yield return null;
+            if (save.IsFaulted) Debug.LogException(save.Exception);
+            if (view != null) view.RefreshWallet();
+        }
     }
 
     private async void AwardGold(long amount)
@@ -175,6 +205,11 @@ public class CatGameScene : MonoBehaviour
         }
     }
     private PlayerWallet adWallet;
+    private async void LearnSkill(OwnedCharacter cat, int node)
+    {
+        await session.LearnSkillAsync(cat, node);
+        if (view != null) view.ShowSkillTree(cat);
+    }
     private async void SelectCharacter(OwnedCharacter character)
     {
         await session.SelectCharacterAsync(character);
@@ -212,13 +247,13 @@ public class CatGameScene : MonoBehaviour
     }
     private async void LevelUpCharacter(OwnedCharacter character)
     {
-        int previousLevel = character.level;
+        int previousStars = character.ascension;
         await session.LevelUpCharacterAsync(character);
         if (view != null)
         {
             view.RefreshWallet();
             view.RefreshCharacterDetail(character);
-            if(character.level > previousLevel) view.PlayCharacterUpgrade();
+            if(character.ascension > previousStars) view.PlayCharacterUpgrade();
         }
     }
     private async void LevelUpRelic(OwnedRelic relic)
@@ -245,6 +280,7 @@ public class CatGameScene : MonoBehaviour
         if (view != null)
         {
             view.CharacterSelected -= SelectCharacter;
+            view.SkillRequested -= LearnSkill;
             view.RelicSelected -= SelectRelic;
             view.CharacterLevelUpRequested -= LevelUpCharacter;
             view.RelicLevelUpRequested -= LevelUpRelic;

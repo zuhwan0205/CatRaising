@@ -22,6 +22,7 @@ public partial class CatGameSceneUI
 
     private void ClearPage()
     {
+        if (adventureImage != null) adventureImage.gameObject.SetActive(false);
         if (joystick != null)
             joystick.ResetInput();
         joystick = null;

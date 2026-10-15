@@ -40,12 +40,38 @@ public class CatGameSession
         get; private set;
     }
     private bool rewardLimitReached;
+    private bool savingExperience;
+    private long experienceRevision, savedExperienceRevision, queuedGold;
+
+    public async Task SaveExperienceAsync()
+    {
+        if (IsSaving || HasPendingReward || experienceRevision == savedExperienceRevision) return;
+        long snapshot = experienceRevision;
+        savingExperience = IsSaving = true;
+        bool success = false;
+        try { success = preview || await saveData(); }
+        catch (Exception) { success = false; }
+        finally
+        {
+            if (success) savedExperienceRevision = snapshot;
+            savingExperience = IsSaving = false;
+        }
+        // 경험치 저장 중 처치한 몬스터의 골드도 유실하지 않습니다.
+        long gold = queuedGold;
+        queuedGold = 0;
+        if (gold > 0) await AwardGoldAsync(gold);
+    }
     public event Action<bool> GameplayBlockedChanged;
     public event Action<bool> BusyChanged;
     public event Action<string> StatusChanged;
 
     public async Task AwardGoldAsync(long amount)
     {
+        if (savingExperience && amount > 0)
+        {
+            queuedGold = checked(queuedGold + amount);
+            return;
+        }
         if (IsSaving || HasPendingReward || rewardLimitReached || amount < 0)
             return;
         if (data.wallet.gold > long.MaxValue - amount)
@@ -73,11 +99,9 @@ public class CatGameSession
     {
         if (IsSaving || HasPendingReward || character == null || !data.characters.Contains(character))
             return;
-        var definition = catalog == null ? null : catalog.FindCharacter(character.characterId);
-        var rules = definition?.fragmentGrowth;
-        if (rules == null || !rules.TryGetCost(character.level, out long cost))
+        if (!CatProgression.TryStarCost(character.ascension, out long cost))
         {
-            StatusChanged?.Invoke("최대 레벨이거나 성장 설정이 없습니다.");
+            StatusChanged?.Invoke("최대 성급(5성)이거나 성급 정보가 올바르지 않습니다.");
             return;
         }
         if (character.fragments < cost)
@@ -85,13 +109,33 @@ public class CatGameSession
             StatusChanged?.Invoke($"해당 캐릭터 조각이 부족합니다. 필요 조각: {cost:N0}");
             return;
         }
-        int oldLevel = character.level;
+        int oldStars = character.ascension;
         long oldFragments = character.fragments;
-        character.level++;
+        character.ascension++;
         character.fragments -= cost;
-        await SaveAsync(() => { character.level = oldLevel; character.fragments = oldFragments; });
+        await SaveAsync(() => { character.ascension = oldStars; character.fragments = oldFragments; });
     }
 
+    public bool TryAwardExperience(long amount)
+    {
+        if ((IsSaving && !savingExperience) || HasPendingReward || amount <= 0) return false;
+        var cat = data.characters.Find(x => x != null && x.characterId == data.loadout.characterId);
+        if (cat == null) return false;
+        CatProgression.AddExperience(cat, amount);
+        experienceRevision++;
+        return true;
+    }
+
+    public async Task LearnSkillAsync(OwnedCharacter cat, int node)
+    {
+        if (IsSaving || HasPendingReward || cat == null || !data.characters.Contains(cat) || !CatSkillTree.CanLearn(cat, node)) return;
+        var previous = cat.skillRanks;
+        var ranks = new int[CatSkillTree.Count];
+        for (int i = 0; i < ranks.Length; i++) ranks[i] = CatSkillTree.Rank(cat, i);
+        ranks[node]++;
+        cat.skillRanks = ranks;
+        await SaveAsync(() => cat.skillRanks = previous);
+    }
     public Task BuyCharacterAsync(string id)
     {
         if (string.IsNullOrWhiteSpace(id) || catalog == null)
@@ -285,8 +329,10 @@ public class CatGameSession
     {
         if (IsSaving)
             return false;
+        long experienceSnapshot = experienceRevision;
         if (preview)
         {
+            savedExperienceRevision = experienceSnapshot;
             HasPendingReward = false;
             GameplayBlockedChanged?.Invoke(rewardLimitReached);
             StatusChanged?.Invoke("미리보기 변경입니다. 서버에는 저장하지 않습니다.");
@@ -307,7 +353,10 @@ public class CatGameSession
             if (!success)
                 rollback?.Invoke();
             if (success)
+            {
                 HasPendingReward = false;
+                savedExperienceRevision = experienceSnapshot;
+            }
             IsSaving = false;
             GameplayBlockedChanged?.Invoke(HasPendingReward || rewardLimitReached);
             BusyChanged?.Invoke(false);

@@ -9,6 +9,14 @@ using UnityEngine.InputSystem.UI;
 
 public partial class CatGameSceneUI : MonoBehaviour
 {
+    [SerializeField] private int textSizeVersion;
+    public bool UpgradeTextSize()
+    {
+        if (textSizeVersion >= 1 || safeArea == null) return false;
+        ReadableUIText.Upgrade(safeArea);
+        textSizeVersion = 1;
+        return true;
+    }
     private CatGameCatalog catalog;
     private Font uiFont;
     private bool preview;
@@ -54,7 +62,7 @@ public partial class CatGameSceneUI : MonoBehaviour
         preview = isPreview;
         if (uiFont == null)
             uiFont = Font.CreateDynamicFontFromOSFont(new[] { "Malgun Gothic", "Apple SD Gothic Neo", "Noto Sans CJK KR", "Arial" }, 24);
-        if (HasSceneUI) { UpgradeBackground(); UpgradeCurrencyHeader(); BindTabs(); Show("모험"); return; }
+        if (HasSceneUI) { UpgradeTextSize(); UpgradeBackground(); UpgradeCurrencyHeader(); UpgradeNavigationIcons(); BindTabs(); Show("모험"); return; }
         if (Camera.main == null)
         {
             var camera = new GameObject("Game Camera", typeof(Camera)).GetComponent<Camera>();
@@ -94,7 +102,9 @@ public partial class CatGameSceneUI : MonoBehaviour
             string title = titles[i];
             tabs[i] = Button(navigation, title, new Vector2(i * .25f, 0), new Vector2(i * .25f + .235f, 1), () => Navigate(title));
         }
+        UpgradeNavigationIcons();
         Show("모험");
+        textSizeVersion = 1;
     }
 
     public bool HasSceneUI => page != null && tabs != null && tabs.Length == 4;
@@ -267,25 +277,27 @@ public partial class CatGameSceneUI : MonoBehaviour
         var page = OpenDetailPopup("캐릭터");
         Button(page, "닫기", new Vector2(0, .92f), new Vector2(.24f, 1), CloseDetailPopup);
         Label(page, CharacterName(owned.characterId), 30, new Vector2(.26f, .92f), Vector2.one);
-        var portrait = Panel(page, "Character Portrait", new Vector2(0, .49f), new Vector2(1, .88f), new Color(.94f, .87f, .77f));
+        var portrait = Panel(page, "Character Portrait", new Vector2(0, .58f), new Vector2(1, .88f), new Color(.94f, .87f, .77f));
         CharacterPortrait(portrait, catalog.FindCharacter(owned.characterId));
         upgradePortrait = portrait;
         var definition = catalog.FindCharacter(owned.characterId);
-        string details = $"Lv. {owned.level}  ·  돌파 {owned.ascension}  ·  조각 {owned.fragments}\n";
+        string details = $"Lv. {owned.level}  ·  {owned.ascension}성  ·  조각 {owned.fragments}\n";
+        details += owned.level >= CatProgression.MaxLevel ? "최대 레벨\n" : $"EXP {owned.experience}/{CatProgression.RequiredExperience(owned.level)} · 결정 수집으로 성장\n";
         if (definition != null)
         {
             var b = definition.baseStats;
             var g = definition.statsPerLevel;
             int n = Mathf.Max(0, owned.level - 1);
-            details += $"{Rarity(definition.rarity)}  ·  기본 성장 스탯\nHP {b.maxHealth + g.maxHealth * n:0.#}    공격력 {b.attack + g.attack * n:0.#}\n방어력 {b.defense + g.defense * n:0.#}    공격 속도 {b.attackSpeed + g.attackSpeed * n:0.##}\n공격 방식: {definition.attackId}";
+            details += $"{Rarity(definition.rarity)}  ·  성급 적용 스탯\nHP {(b.maxHealth + g.maxHealth * n) * CatProgression.StarMultiplier(owned.ascension) * CatSkillTree.Health(owned):0.#}    공격력 {(b.attack + g.attack * n) * CatProgression.StarMultiplier(owned.ascension) * CatSkillTree.Attack(owned):0.#}\n방어력 {(b.defense + g.defense * n) * CatProgression.StarMultiplier(owned.ascension) + CatSkillTree.Defense(owned):0.#}    공격 속도 {(b.attackSpeed + g.attackSpeed * n) * CatSkillTree.Speed(owned):0.##}\n공격 방식: {definition.attackId}";
         }
         else
             details += "캐릭터 공통 설정을 연결해주세요.";
-        upgradeDetails = Label(page, details, 23, new Vector2(0, .19f), new Vector2(1, .47f));
+        upgradeDetails = Label(page, details, 23, new Vector2(0, .29f), new Vector2(1, .56f));
+        Button(page, $"스킬 · {CatSkillTree.Available(owned)} 포인트", new Vector2(0, .19f), new Vector2(1, .27f), () => ShowSkillTree(owned));
         Button(page, "이 고양이 선택 · 저장", new Vector2(0, .09f), new Vector2(1, .17f), () => CharacterSelected?.Invoke(owned));
         long fragmentCost = 0;
-        bool canGrow = definition?.fragmentGrowth != null && definition.fragmentGrowth.TryGetCost(owned.level, out fragmentCost);
-        var grow = Button(page, canGrow ? $"Lv. {owned.level} → {owned.level + 1} · 조각 {fragmentCost:N0}개" : "최대 레벨 / 성장 설정 없음", Vector2.zero, new Vector2(1, .07f), () => CharacterLevelUpRequested?.Invoke(owned));
+        bool canGrow = CatProgression.TryStarCost(owned.ascension, out fragmentCost);
+        var grow = Button(page, canGrow ? $"{owned.ascension}성 → {owned.ascension + 1}성 · 조각 {fragmentCost:N0}개" : "최대 성급 · 5성", Vector2.zero, new Vector2(1, .07f), () => CharacterLevelUpRequested?.Invoke(owned));
         upgradeButton = grow;
         canAffordUpgrade = () => canGrow && owned.fragments >= fragmentCost;
         RefreshUpgradeButton();
@@ -426,12 +438,12 @@ public partial class CatGameSceneUI : MonoBehaviour
         var text = Rect(parent, "Label", min, max).gameObject.AddComponent<Text>();
         text.font = uiFont;
         text.text = value;
-        text.fontSize = Mathf.RoundToInt(size * 1.1f);
+        ReadableUIText.Configure(text, Mathf.RoundToInt(size * 1.3f));
         text.color = ink;
         text.alignment = TextAnchor.MiddleCenter;
         text.raycastTarget = false;
         text.resizeTextForBestFit = true;
-        text.resizeTextMinSize = 12;
+        text.resizeTextMinSize = 16;
         text.resizeTextMaxSize = text.fontSize;
         return text;
     }

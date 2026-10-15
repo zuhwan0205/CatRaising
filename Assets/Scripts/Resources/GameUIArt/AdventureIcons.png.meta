@@ -1,0 +1,1627 @@
+fileFormatVersion: 2
+guid: 861ae4fc8da19c54aa55e892971a0b67
+TextureImporter:
+  internalIDToNameTable:
+  - first:
+      213: 743463439304285120
+    second: AdventureIcons_0
+  - first:
+      213: 6401123104569494640
+    second: AdventureIcons_1
+  - first:
+      213: 7934213886017093799
+    second: AdventureIcons_2
+  - first:
+      213: -6133691722463431286
+    second: AdventureIcons_3
+  - first:
+      213: -5542227910936008253
+    second: AdventureIcons_4
+  - first:
+      213: 6598248824428289444
+    second: AdventureIcons_5
+  - first:
+      213: 2841916896620562633
+    second: AdventureIcons_6
+  - first:
+      213: 2341726776813225867
+    second: AdventureIcons_7
+  - first:
+      213: 8089352046596556206
+    second: AdventureIcons_8
+  - first:
+      213: 7328683340974229169
+    second: AdventureIcons_9
+  - first:
+      213: -5035039254698476578
+    second: AdventureIcons_10
+  - first:
+      213: 5835473296968795614
+    second: AdventureIcons_11
+  - first:
+      213: -5815490571398864030
+    second: AdventureIcons_12
+  - first:
+      213: -8480554266356702232
+    second: AdventureIcons_13
+  - first:
+      213: 7627525515511707197
+    second: AdventureIcons_14
+  - first:
+      213: 4146398233385445710
+    second: AdventureIcons_15
+  - first:
+      213: -3018662111607408053
+    second: AdventureIcons_16
+  - first:
+      213: -6560190560190935059
+    second: AdventureIcons_17
+  - first:
+      213: -1782985648130508794
+    second: AdventureIcons_18
+  - first:
+      213: 1937393137285644211
+    second: AdventureIcons_19
+  - first:
+      213: -2373982438072308448
+    second: AdventureIcons_20
+  - first:
+      213: 3749608595729926361
+    second: AdventureIcons_21
+  - first:
+      213: 3828743169212010078
+    second: AdventureIcons_22
+  - first:
+      213: 7473645495024688150
+    second: AdventureIcons_23
+  - first:
+      213: 3553350240195146
+    second: AdventureIcons_24
+  - first:
+      213: 197704690815450121
+    second: AdventureIcons_25
+  - first:
+      213: -1637365158258370595
+    second: AdventureIcons_26
+  - first:
+      213: -3461874571002947426
+    second: AdventureIcons_27
+  - first:
+      213: 6548301801293654883
+    second: AdventureIcons_28
+  - first:
+      213: 1812617620713795525
+    second: AdventureIcons_29
+  - first:
+      213: -2734540707781039413
+    second: AdventureIcons_30
+  - first:
+      213: 6609325058327646763
+    second: AdventureIcons_31
+  - first:
+      213: -123036369849801082
+    second: AdventureIcons_32
+  - first:
+      213: 4172739648369553988
+    second: AdventureIcons_33
+  - first:
+      213: 1013714343215880936
+    second: AdventureIcons_34
+  - first:
+      213: -7958838673235534717
+    second: AdventureIcons_35
+  - first:
+      213: -6605742555706868814
+    second: AdventureIcons_36
+  - first:
+      213: -6761813391743926015
+    second: AdventureIcons_37
+  - first:
+      213: -8708978166575942514
+    second: AdventureIcons_38
+  - first:
+      213: -4152103052315498171
+    second: AdventureIcons_39
+  - first:
+      213: 3449891757570752042
+    second: AdventureIcons_40
+  - first:
+      213: 8919322659581082630
+    second: AdventureIcons_41
+  - first:
+      213: -2976305973916786780
+    second: AdventureIcons_42
+  - first:
+      213: 5899769815029816101
+    second: AdventureIcons_43
+  - first:
+      213: -4644548017327443609
+    second: AdventureIcons_44
+  - first:
+      213: -4334724484060935434
+    second: AdventureIcons_45
+  - first:
+      213: 8758446061438163092
+    second: AdventureIcons_46
+  - first:
+      213: 2112299990584907785
+    second: AdventureIcons_47
+  - first:
+      213: 7723501677167753756
+    second: AdventureIcons_48
+  - first:
+      213: 2095074325062410499
+    second: AdventureIcons_49
+  - first:
+      213: -3024111912550002216
+    second: AdventureIcons_50
+  - first:
+      213: 4263139125540937535
+    second: AdventureIcons_51
+  - first:
+      213: -3545753826128744357
+    second: AdventureIcons_52
+  - first:
+      213: 1885729760841452114
+    second: AdventureIcons_53
+  - first:
+      213: 3995762272832113970
+    second: AdventureIcons_54
+  - first:
+      213: -106015202228041797
+    second: AdventureIcons_55
+  - first:
+      213: -8424134540830438984
+    second: AdventureIcons_56
+  externalObjects: {}
+  serializedVersion: 13
+  mipmaps:
+    mipMapMode: 0
+    enableMipMap: 0
+    sRGBTexture: 1
+    linearTexture: 0
+    fadeOut: 0
+    borderMipMap: 0
+    mipMapsPreserveCoverage: 0
+    alphaTestReferenceValue: 0.5
+    mipMapFadeDistanceStart: 1
+    mipMapFadeDistanceEnd: 3
+  bumpmap:
+    convertToNormalMap: 0
+    externalNormalMap: 0
+    heightScale: 0.25
+    normalMapFilter: 0
+    flipGreenChannel: 0
+  isReadable: 0
+  streamingMipmaps: 0
+  streamingMipmapsPriority: 0
+  vTOnly: 0
+  ignoreMipmapLimit: 0
+  grayScaleToAlpha: 0
+  generateCubemap: 6
+  cubemapConvolution: 0
+  seamlessCubemap: 0
+  textureFormat: 1
+  maxTextureSize: 2048
+  textureSettings:
+    serializedVersion: 2
+    filterMode: 1
+    aniso: 1
+    mipBias: 0
+    wrapU: 1
+    wrapV: 1
+    wrapW: 1
+  nPOTScale: 0
+  lightmap: 0
+  compressionQuality: 50
+  spriteMode: 2
+  spriteExtrude: 1
+  spriteMeshType: 1
+  alignment: 0
+  spritePivot: {x: 0.5, y: 0.5}
+  spritePixelsToUnits: 100
+  spriteBorder: {x: 0, y: 0, z: 0, w: 0}
+  spriteGenerateFallbackPhysicsShape: 1
+  alphaUsage: 1
+  alphaIsTransparency: 1
+  spriteTessellationMethod: 0
+  spriteTessellationDetail: -1
+  spriteGeometrySubdivision: -1
+  textureType: 8
+  textureShape: 1
+  singleChannelComponent: 0
+  flipbookRows: 1
+  flipbookColumns: 1
+  maxTextureSizeSet: 0
+  compressionQualitySet: 0
+  textureFormatSet: 0
+  ignorePngGamma: 0
+  applyGammaDecoding: 0
+  swizzle: 50462976
+  cookieLightType: 0
+  platformSettings:
+  - serializedVersion: 4
+    buildTarget: DefaultTexturePlatform
+    maxTextureSize: 2048
+    resizeAlgorithm: 0
+    textureFormat: -1
+    textureCompression: 1
+    compressionQuality: 50
+    crunchedCompression: 0
+    allowsAlphaSplitting: 0
+    overridden: 0
+    ignorePlatformSupport: 0
+    androidETC2FallbackOverride: 0
+    forceMaximumCompressionQuality_BC6H_BC7: 0
+  - serializedVersion: 4
+    buildTarget: Standalone
+    maxTextureSize: 2048
+    resizeAlgorithm: 0
+    textureFormat: -1
+    textureCompression: 1
+    compressionQuality: 50
+    crunchedCompression: 0
+    allowsAlphaSplitting: 0
+    overridden: 0
+    ignorePlatformSupport: 0
+    androidETC2FallbackOverride: 0
+    forceMaximumCompressionQuality_BC6H_BC7: 0
+  - serializedVersion: 4
+    buildTarget: Android
+    maxTextureSize: 2048
+    resizeAlgorithm: 0
+    textureFormat: -1
+    textureCompression: 1
+    compressionQuality: 50
+    crunchedCompression: 0
+    allowsAlphaSplitting: 0
+    overridden: 0
+    ignorePlatformSupport: 0
+    androidETC2FallbackOverride: 0
+    forceMaximumCompressionQuality_BC6H_BC7: 0
+  - serializedVersion: 4
+    buildTarget: iOS
+    maxTextureSize: 2048
+    resizeAlgorithm: 0
+    textureFormat: -1
+    textureCompression: 1
+    compressionQuality: 50
+    crunchedCompression: 0
+    allowsAlphaSplitting: 0
+    overridden: 0
+    ignorePlatformSupport: 0
+    androidETC2FallbackOverride: 0
+    forceMaximumCompressionQuality_BC6H_BC7: 0
+  spriteSheet:
+    serializedVersion: 2
+    sprites:
+    - serializedVersion: 2
+      name: AdventureIcons_0
+      rect:
+        serializedVersion: 2
+        x: 231
+        y: 1191
+        width: 49
+        height: 47
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 0cbd83b1f00515a00800000000000000
+      internalID: 743463439304285120
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: AdventureIcons_1
+      rect:
+        serializedVersion: 2
+        x: 633
+        y: 1226
+        width: 75
+        height: 20
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 07c096b8c8b55d850800000000000000
+      internalID: 6401123104569494640
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: AdventureIcons_2
+      rect:
+        serializedVersion: 2
+        x: 643
+        y: 0
+        width: 592
+        height: 1234
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 7a04508fd7dfb1e60800000000000000
+      internalID: 7934213886017093799
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: AdventureIcons_3
+      rect:
+        serializedVersion: 2
+        x: 297
+        y: 1181
+        width: 20
+        height: 33
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: a8530d840efb0eaa0800000000000000
+      internalID: -6133691722463431286
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: AdventureIcons_4
+      rect:
+        serializedVersion: 2
+        x: 482
+        y: 1181
+        width: 19
+        height: 33
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 3c96768341d0613b0800000000000000
+      internalID: -5542227910936008253
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: AdventureIcons_5
+      rect:
+        serializedVersion: 2
+        x: 547
+        y: 1197
+        width: 33
+        height: 27
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 4addfa7c850b19b50800000000000000
+      internalID: 6598248824428289444
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: AdventureIcons_6
+      rect:
+        serializedVersion: 2
+        x: 1125
+        y: 1213
+        width: 7
+        height: 8
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 9c8cf304c54807720800000000000000
+      internalID: 2841916896620562633
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: AdventureIcons_7
+      rect:
+        serializedVersion: 2
+        x: 1139
+        y: 1213
+        width: 17
+        height: 10
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: b8709f4b81c7f7020800000000000000
+      internalID: 2341726776813225867
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: AdventureIcons_8
+      rect:
+        serializedVersion: 2
+        x: 0
+        y: 596
+        width: 662
+        height: 606
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: ea58770c3d6234070800000000000000
+      internalID: 8089352046596556206
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: AdventureIcons_9
+      rect:
+        serializedVersion: 2
+        x: 673
+        y: 1191
+        width: 7
+        height: 7
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 1b6871a6ba6b4b560800000000000000
+      internalID: 7328683340974229169
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: AdventureIcons_10
+      rect:
+        serializedVersion: 2
+        x: 72
+        y: 819
+        width: 7
+        height: 16
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: edbbc818972ff1ab0800000000000000
+      internalID: -5035039254698476578
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: AdventureIcons_11
+      rect:
+        serializedVersion: 2
+        x: 54
+        y: 779
+        width: 8
+        height: 22
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: ed54a12cb04cbf050800000000000000
+      internalID: 5835473296968795614
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: AdventureIcons_12
+      rect:
+        serializedVersion: 2
+        x: 661
+        y: 757
+        width: 13
+        height: 15
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 2632329132a3b4fa0800000000000000
+      internalID: -5815490571398864030
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: AdventureIcons_13
+      rect:
+        serializedVersion: 2
+        x: 618
+        y: 698
+        width: 8
+        height: 9
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 8e3a26f93d40f4a80800000000000000
+      internalID: -8480554266356702232
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: AdventureIcons_14
+      rect:
+        serializedVersion: 2
+        x: 398
+        y: 654
+        width: 21
+        height: 31
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: d36bd434b0a6ad960800000000000000
+      internalID: 7627525515511707197
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: AdventureIcons_15
+      rect:
+        serializedVersion: 2
+        x: 675
+        y: 652
+        width: 7
+        height: 13
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: e492f368937fa8930800000000000000
+      internalID: 4146398233385445710
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: AdventureIcons_16
+      rect:
+        serializedVersion: 2
+        x: 705
+        y: 634
+        width: 15
+        height: 12
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: b4ab5b49dce8b16d0800000000000000
+      internalID: -3018662111607408053
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: AdventureIcons_17
+      rect:
+        serializedVersion: 2
+        x: 496
+        y: 594
+        width: 12
+        height: 11
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: defc2f0617585f4a0800000000000000
+      internalID: -6560190560190935059
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: AdventureIcons_18
+      rect:
+        serializedVersion: 2
+        x: 0
+        y: 15
+        width: 640
+        height: 568
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 608bf8befff8147e0800000000000000
+      internalID: -1782985648130508794
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: AdventureIcons_19
+      rect:
+        serializedVersion: 2
+        x: 625
+        y: 520
+        width: 15
+        height: 13
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 3bfb03a2bc003ea10800000000000000
+      internalID: 1937393137285644211
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: AdventureIcons_20
+      rect:
+        serializedVersion: 2
+        x: 657
+        y: 532
+        width: 33
+        height: 49
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 02d2fabec8bed0fd0800000000000000
+      internalID: -2373982438072308448
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: AdventureIcons_21
+      rect:
+        serializedVersion: 2
+        x: 1105
+        y: 505
+        width: 36
+        height: 36
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 9d8cb3bc629490430800000000000000
+      internalID: 3749608595729926361
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: AdventureIcons_22
+      rect:
+        serializedVersion: 2
+        x: 1139
+        y: 526
+        width: 18
+        height: 23
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: e5ec51970ad622530800000000000000
+      internalID: 3828743169212010078
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: AdventureIcons_23
+      rect:
+        serializedVersion: 2
+        x: 1168
+        y: 509
+        width: 19
+        height: 24
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 61c152c0bf8b7b760800000000000000
+      internalID: 7473645495024688150
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: AdventureIcons_24
+      rect:
+        serializedVersion: 2
+        x: 673
+        y: 494
+        width: 27
+        height: 23
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: a4254d2d0cf9c0000800000000000000
+      internalID: 3553350240195146
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: AdventureIcons_25
+      rect:
+        serializedVersion: 2
+        x: 735
+        y: 513
+        width: 8
+        height: 14
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 90cbb7a6e536eb200800000000000000
+      internalID: 197704690815450121
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: AdventureIcons_26
+      rect:
+        serializedVersion: 2
+        x: 742
+        y: 493
+        width: 29
+        height: 30
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: dd7986e4019e649e0800000000000000
+      internalID: -1637365158258370595
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: AdventureIcons_27
+      rect:
+        serializedVersion: 2
+        x: 1088
+        y: 481
+        width: 24
+        height: 36
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: e9859626b63f4ffc0800000000000000
+      internalID: -3461874571002947426
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: AdventureIcons_28
+      rect:
+        serializedVersion: 2
+        x: 1091
+        y: 515
+        width: 9
+        height: 8
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 36ba82c3bcd30ea50800000000000000
+      internalID: 6548301801293654883
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: AdventureIcons_29
+      rect:
+        serializedVersion: 2
+        x: 1141
+        y: 516
+        width: 6
+        height: 6
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 5cf62445f16b72910800000000000000
+      internalID: 1812617620713795525
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: AdventureIcons_30
+      rect:
+        serializedVersion: 2
+        x: 1145
+        y: 505
+        width: 24
+        height: 21
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: bcaadd8e6b5fc0ad0800000000000000
+      internalID: -2734540707781039413
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: AdventureIcons_31
+      rect:
+        serializedVersion: 2
+        x: 1166
+        y: 503
+        width: 11
+        height: 12
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: b2215b27f1a09bb50800000000000000
+      internalID: 6609325058327646763
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: AdventureIcons_32
+      rect:
+        serializedVersion: 2
+        x: 609
+        y: 465
+        width: 29
+        height: 24
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 68626a0d213ea4ef0800000000000000
+      internalID: -123036369849801082
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: AdventureIcons_33
+      rect:
+        serializedVersion: 2
+        x: 786
+        y: 481
+        width: 9
+        height: 10
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 44271412a9c88e930800000000000000
+      internalID: 4172739648369553988
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: AdventureIcons_34
+      rect:
+        serializedVersion: 2
+        x: 1051
+        y: 481
+        width: 40
+        height: 30
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 8ead91303df611e00800000000000000
+      internalID: 1013714343215880936
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: AdventureIcons_35
+      rect:
+        serializedVersion: 2
+        x: 633
+        y: 391
+        width: 25
+        height: 17
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 38c9729f4668c8190800000000000000
+      internalID: -7958838673235534717
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: AdventureIcons_36
+      rect:
+        serializedVersion: 2
+        x: 713
+        y: 389
+        width: 10
+        height: 18
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 2bb3961f420b354a0800000000000000
+      internalID: -6605742555706868814
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: AdventureIcons_37
+      rect:
+        serializedVersion: 2
+        x: 717
+        y: 391
+        width: 8
+        height: 11
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 101cf9bbb863922a0800000000000000
+      internalID: -6761813391743926015
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: AdventureIcons_38
+      rect:
+        serializedVersion: 2
+        x: 641
+        y: 353
+        width: 19
+        height: 19
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: e84bb98ef7e732780800000000000000
+      internalID: -8708978166575942514
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: AdventureIcons_39
+      rect:
+        serializedVersion: 2
+        x: 679
+        y: 328
+        width: 31
+        height: 34
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 5496befc544c066c0800000000000000
+      internalID: -4152103052315498171
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: AdventureIcons_40
+      rect:
+        serializedVersion: 2
+        x: 715
+        y: 361
+        width: 12
+        height: 11
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: a2e7d83764a70ef20800000000000000
+      internalID: 3449891757570752042
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: AdventureIcons_41
+      rect:
+        serializedVersion: 2
+        x: 723
+        y: 324
+        width: 20
+        height: 28
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 60c3c69c3bcc7cb70800000000000000
+      internalID: 8919322659581082630
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: AdventureIcons_42
+      rect:
+        serializedVersion: 2
+        x: 731
+        y: 274
+        width: 22
+        height: 15
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 4af11d16c7902b6d0800000000000000
+      internalID: -2976305973916786780
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: AdventureIcons_43
+      rect:
+        serializedVersion: 2
+        x: 733
+        y: 258
+        width: 6
+        height: 12
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 52b9c61736130e150800000000000000
+      internalID: 5899769815029816101
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: AdventureIcons_44
+      rect:
+        serializedVersion: 2
+        x: 713
+        y: 214
+        width: 18
+        height: 19
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 761f3f4af204b8fb0800000000000000
+      internalID: -4644548017327443609
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: AdventureIcons_45
+      rect:
+        serializedVersion: 2
+        x: 730
+        y: 192
+        width: 31
+        height: 35
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 6fa0c505c07f7d3c0800000000000000
+      internalID: -4334724484060935434
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: AdventureIcons_46
+      rect:
+        serializedVersion: 2
+        x: 760
+        y: 208
+        width: 17
+        height: 17
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 498d074e9404c8970800000000000000
+      internalID: 8758446061438163092
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: AdventureIcons_47
+      rect:
+        serializedVersion: 2
+        x: 705
+        y: 198
+        width: 11
+        height: 13
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 908dfd566a5605d10800000000000000
+      internalID: 2112299990584907785
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: AdventureIcons_48
+      rect:
+        serializedVersion: 2
+        x: 713
+        y: 200
+        width: 8
+        height: 11
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: c1ab7b1cad36f2b60800000000000000
+      internalID: 7723501677167753756
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: AdventureIcons_49
+      rect:
+        serializedVersion: 2
+        x: 731
+        y: 184
+        width: 12
+        height: 11
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 301e26b9ff2331d10800000000000000
+      internalID: 2095074325062410499
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: AdventureIcons_50
+      rect:
+        serializedVersion: 2
+        x: 667
+        y: 154
+        width: 25
+        height: 17
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 8d11e6bec323806d0800000000000000
+      internalID: -3024111912550002216
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: AdventureIcons_51
+      rect:
+        serializedVersion: 2
+        x: 703
+        y: 143
+        width: 40
+        height: 22
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: f3fdfe59276b92b30800000000000000
+      internalID: 4263139125540937535
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: AdventureIcons_52
+      rect:
+        serializedVersion: 2
+        x: 764
+        y: 128
+        width: 19
+        height: 19
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: b503d9c6ea3facec0800000000000000
+      internalID: -3545753826128744357
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: AdventureIcons_53
+      rect:
+        serializedVersion: 2
+        x: 721
+        y: 81
+        width: 22
+        height: 16
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 25a4659f9357b2a10800000000000000
+      internalID: 1885729760841452114
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: AdventureIcons_54
+      rect:
+        serializedVersion: 2
+        x: 932
+        y: 87
+        width: 6
+        height: 6
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 23dc01fdd9cc37730800000000000000
+      internalID: 3995762272832113970
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: AdventureIcons_55
+      rect:
+        serializedVersion: 2
+        x: 745
+        y: 63
+        width: 6
+        height: 9
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: bb7086a3cbb578ef0800000000000000
+      internalID: -106015202228041797
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: AdventureIcons_56
+      rect:
+        serializedVersion: 2
+        x: 750
+        y: 65
+        width: 9
+        height: 7
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 8b904b1a446771b80800000000000000
+      internalID: -8424134540830438984
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    outline: []
+    customData: 
+    physicsShape: []
+    bones: []
+    spriteID: 
+    internalID: 0
+    vertices: []
+    indices: 
+    edges: []
+    weights: []
+    secondaryTextures: []
+    spriteCustomMetadata:
+      entries: []
+    nameFileIdTable:
+      AdventureIcons_0: 743463439304285120
+      AdventureIcons_1: 6401123104569494640
+      AdventureIcons_10: -5035039254698476578
+      AdventureIcons_11: 5835473296968795614
+      AdventureIcons_12: -5815490571398864030
+      AdventureIcons_13: -8480554266356702232
+      AdventureIcons_14: 7627525515511707197
+      AdventureIcons_15: 4146398233385445710
+      AdventureIcons_16: -3018662111607408053
+      AdventureIcons_17: -6560190560190935059
+      AdventureIcons_18: -1782985648130508794
+      AdventureIcons_19: 1937393137285644211
+      AdventureIcons_2: 7934213886017093799
+      AdventureIcons_20: -2373982438072308448
+      AdventureIcons_21: 3749608595729926361
+      AdventureIcons_22: 3828743169212010078
+      AdventureIcons_23: 7473645495024688150
+      AdventureIcons_24: 3553350240195146
+      AdventureIcons_25: 197704690815450121
+      AdventureIcons_26: -1637365158258370595
+      AdventureIcons_27: -3461874571002947426
+      AdventureIcons_28: 6548301801293654883
+      AdventureIcons_29: 1812617620713795525
+      AdventureIcons_3: -6133691722463431286
+      AdventureIcons_30: -2734540707781039413
+      AdventureIcons_31: 6609325058327646763
+      AdventureIcons_32: -123036369849801082
+      AdventureIcons_33: 4172739648369553988
+      AdventureIcons_34: 1013714343215880936
+      AdventureIcons_35: -7958838673235534717
+      AdventureIcons_36: -6605742555706868814
+      AdventureIcons_37: -6761813391743926015
+      AdventureIcons_38: -8708978166575942514
+      AdventureIcons_39: -4152103052315498171
+      AdventureIcons_4: -5542227910936008253
+      AdventureIcons_40: 3449891757570752042
+      AdventureIcons_41: 8919322659581082630
+      AdventureIcons_42: -2976305973916786780
+      AdventureIcons_43: 5899769815029816101
+      AdventureIcons_44: -4644548017327443609
+      AdventureIcons_45: -4334724484060935434
+      AdventureIcons_46: 8758446061438163092
+      AdventureIcons_47: 2112299990584907785
+      AdventureIcons_48: 7723501677167753756
+      AdventureIcons_49: 2095074325062410499
+      AdventureIcons_5: 6598248824428289444
+      AdventureIcons_50: -3024111912550002216
+      AdventureIcons_51: 4263139125540937535
+      AdventureIcons_52: -3545753826128744357
+      AdventureIcons_53: 1885729760841452114
+      AdventureIcons_54: 3995762272832113970
+      AdventureIcons_55: -106015202228041797
+      AdventureIcons_56: -8424134540830438984
+      AdventureIcons_6: 2841916896620562633
+      AdventureIcons_7: 2341726776813225867
+      AdventureIcons_8: 8089352046596556206
+      AdventureIcons_9: 7328683340974229169
+  mipmapLimitGroupName: 
+  pSDRemoveMatte: 0
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
