@@ -68,7 +68,7 @@ public class OwnedCharacter
     public int level = 1;
     public long experience;
     public int ascension;
-    public int[] skillRanks = new int[6];
+    public int[] skillRanks = new int[CatSkillTree.Count];
     public long fragments;
 }
 

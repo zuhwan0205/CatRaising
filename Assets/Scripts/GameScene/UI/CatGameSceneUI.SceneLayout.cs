@@ -31,6 +31,8 @@ public partial class CatGameSceneUI
 
     private void RestoreAdventure()
     {
+        var header = safeArea.Find("Currency Bar");
+        if (header != null) header.gameObject.SetActive(true);
         adventureRoot.SetActive(true);
         UpgradeFullScreenBattle();
         adventureImage.gameObject.SetActive(true);

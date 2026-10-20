@@ -177,11 +177,11 @@ public class FieldEnemy : MonoBehaviour
         artwork.color = flashRemaining > 0 ? (raidArtwork != null ? new Color(1, .55f, .55f) : Color.white) : slowRemaining > 0 ? Color.Lerp(color, new Color(.35f, .8f, 1), .65f) : color;
         if (raidVisual != null) raidVisual.Step(delta, moved);
     }
-    public bool Hit(double damage)
+    public bool Hit(double damage, bool ignoreDefense = false)
     {
         if (!Alive)
             return false;
-        LastHitDamage = System.Math.Max(1, damage - Defense);
+        LastHitDamage = ignoreDefense ? System.Math.Max(0, damage) : System.Math.Max(1, damage - Defense);
         bool killed = Health.Damage(LastHitDamage);
         HealthBarTween.Set(healthBar, (float)(Health.Current / Health.Maximum));
         flashRemaining = .15f;

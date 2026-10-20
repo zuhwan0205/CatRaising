@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using UnityEngine;
 
 // XZ 거리 기반 추적과 자동 공격. 이동 모드와 관계없이 공격을 처리합니다.
-public class FieldCombatController : MonoBehaviour
+public partial class FieldCombatController : MonoBehaviour
 {
     public event Action<long> GoldEarned;
     public event Action<Vector3, long> EnemyGoldDropped;
@@ -80,6 +80,7 @@ public class FieldCombatController : MonoBehaviour
         ResolveStats();
         if (PlayerHealth.Dead) return;
         bool died = PlayerHealth.Damage(Math.Max(1, damage - defense));
+        TrySkillPotion();
         if (!died) TriggerRelics(EffectTrigger.OnDamaged, null);
         PlayerHit?.Invoke();
         HealthChanged?.Invoke(PlayerHealth.Current, PlayerHealth.Maximum);
@@ -95,6 +96,7 @@ public class FieldCombatController : MonoBehaviour
             LockedTarget = null;
         float delta = Mathf.Min(Time.deltaTime, .1f);
         ResolveStats();
+        TickCombatSkills(delta);
         relicEffects.Tick(delta);
         killsThisFrame = 0;
         if (PlayerHealth.Dead)
@@ -207,6 +209,7 @@ public class FieldCombatController : MonoBehaviour
             contactCooldown = Mathf.Max(.1f, ContactInterval);
             if (contactAttacker != null) contactAttacker.ShowAttack(player.position);
             bool died = PlayerHealth.Damage(Math.Max(1, touchingDamage - defense));
+            TrySkillPotion();
             if (!died)
                 TriggerRelics(EffectTrigger.OnDamaged, null);
             PlayerHit?.Invoke();
@@ -232,47 +235,40 @@ public class FieldCombatController : MonoBehaviour
         // 매 프레임 사거리 안에서 공격 가능한 가장 가까운 적을 선택합니다.
         // 쿨다운 중에도 범위를 벗어나면 즉시 이전 타겟을 해제합니다.
         LockedTarget = closest;
+        UpdateArrowFocus(closest, false);
         if (!valid || cooldown > 0 || closest == null)
             return;
-        cooldown = (float)(1 / speed);
+        UpdateArrowFocus(closest, true);
+        cooldown = (float)(1 / (speed * (1 + focusStacks * .10)));
         // 여러 적을 맞히는 공격도 몸의 방향/모션은 한 번만 시작합니다.
         AttackStarted?.Invoke(player.position, closest.transform.position);
         // OnAttack은 공격 1회당, OnHit은 기본 공격 명중 대상마다 실행합니다.
         double attackBonus = 0;
         TriggerRelics(EffectTrigger.OnAttack, value => attackBonus += value);
+        if (UsesSkillArrows)
+        {
+            LaunchSkillArrows(closest, attack + attackBonus);
+            return;
+        }
         attackBehavior.SelectTargets(player.position, closest, enemies, Range, attackTargets);
+        ExpandMaceTargets(closest);
         if (Navigation != null)
             attackTargets.RemoveAll(target => !Navigation.Clear(player.position, target.transform.position));
         if (attackBehavior is TrioAttack trio)
             trio.LimitTargets(attackTargets);
         double minDamage = double.PositiveInfinity, maxDamage = 0, maxBonus = 0;
-        long earnedGold = 0;
         foreach (var target in attackTargets)
         {
+            if (!target.Alive) continue;
             AttackPerformed?.Invoke(player.position, target.transform.position);
             double hitBonus = 0;
             TriggerRelics(EffectTrigger.OnHit, value => hitBonus += value);
             double bonus = attackBonus + hitBonus;
             double damage = attack + bonus;
             maxBonus = Math.Max(maxBonus, bonus);
-            bool killed = target.Hit(damage);
-            DamageDealt?.Invoke(target.transform.position, target.LastHitDamage);
+            DealSkillDamage(target, damage, false, true);
             minDamage = Math.Min(minDamage, target.LastHitDamage);
             maxDamage = Math.Max(maxDamage, target.LastHitDamage);
-            if (!killed && selectedId == "cat_shadow")
-                target.ApplyIceSlow();
-            if (killed)
-            {
-                if (target == LockedTarget)
-                    LockedTarget = null;
-                target.RespawnRemaining = RespawnDelay;
-                if (!RaidMode && Pool != null) Pool.Release(target);
-                killsThisFrame++;
-                if (!RaidMode) ExperienceDropped?.Invoke(target.transform.position, CatProgression.DropExperience(target.Kind));
-                earnedGold += target.GoldReward;
-                EnemyGoldDropped?.Invoke(target.transform.position, target.GoldReward);
-                TriggerRelics(EffectTrigger.OnKill, null);
-            }
         }
         if (attackTargets.Count > 0)
         {
@@ -284,8 +280,6 @@ public class FieldCombatController : MonoBehaviour
             MessageChanged?.Invoke($"공격 피해 {damageText}{bonusText}{result}");
         }
         // 범위 공격은 한 번에 합산 저장하여 저장 중 중복 보상 누락을 막습니다.
-        if (earnedGold > 0)
-            GoldEarned?.Invoke(earnedGold);
     }
 
     private void TriggerRelics(EffectTrigger trigger, Action<double> bonusDamage)
@@ -311,6 +305,8 @@ public class FieldCombatController : MonoBehaviour
         if (PlayerHealth != null && selectedId == data.loadout.characterId && selectedLevel == level && selectedStars == (owned == null ? 0 : owned.ascension) && selectedSkills == CatSkillTree.Signature(owned))
             return;
         selectedId = data.loadout.characterId;
+        skillOwner = owned;
+        ResetSkillAttacks();
         selectedLevel = level;
         selectedSkills = CatSkillTree.Signature(owned);
         selectedStars = owned == null ? 0 : owned.ascension;

@@ -126,6 +126,21 @@ public class CatGameSession
         return true;
     }
 
+    public async Task ResetSkillsAsync(OwnedCharacter cat)
+    {
+        if (IsSaving || HasPendingReward || cat == null || !data.characters.Contains(cat) ||
+            !CatSkillTree.HasLearnedSkills(cat) || data.wallet.gems < CatSkillTree.ResetCost) return;
+        var previousRanks = cat.skillRanks;
+        long previousGems = data.wallet.gems;
+        cat.skillRanks = new int[CatSkillTree.Count];
+        data.wallet.gems -= CatSkillTree.ResetCost;
+        await SaveAsync(() =>
+        {
+            cat.skillRanks = previousRanks;
+            data.wallet.gems = previousGems;
+        });
+    }
+
     public async Task LearnSkillAsync(OwnedCharacter cat, int node)
     {
         if (IsSaving || HasPendingReward || cat == null || !data.characters.Contains(cat) || !CatSkillTree.CanLearn(cat, node)) return;

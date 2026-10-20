@@ -126,6 +126,7 @@ public partial class CatGameSceneUI : MonoBehaviour
             ApplySafeArea();
         RefreshUpgradeButton();
         RefreshCrystalAdButton();
+        RefreshSkillResetButton();
         UpdateRaid();
     }
     private void ApplySafeArea()
@@ -142,7 +143,9 @@ public partial class CatGameSceneUI : MonoBehaviour
 
     private void Show(string tab)
     {
-        if (saving || drawOverlay != null || detailOverlay != null)
+        // 보상 자동 저장 중에도 화면 탐색은 허용합니다.
+        // 데이터 변경 작업은 각 버튼과 세션의 저장 상태 검사로 보호합니다.
+        if (drawOverlay != null || detailOverlay != null)
             return;
         CloseAdventureMenu();
         if (joystick != null)
