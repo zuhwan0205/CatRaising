@@ -24,7 +24,7 @@ public static class LoadingSceneUISetup
             var ui = manager.GetComponent<LoadingLoginUI>();
             if (ui != null && ui.HasSceneUI)
             {
-                if (ui.UpgradeTextSize())
+                if (ui.UpgradeTextSize() | ui.UpgradeBackgroundSize())
                 {
                     EditorUtility.SetDirty(ui);
                     EditorSceneManager.MarkSceneDirty(scene);

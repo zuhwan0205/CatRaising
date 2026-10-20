@@ -108,6 +108,7 @@ public class CatGameScene : MonoBehaviour
         view.Build(data, catalog, uiFont, preview, field.Output);
         view.CharacterSelected += SelectCharacter;
         view.SkillRequested += LearnSkill;
+        view.SkillResetRequested += ResetSkills;
         view.RelicSelected += SelectRelic;
         view.CharacterLevelUpRequested += LevelUpCharacter;
         view.RelicLevelUpRequested += LevelUpRelic;
@@ -208,7 +209,14 @@ public class CatGameScene : MonoBehaviour
     private async void LearnSkill(OwnedCharacter cat, int node)
     {
         await session.LearnSkillAsync(cat, node);
-        if (view != null) view.ShowSkillTree(cat);
+        if (view != null) view.RefreshSkillAfterLearning(cat, node);
+    }
+    private async void ResetSkills(OwnedCharacter cat)
+    {
+        await session.ResetSkillsAsync(cat);
+        if (view == null) return;
+        view.RefreshWallet();
+        view.ShowSkillTree(cat);
     }
     private async void SelectCharacter(OwnedCharacter character)
     {
@@ -281,6 +289,7 @@ public class CatGameScene : MonoBehaviour
         {
             view.CharacterSelected -= SelectCharacter;
             view.SkillRequested -= LearnSkill;
+            view.SkillResetRequested -= ResetSkills;
             view.RelicSelected -= SelectRelic;
             view.CharacterLevelUpRequested -= LevelUpCharacter;
             view.RelicLevelUpRequested -= LevelUpRelic;

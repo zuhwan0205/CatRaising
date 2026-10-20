@@ -21,6 +21,15 @@ public sealed class RaidPartyFormation : MonoBehaviour
         bool running = Field != null && Field.RaidRunning;
         Movement.enabled = running;
         if (!running) { Movement.StickInput = Vector2.zero; return; }
+        // 대형 전체는 살아있는 파티원 중 가장 느린 이동 보너스에 맞춥니다.
+        float multiplier = float.MaxValue;
+        foreach (var member in Members)
+        {
+            if (member == null || !member.gameObject.activeSelf) continue;
+            var combat = member.GetComponent<FieldCombatController>();
+            if (combat != null) multiplier = Mathf.Min(multiplier, combat.SkillMovementMultiplier);
+        }
+        Movement.Speed = 3 * (multiplier == float.MaxValue ? 1 : multiplier);
         if (Field.RaidBoss != null)
         {
             Vector3 towardBoss = Field.RaidBoss.transform.position - transform.position;

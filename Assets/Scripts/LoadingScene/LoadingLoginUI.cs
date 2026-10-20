@@ -11,6 +11,17 @@ using UnityEngine.InputSystem.UI;
 public class LoadingLoginUI : MonoBehaviour
 {
     [SerializeField] private int textSizeVersion;
+    [SerializeField] private int backgroundSizeVersion;
+    public bool UpgradeBackgroundSize()
+    {
+        if (backgroundSizeVersion >= 2 || root == null) return false;
+        var picture = root.transform.Find("Background/Cat Village Background");
+        if (picture == null) return false;
+        // 씬에 저장된 축소 상태도 원래 크기로 복원합니다.
+        picture.localScale = Vector3.one;
+        backgroundSizeVersion = 2;
+        return true;
+    }
     public bool UpgradeTextSize()
     {
         if (textSizeVersion >= 1 || root == null) return false;
@@ -42,6 +53,7 @@ public class LoadingLoginUI : MonoBehaviour
         if (root != null)
         {
             UpgradeTextSize();
+            UpgradeBackgroundSize();
             BindButtons();
             PrepareInitialView();
             return;
@@ -126,6 +138,7 @@ public class LoadingLoginUI : MonoBehaviour
         BindButtons();
         PrepareInitialView();
         textSizeVersion = 1;
+        UpgradeBackgroundSize();
     }
 
     public bool HasSceneUI => root != null;

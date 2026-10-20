@@ -62,6 +62,7 @@ public partial class CatGameSceneUI
         texture.filterMode = FilterMode.Point;
         foreach (var label in button.GetComponentsInChildren<Text>()) label.gameObject.SetActive(false);
         var rect = Rect(button.transform, "Adventure Icon", Vector2.zero, Vector2.one);
+        rect.localScale = Vector3.one * .9f;
         var image = rect.gameObject.AddComponent<RawImage>();
         image.texture = texture;
         image.uvRect = CenteredIconRect(icon, true);

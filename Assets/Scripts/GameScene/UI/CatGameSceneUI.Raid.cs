@@ -23,11 +23,11 @@ public partial class CatGameSceneUI
         if (raidActive) { ShowStatus("레이드를 종료한 뒤 이동해주세요."); return; }
         if (title != "모험") { Show(title); return; }
         if (adventureMenu != null) { CloseAdventureMenu(); return; }
-        adventureMenu = Panel(safeArea, "Adventure Menu", new Vector2(.025f, .135f), new Vector2(.29f, .48f), new Color(.16f, .20f, .17f, .8f));
+        adventureMenu = Panel(safeArea, "Adventure Menu", new Vector2(.045f, .135f), new Vector2(.27f, .428f), new Color(.16f, .20f, .17f, .8f));
         adventureMenu.SetAsLastSibling();
         AdventureIconButton("전투", 0, .68f, .97f, () => Show("모험"));
-        AdventureIconButton("레이드", 1, .355f, .645f, () => Show("레이드"));
-        AdventureIconButton("던전", 2, .03f, .32f, () => Show("던전"));
+        AdventureIconButton("던전", 2, .355f, .645f, () => Show("던전"));
+        AdventureIconButton("레이드", 1, .03f, .32f, () => Show("레이드"));
     }
 
     private void CloseAdventureMenu()

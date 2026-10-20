@@ -18,6 +18,7 @@ public sealed class FieldExperienceCrystals : MonoBehaviour
     private FieldCombatController combat;
     private CatFieldController field;
     public Func<long, bool> Collect;
+    private float magnetCooldown;
 
     public void Initialize(Transform cat, Camera camera, Sprite square, FieldCombatController controller, CatFieldController owner)
     {
@@ -64,6 +65,8 @@ public sealed class FieldExperienceCrystals : MonoBehaviour
         foreach (var item in crystals)
             if (item.amount > 0 && item.visual.activeSelf == encounter) item.visual.SetActive(!encounter);
         if (encounter || combat.Blocked || combat.PlayerHealth == null || combat.PlayerHealth.Dead || Collect == null) return;
+        magnetCooldown = Mathf.Max(0, magnetCooldown - Time.deltaTime);
+        bool magnet = combat.MagnetRank > 0 && magnetCooldown <= 0;
         collected.Clear();
         long total = 0;
         foreach (var item in crystals)
@@ -71,11 +74,12 @@ public sealed class FieldExperienceCrystals : MonoBehaviour
             if (item.amount == 0) continue;
             var offset = player.position - item.position;
             offset.y = 0;
-            if (offset.sqrMagnitude > 1.2f * 1.2f) continue;
+            if (!magnet && offset.sqrMagnitude > 1.2f * 1.2f) continue;
             total += item.amount;
             collected.Add(item);
         }
         if (total == 0 || !Collect(total)) return;
+        if (magnet) magnetCooldown = 6 - combat.MagnetRank;
         foreach (var item in collected) { item.amount = 0; item.visual.SetActive(false); }
     }
 

@@ -24,6 +24,7 @@ public class CatMovementController : MonoBehaviour
         get; set;
     }
     public float Speed = 3;
+    public float EffectiveSpeed => Speed * (Combat != null ? Combat.SkillMovementMultiplier : 1);
     public float StopDistance = 1.5f;
     public float FieldHalfSize = FieldMapSize.HalfSize;
 
@@ -36,7 +37,7 @@ public class CatMovementController : MonoBehaviour
     private void Update()
     {
         Vector2 direction = Automatic ? AutoDirection() : ManualDirection();
-        Vector2 next = new Vector2(transform.position.x, transform.position.z) + Vector2.ClampMagnitude(direction, 1) * Speed * Mathf.Min(Time.deltaTime, .1f);
+        Vector2 next = new Vector2(transform.position.x, transform.position.z) + Vector2.ClampMagnitude(direction, 1) * EffectiveSpeed * Mathf.Min(Time.deltaTime, .1f);
         next.x = Mathf.Clamp(next.x, -FieldHalfSize, FieldHalfSize);
         next.y = Mathf.Clamp(next.y, -FieldHalfSize, FieldHalfSize);
         Vector3 destination = new Vector3(next.x, 0, next.y);
@@ -70,7 +71,7 @@ public class CatMovementController : MonoBehaviour
         Vector3 displacement = goal - transform.position;
         Vector2 delta = new Vector2(displacement.x, displacement.z);
         // 이동 한 번으로 유지 거리를 지나치지 않습니다.
-        float step = Speed * Mathf.Min(Time.deltaTime, .1f);
+        float step = EffectiveSpeed * Mathf.Min(Time.deltaTime, .1f);
         float stop = Combat != null ? Mathf.Max(.1f, Combat.Range * .9f) : StopDistance;
         return delta.normalized * Mathf.Clamp01((delta.magnitude - (direct ? stop : 0)) / Mathf.Max(step, .0001f));
     }

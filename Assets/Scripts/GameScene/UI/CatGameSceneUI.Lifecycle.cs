@@ -22,6 +22,8 @@ public partial class CatGameSceneUI
 
     private void ClearPage()
     {
+        var header = safeArea != null ? safeArea.Find("Currency Bar") : null;
+        if (header != null) header.gameObject.SetActive(false);
         if (adventureImage != null) adventureImage.gameObject.SetActive(false);
         if (joystick != null)
             joystick.ResetInput();
