@@ -8,6 +8,7 @@ public partial class CatGameSceneUI
     public event Action<string> CharacterPurchaseRequested;
     public event Action RelicDrawRequested;
     public event Action CharacterDrawRequested;
+    public event Action<bool, int> BatchDrawRequested;
     public event Action CrystalAdRequested;
     private UnityEngine.UI.Button crystalAdButton;
     private UnityEngine.UI.Text crystalAdLabel;
@@ -72,9 +73,18 @@ public partial class CatGameSceneUI
         bool valid = rules != null && rules.Validate(catalog.CharacterDrawPool());
         Label(page, rules == null ? "뽑기 설정 없음" : $"Common {rules.commonPercent}% · Epic {rules.epicPercent}%\nUnique {rules.uniquePercent}% · Legendary {rules.legendaryPercent}%", 23, new Vector2(0, .64f), new Vector2(1, .76f));
         Label(page, rules == null ? "" : $"최초 획득: 골드 해금 또는 뽑기\n중복: 해당 캐릭터 조각 +{rules.duplicateFragments} · 조각으로 강화", 19, new Vector2(0, .54f), new Vector2(1, .64f));
-        var button = Button(page, valid ? $"캐릭터 1회 뽑기 · {rules.goldCost:N0} 골드" : "뽑기 설정 확인 필요", new Vector2(0, .44f), new Vector2(1, .53f), () => CharacterDrawRequested?.Invoke());
+        var button = Button(page, valid ? $"캐릭터 1회 뽑기 · {rules.goldCost:N0} 골드" : "뽑기 설정 확인 필요", new Vector2(0, .44f), new Vector2(.48f, .53f), () => CharacterDrawRequested?.Invoke());
         button.interactable = valid;
+        AddTenDrawButton(true, valid, rules == null ? 0 : rules.goldCost);
         lastDrawLabel = Label(page, lastCharacterDrawResult, 21, new Vector2(0, .35f), new Vector2(1, .44f));
+    }
+
+    private void AddTenDrawButton(bool character, bool valid, long cost)
+    {
+        bool available = valid && cost > 0 && cost <= long.MaxValue / 10;
+        var button = Button(page, available ? $"10회 뽑기 · {cost * 10:N0} 골드" : "뽑기 설정 확인 필요",
+            new Vector2(.52f, .44f), new Vector2(1, .53f), () => BatchDrawRequested?.Invoke(character, 10));
+        button.interactable = available;
     }
 
     private void RelicDrawPanel(Transform grid)
@@ -87,8 +97,9 @@ public partial class CatGameSceneUI
         string odds = rules == null ? "뽑기 설정 없음" : $"Common {rules.commonPercent}% · Epic {rules.epicPercent}%\nUnique {rules.uniquePercent}% · Legendary {rules.legendaryPercent}%";
         Label(page, odds, 23, new Vector2(0, .64f), new Vector2(1, .76f));
         Label(page, rules == null ? "" : $"같은 등급 안에서는 동일 확률\n중복 유물: 해당 유물 조각 +{rules.duplicateFragments}", 19, new Vector2(0, .54f), new Vector2(1, .64f));
-        var draw = Button(page, valid ? $"유물 1회 뽑기 · {rules.goldCost:N0} 골드" : "뽑기 설정 확인 필요", new Vector2(0, .44f), new Vector2(1, .53f), () => RelicDrawRequested?.Invoke());
+        var draw = Button(page, valid ? $"유물 1회 뽑기 · {rules.goldCost:N0} 골드" : "뽑기 설정 확인 필요", new Vector2(0, .44f), new Vector2(.48f, .53f), () => RelicDrawRequested?.Invoke());
         draw.interactable = valid;
+        AddTenDrawButton(false, valid, rules == null ? 0 : rules.goldCost);
         lastDrawLabel = Label(page, lastDrawResult, 21, new Vector2(0, .35f), new Vector2(1, .44f));
         foreach (var definition in pool)
         {

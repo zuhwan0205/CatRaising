@@ -189,99 +189,103 @@ public class CatGameSession
 
     public async Task<ContentDrawResult> DrawRelicAsync()
     {
-        if (MutationBlocked || catalog == null)
-            return null;
-        var rules = catalog.relicDraw;
-        var pool = catalog.RelicDrawPool();
-        if (rules == null || !rules.Validate(pool))
-        {
-            StatusChanged?.Invoke("뽑기 확률 또는 등급별 유물 목록을 확인해주세요.");
-            return null;
-        }
-        if (data.wallet.gold < rules.goldCost)
-        {
-            StatusChanged?.Invoke($"골드가 부족합니다. 필요 골드: {rules.goldCost:N0}");
-            return null;
-        }
-        // 조각 한도로 인해 특정 당첨 결과만 취소되는 편향을 막습니다.
-        foreach (var entry in pool)
-        {
-            var existing = data.relics.Find(x => x != null && x.relicId == entry.id);
-            if (existing != null && existing.fragments > long.MaxValue - rules.duplicateFragments)
-            {
-                StatusChanged?.Invoke("유물 조각 보유 한도에 도달했습니다.");
-                return null;
-            }
-        }
-        var definition = rules.Pick(pool, drawRandom.NextDouble(), drawRandom.NextDouble());
-        var owned = data.relics.Find(x => x != null && x.relicId == definition.id);
-        return await CommitDrawAsync(data.relics, owned,
-            () => new OwnedRelic { relicId = definition.id },
-            item => item.fragments, (item, value) => item.fragments = value,
-            rules.goldCost, rules.duplicateFragments,
-            new ContentDrawResult { id = definition.id, name = definition.displayName, rarity = definition.rarity });
+        var results = await DrawContentBatchAsync(false, 1);
+        return results == null ? null : results[0];
     }
 
     public async Task<ContentDrawResult> DrawCharacterAsync()
     {
-        if (MutationBlocked || catalog == null)
-            return null;
-        var rules = catalog.characterDraw;
-        var pool = catalog.CharacterDrawPool();
-        if (rules == null || !rules.Validate(pool))
-        {
-            StatusChanged?.Invoke("뽑기 확률 또는 등급별 캐릭터 목록을 확인해주세요.");
-            return null;
-        }
-        if (data.wallet.gold < rules.goldCost)
-        {
-            StatusChanged?.Invoke($"골드가 부족합니다. 필요 골드: {rules.goldCost:N0}");
-            return null;
-        }
-        // 조각 한도로 인해 특정 당첨 결과만 취소되는 편향을 막습니다.
-        foreach (var entry in pool)
-        {
-            var existing = data.characters.Find(x => x != null && x.characterId == entry.id);
-            if (existing != null && existing.fragments > long.MaxValue - rules.duplicateFragments)
-            {
-                StatusChanged?.Invoke("캐릭터 조각 보유 한도에 도달했습니다.");
-                return null;
-            }
-        }
-        var definition = rules.Pick(pool, drawRandom.NextDouble(), drawRandom.NextDouble());
-        var owned = data.characters.Find(x => x != null && x.characterId == definition.id);
-        return await CommitDrawAsync(data.characters, owned,
-            () => new OwnedCharacter { characterId = definition.id },
-            item => item.fragments, (item, value) => item.fragments = value,
-            rules.goldCost, rules.duplicateFragments,
-            new ContentDrawResult { character = true, id = definition.id, name = definition.displayName, rarity = definition.rarity });
+        var results = await DrawContentBatchAsync(true, 1);
+        return results == null ? null : results[0];
     }
 
     private bool MutationBlocked => IsSaving || HasPendingReward;
 
-    private async Task<ContentDrawResult> CommitDrawAsync<T>(System.Collections.Generic.List<T> collection,
-        T owned, Func<T> create, Func<T, long> fragments, Action<T, long> setFragments,
-        long goldCost, long duplicateFragments, ContentDrawResult result) where T : class
+    public async Task<System.Collections.Generic.List<ContentDrawResult>> DrawContentBatchAsync(bool character, int count)
     {
-        bool duplicate = owned != null;
-        long previousGold = data.wallet.gold;
-        long previousFragments = duplicate ? fragments(owned) : 0;
-        if (duplicate) setFragments(owned, previousFragments + duplicateFragments);
+        if (MutationBlocked || catalog == null || (count != 1 && count != 10)) return null;
+        if (character)
+        {
+            var rules = catalog.characterDraw;
+            var pool = catalog.CharacterDrawPool();
+            if (rules == null || !rules.Validate(pool)) { StatusChanged?.Invoke("캐릭터 뽑기 설정을 확인해주세요."); return null; }
+            return await DrawBatchAsync(pool, data.characters, count, rules.goldCost, rules.duplicateFragments,
+                () => rules.Pick(pool, drawRandom.NextDouble(), drawRandom.NextDouble()),
+                definition => definition.id, owned => owned.characterId,
+                definition => new OwnedCharacter { characterId = definition.id },
+                owned => owned.fragments, (owned, value) => owned.fragments = value,
+                definition => new ContentDrawResult { character = true, id = definition.id, name = definition.displayName, rarity = definition.rarity });
+        }
         else
         {
-            owned = create();
-            collection.Add(owned);
+            var rules = catalog.relicDraw;
+            var pool = catalog.RelicDrawPool();
+            if (rules == null || !rules.Validate(pool)) { StatusChanged?.Invoke("유물 뽑기 설정을 확인해주세요."); return null; }
+            return await DrawBatchAsync(pool, data.relics, count, rules.goldCost, rules.duplicateFragments,
+                () => rules.Pick(pool, drawRandom.NextDouble(), drawRandom.NextDouble()),
+                definition => definition.id, owned => owned.relicId,
+                definition => new OwnedRelic { relicId = definition.id },
+                owned => owned.fragments, (owned, value) => owned.fragments = value,
+                definition => new ContentDrawResult { id = definition.id, name = definition.displayName, rarity = definition.rarity });
         }
-        data.wallet.gold -= goldCost;
-        bool saved = await SaveAsync(() =>
+    }
+
+    private async Task<System.Collections.Generic.List<ContentDrawResult>> DrawBatchAsync<TDefinition, TOwned>(
+        System.Collections.Generic.List<TDefinition> pool, System.Collections.Generic.List<TOwned> collection,
+        int count, long cost, long fragmentCount, Func<TDefinition> pick,
+        Func<TDefinition, string> definitionId, Func<TOwned, string> ownedId, Func<TDefinition, TOwned> create,
+        Func<TOwned, long> fragments, Action<TOwned, long> setFragments, Func<TDefinition, ContentDrawResult> describe)
+        where TDefinition : class where TOwned : class
+    {
+        if (cost > long.MaxValue / count || fragmentCount > long.MaxValue / count)
+        { StatusChanged?.Invoke("뽑기 비용 또는 조각 설정이 너무 큽니다."); return null; }
+        long totalCost = cost * count, maximumFragments = fragmentCount * count;
+        if (data.wallet.gold < totalCost)
+        { StatusChanged?.Invoke($"골드가 부족합니다. 필요 골드: {totalCost:N0}"); return null; }
+        // 결과를 뽑기 전에 모든 후보의 조각 한도를 확인해 확률 편향을 막습니다.
+        foreach (var definition in pool)
+        {
+            var existing = collection.Find(x => x != null && ownedId(x) == definitionId(definition));
+            if (existing != null && fragments(existing) > long.MaxValue - maximumFragments)
+            { StatusChanged?.Invoke("조각 보유 한도에 도달했습니다."); return null; }
+        }
+        var results = new System.Collections.Generic.List<ContentDrawResult>(count);
+        var undo = new System.Collections.Generic.List<Action>(count);
+        long previousGold = data.wallet.gold;
+        Action rollback = () =>
         {
             data.wallet.gold = previousGold;
-            if (duplicate) setFragments(owned, previousFragments);
-            else collection.Remove(owned);
-        });
-        result.duplicate = duplicate;
-        result.fragments = duplicate ? duplicateFragments : 0;
-        return saved ? result : null;
+            for (int i = undo.Count - 1; i >= 0; i--) undo[i]();
+        };
+        try
+        {
+            for (int i = 0; i < count; i++)
+            {
+                var definition = pick();
+                if (definition == null) throw new InvalidOperationException("뽑기 후보를 선택하지 못했습니다.");
+                var owned = collection.Find(x => x != null && ownedId(x) == definitionId(definition));
+                var result = describe(definition);
+                result.duplicate = owned != null;
+                if (owned != null)
+                {
+                    long before = fragments(owned);
+                    undo.Add(() => setFragments(owned, before));
+                    setFragments(owned, before + fragmentCount);
+                    result.fragments = fragmentCount;
+                }
+                else
+                {
+                    owned = create(definition);
+                    collection.Add(owned);
+                    undo.Add(() => collection.Remove(owned));
+                }
+                results.Add(result);
+            }
+            data.wallet.gold -= totalCost;
+        }
+        catch { rollback(); throw; }
+        // 10개 모두 한 번에 저장합니다. 실패하면 차감과 지급 전체를 복원합니다.
+        return await SaveAsync(rollback) ? results : null;
     }
     private async Task PurchaseAsync(ShopOffer offer, bool alreadyOwned, Action grant, Action revoke)
     {
@@ -364,16 +368,50 @@ public class CatGameSession
         await SaveAsync(() => data.loadout.relicIds = previous);
     }
 
-    public async Task<bool> UpdateProfileAsync(string name, string portraitId)
+    public Func<string, Task<string>> NicknameUpdateRequested;
+    public string LastProfileError { get; private set; }
+
+    public async Task<bool> UpdateProfileAsync(string name, string portraitId, bool rename)
     {
+        LastProfileError = null;
         name = name?.Trim();
         if (MutationBlocked || string.IsNullOrEmpty(name) || name.Length > 12 ||
             !data.characters.Exists(x => x != null && x.characterId == portraitId)) return false;
         foreach (char ch in name) if (char.IsControl(ch) || ch == '<' || ch == '>') return false;
         string oldName = data.progress.profileName, oldPortrait = data.progress.profileCharacterId;
+        if (rename)
+        {
+            if (preview || NicknameUpdateRequested == null)
+            {
+                LastProfileError = "서버에 로그인한 후 이름을 변경해주세요.";
+                return false;
+            }
+            IsSaving = true;
+            try
+            {
+                BusyChanged?.Invoke(true);
+                GameplayBlockedChanged?.Invoke(true);
+                LastProfileError = await NicknameUpdateRequested(name);
+            }
+            catch (Exception) { LastProfileError = "이름 변경 결과를 확인하지 못했습니다. 다시 시도해주세요."; }
+            finally
+            {
+                IsSaving = false;
+                ApplyQueuedGold();
+                BusyChanged?.Invoke(false);
+                GameplayBlockedChanged?.Invoke(rewardLimitReached);
+            }
+            if (LastProfileError != null) return false;
+        }
         data.progress.profileName = name;
         data.progress.profileCharacterId = portraitId;
-        return await SaveAsync(() => { data.progress.profileName = oldName; data.progress.profileCharacterId = oldPortrait; });
+        bool saved = await SaveAsync(() =>
+        {
+            if (!rename) data.progress.profileName = oldName;
+            data.progress.profileCharacterId = oldPortrait;
+        });
+        if (!saved && rename) LastProfileError = "이름은 서버에서 변경됐지만 프로필 저장에 실패했습니다. 다시 로그인하면 변경된 이름이 표시됩니다.";
+        return saved;
     }
 
     public async Task<bool> SaveAsync(Action rollback = null)

@@ -107,6 +107,8 @@ public class CatGameScene : MonoBehaviour
         view.AdventureVisibilityChanged += field.SetVisible;
         view.Build(data, catalog, uiFont, preview, field.Output);
         view.ProfileSaveRequested = session.UpdateProfileAsync;
+        session.NicknameUpdateRequested = BackendLogin.Instance.UpdateNicknameAsync;
+        view.ProfileSaveError = () => session.LastProfileError;
         view.CharacterSelected += SelectCharacter;
         view.SkillRequested += LearnSkill;
         view.SkillResetRequested += ResetSkills;
@@ -116,6 +118,7 @@ public class CatGameScene : MonoBehaviour
         view.CharacterPurchaseRequested += BuyCharacter;
         view.RelicDrawRequested += DrawRelic;
         view.CharacterDrawRequested += DrawCharacter;
+        view.BatchDrawRequested += DrawContent;
         view.CrystalAdRequested += WatchCrystalAd;
         session.BusyChanged += view.SetBusy;
         session.StatusChanged += view.ShowStatus;
@@ -271,14 +274,14 @@ public class CatGameScene : MonoBehaviour
     {
         DrawContent(true);
     }
-    private async void DrawContent(bool character)
+    private async void DrawContent(bool character, int count = 1)
     {
-        if (view == null || !view.BeginRelicDraw(character))
+        if (view == null || !view.BeginRelicDraw(character, count))
             return;
-        ContentDrawResult result = null;
+        System.Collections.Generic.List<ContentDrawResult> results = null;
         try
         {
-            result = character ? await session.DrawCharacterAsync() : await session.DrawRelicAsync();
+            results = await session.DrawContentBatchAsync(character, count);
         }
         catch (System.Exception exception)
         {
@@ -286,7 +289,7 @@ public class CatGameScene : MonoBehaviour
             if (view != null)
                 view.ShowStatus("뽑기 처리 중 오류가 발생했습니다. 저장 상태를 확인해주세요.");
         }
-        finally { if (view != null) view.CompleteRelicDraw(result); }
+        finally { if (view != null) view.CompleteRelicDrawBatch(results); }
     }
     private async void LevelUpCharacter(OwnedCharacter character)
     {
@@ -331,6 +334,7 @@ public class CatGameScene : MonoBehaviour
             view.CharacterPurchaseRequested -= BuyCharacter;
             view.RelicDrawRequested -= DrawRelic;
             view.CharacterDrawRequested -= DrawCharacter;
+            view.BatchDrawRequested -= DrawContent;
             view.CrystalAdRequested -= WatchCrystalAd;
             view.RaidActiveChanged -= SetRaidActive;
             view.RaidRequested -= BeginFieldRaid;

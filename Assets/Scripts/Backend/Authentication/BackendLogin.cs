@@ -67,19 +67,18 @@ public class BackendLogin
         }
     }
 
-    public void UpdateNickname(string nickname)
+    public async System.Threading.Tasks.Task<string> UpdateNicknameAsync(string nickname)
     {
-        Debug.Log("닉네임 변경을 요청합니다.");
-
-        var bro = Backend.BMember.UpdateNickname(nickname);
-
-        if (bro.IsSuccess())
-        {
-            Debug.Log("닉네임 변경에 성공했습니다 : " + bro);
-        }
-        else
-        {
-            Debug.LogError("닉네임 변경에 실패했습니다 : " + bro);
-        }
+        if (string.IsNullOrEmpty(Backend.UserInDate)) return "로그인 후 이름을 변경해주세요.";
+        if (nickname == Backend.UserNickName) return null;
+        string owner = Backend.UserInDate;
+        var completion = new System.Threading.Tasks.TaskCompletionSource<BackendReturnObject>(System.Threading.Tasks.TaskCreationOptions.RunContinuationsAsynchronously);
+        Backend.BMember.UpdateNickname(nickname, result => completion.TrySetResult(result));
+        var response = await completion.Task;
+        if (owner != Backend.UserInDate) return "계정이 변경되었습니다. 다시 로그인해주세요.";
+        if (response.IsSuccess()) return null;
+        if (response.GetStatusCode() == "409") return "중복된 이름이 있습니다. 다른 이름을 입력해주세요.";
+        if (response.GetStatusCode() == "400") return "사용할 수 없는 이름입니다. 다른 이름을 입력해주세요.";
+        return "서버에서 이름을 변경하지 못했습니다. 연결을 확인하고 다시 시도해주세요.";
     }
 }

@@ -82,6 +82,8 @@ public class BackendGameData
             }
             EnsureOwner(owner);
             var loaded = FromRow(row);
+            // 닉네임은 계정 서버가 기준입니다. 프로필 JSON 저장 실패 후에도 복원됩니다.
+            if (!string.IsNullOrEmpty(Backend.UserNickName)) loaded.progress.profileName = Backend.UserNickName;
             var journal = new CombatRewardJournal(
                 System.IO.Path.Combine(Application.persistentDataPath, "CombatRewards"),
                 databaseUuid + ":" + key, loaded.progress.combatSaveReceipt);
