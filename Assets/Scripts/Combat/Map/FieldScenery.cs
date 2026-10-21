@@ -26,6 +26,7 @@ public sealed class FieldScenery : MonoBehaviour
                 var instance = sceneMap != null ? sceneMap : Instantiate(map, transform, false);
                 if (sceneMap != null) instance.transform.SetParent(transform, true);
                 FieldMapSize.Expand(instance);
+                FieldPropGrounding.Apply(instance);
                 foreach (var billboard in instance.GetComponentsInChildren<FieldBillboard>(true))
                     billboard.ViewCamera = camera;
                 foreach (var obstacle in instance.GetComponentsInChildren<FieldMapObstacle>())
@@ -47,6 +48,7 @@ public sealed class FieldScenery : MonoBehaviour
         diamond = Shape(new[] { new Vector2(-.5f, 0), new Vector2(0, -.5f), new Vector2(.5f, 0), new Vector2(0, .5f) });
         if (BuildImportedGarden())
         {
+            FieldPropGrounding.Apply(gameObject);
             Navigation.Bake();
             return;
         }

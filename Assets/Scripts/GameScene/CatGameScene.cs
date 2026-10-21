@@ -95,7 +95,7 @@ public class CatGameScene : MonoBehaviour
             catalog = ScriptableObject.CreateInstance<CatGameCatalog>();
             ownCatalog = true;
         }
-        session = new CatGameSession(data, preview, () => BackendGameData.Instance.GameDataUpdateAsync(), catalog);
+        session = new CatGameSession(data, preview, () => BackendGameData.Instance.GameDataUpdateAsync(), catalog, BackendGameData.Instance.RewardJournal);
         if (editorMapCamera != null) editorMapCamera.gameObject.SetActive(false);
         view = GetComponent<CatGameSceneUI>();
         if (view == null) view = gameObject.AddComponent<CatGameSceneUI>();
@@ -106,6 +106,7 @@ public class CatGameScene : MonoBehaviour
         view.StickChanged += field.SetStick;
         view.AdventureVisibilityChanged += field.SetVisible;
         view.Build(data, catalog, uiFont, preview, field.Output);
+        view.ProfileSaveRequested = session.UpdateProfileAsync;
         view.CharacterSelected += SelectCharacter;
         view.SkillRequested += LearnSkill;
         view.SkillResetRequested += ResetSkills;
@@ -128,7 +129,7 @@ public class CatGameScene : MonoBehaviour
         field.Combat.MessageChanged += view.ShowCombatMessage;
         field.Combat.RelicMessageChanged += view.ShowRelicMessage;
         field.Combat.HealthChanged += view.ShowPlayerHealth;
-        StartCoroutine(SaveExperiencePeriodically());
+        StartCoroutine(SaveCombatRewardsPeriodically());
     }
 
     private bool CollectExperience(long amount)
@@ -145,17 +146,51 @@ public class CatGameScene : MonoBehaviour
         view.ShowCombatMessage($"경험치 획득 · Lv.{cat.level} · EXP {cat.experience}/{CatProgression.RequiredExperience(cat.level)}");
     }
 
-    private System.Collections.IEnumerator SaveExperiencePeriodically()
+    private System.Collections.IEnumerator SaveCombatRewardsPeriodically()
     {
-        var wait = new WaitForSecondsRealtime(5);
+        var wait = new WaitForSecondsRealtime(1);
+        int ticks = 0;
+        System.Threading.Tasks.Task pendingSave = null;
         while (true)
         {
             yield return wait;
-            var save = session.SaveExperienceAsync();
-            while (!save.IsCompleted) yield return null;
-            if (save.IsFaulted) Debug.LogException(save.Exception);
-            if (view != null) view.RefreshWallet();
+            CheckpointCombatRewards();
+            if (pendingSave != null && pendingSave.IsCompleted)
+            {
+                if (pendingSave.IsFaulted) Debug.LogException(pendingSave.Exception);
+                pendingSave = null;
+                if (view != null) view.RefreshWallet();
+            }
+            if (++ticks < 5) continue;
+            ticks = 0;
+            if (pendingSave == null) pendingSave = session.SaveCombatRewardsAsync();
         }
+    }
+
+    private void CheckpointCombatRewards()
+    {
+        try { session?.CheckpointRewards(); }
+        catch (System.Exception exception) { Debug.LogException(exception); }
+    }
+
+    private void OnApplicationPause(bool paused)
+    {
+        if (paused) SaveBeforeLeaving();
+    }
+
+    private void OnApplicationFocus(bool focused)
+    {
+        if (!focused) SaveBeforeLeaving();
+    }
+
+    private void OnApplicationQuit() => SaveBeforeLeaving();
+
+    private async void SaveBeforeLeaving()
+    {
+        CheckpointCombatRewards();
+        if (session == null) return;
+        try { await session.SaveCombatRewardsAsync(); }
+        catch (System.Exception exception) { Debug.LogException(exception); }
     }
 
     private async void AwardGold(long amount)

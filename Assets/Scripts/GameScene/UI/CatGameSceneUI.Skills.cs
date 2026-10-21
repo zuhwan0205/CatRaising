@@ -6,29 +6,22 @@ public partial class CatGameSceneUI
 {
     public event Action<OwnedCharacter, int> SkillRequested;
     public event Action<OwnedCharacter> SkillResetRequested;
-    private Button skillResetButton;
-    private OwnedCharacter skillResetCharacter;
     private RectTransform skillPopup;
     private Button skillPopupAction;
     private OwnedCharacter skillPopupCharacter;
     private int skillPopupNode = -1;
-    private void RefreshSkillResetButton()
+    private void RefreshSkillPopupAction()
     {
-        if (skillResetButton != null)
-            skillResetButton.interactable = true;
         if (skillPopupAction != null)
             skillPopupAction.interactable = !saving && (skillPopupNode >= 0
                 ? CatSkillTree.CanLearn(skillPopupCharacter, skillPopupNode)
                 : data.wallet.gems >= CatSkillTree.ResetCost && CatSkillTree.HasLearnedSkills(skillPopupCharacter));
     }
-    private int selectedSkill;
     public void ShowSkillTree(OwnedCharacter cat)
     {
         skillPopup = null;
         skillPopupAction = null;
         skillPopupCharacter = null;
-        if (!CatSkillTree.IsAllowed(cat, selectedSkill))
-            selectedSkill = CatSkillTree.IsRanged(cat) ? CatSkillTree.Haste : CatSkillTree.Vitality;
         var panel = OpenDetailPopup("캐릭터");
         var frame = (RectTransform)panel.parent;
         frame.anchorMin = new Vector2(.025f, .035f);
@@ -57,13 +50,9 @@ public partial class CatGameSceneUI
         }
         SkillLine(tree, .08f, .22f, .92f, .22f);
         for (int i = 0; i < nodes.Length; i++) SkillNode(tree, cat, nodes[i], positions[i]);
-        skillResetCharacter = cat;
-        skillResetButton = Button(panel, "", new Vector2(.82f, .92f), new Vector2(.98f, .99f),
-            () => ShowSkillResetPopup(cat));
-        skillResetButton.onClick.RemoveAllListeners();
-        skillResetButton.onClick.AddListener(() => ShowSkillResetPopup(cat));
-        SkillControlIcon(skillResetButton.transform, true);
-        RefreshSkillResetButton();
+        var reset = Button(panel, "", new Vector2(.82f, .92f), new Vector2(.98f, .99f),
+            () => ShowSkillResetPopup(cat), allowWhileSaving: true);
+        SkillControlIcon(reset.transform, true);
     }
 
     private void SkillLine(Transform parent, float x1, float y1, float x2, float y2)
@@ -76,12 +65,9 @@ public partial class CatGameSceneUI
     private void SkillNode(Transform parent, OwnedCharacter cat, int node, Vector2 center)
     {
         var button = Button(parent, "", center - new Vector2(.10f, .075f), center + new Vector2(.10f, .075f),
-            () => ShowSkillPopup(cat, node));
+            () => ShowSkillPopup(cat, node), allowWhileSaving: true);
         // 설명 열기는 포인트·선행 조건·자동 저장 여부와 무관하게 허용합니다.
         // 공통 Button의 저장 중 클릭 차단은 실제 레벨업 버튼에만 적용합니다.
-        button.onClick.RemoveAllListeners();
-        button.onClick.AddListener(() => ShowSkillPopup(cat, node));
-        button.interactable = true;
         bool locked = CatSkillTree.BranchLocked(cat, node);
         CozyButtonStyle.SetColor(button, locked ? Color.gray : CatSkillTree.Rank(cat, node) > 0 ? CozyButtonStyle.Green : CozyButtonStyle.Cream);
         foreach (var label in button.GetComponentsInChildren<Text>()) label.gameObject.SetActive(false);
@@ -116,12 +102,8 @@ public partial class CatGameSceneUI
         skillPopupCharacter = cat;
         skillPopupNode = node;
         skillPopup = Panel(detailOverlay, "Skill Information Overlay", Vector2.zero, Vector2.one, new Color(0, 0, 0, .65f));
-        var dismiss = skillPopup.gameObject.AddComponent<Button>();
-        dismiss.transition = Selectable.Transition.None;
-        dismiss.onClick.AddListener(CloseSkillPopup);
-        var frame = Panel(skillPopup, "Skill Popup Frame", new Vector2(.075f, .21f), new Vector2(.925f, .79f), new Color(.44f, .28f, .12f));
-        frame.gameObject.AddComponent<Button>().transition = Selectable.Transition.None;
-        var content = Panel(frame, "Skill Popup Content", new Vector2(.025f, .025f), new Vector2(.975f, .975f), cream);
+        var content = PopupContent(skillPopup, "Skill Popup Frame", "Skill Popup Content",
+            new Vector2(.075f, .21f), new Vector2(.925f, .79f), new Color(.44f, .28f, .12f), CloseSkillPopup, out _);
         Button(content, "닫기", new Vector2(.76f, .88f), new Vector2(.98f, .98f), CloseSkillPopup);
         return content;
     }
@@ -137,7 +119,6 @@ public partial class CatGameSceneUI
 
     private void ShowSkillPopup(OwnedCharacter cat, int node)
     {
-        selectedSkill = node;
         var panel = OpenSkillPopup(cat, node);
         int rank = CatSkillTree.Rank(cat, node);
         Label(panel, CatSkillTree.Names[node], 27, new Vector2(.02f, .87f), new Vector2(.74f, .98f));
@@ -156,7 +137,7 @@ public partial class CatGameSceneUI
             CatSkillTree.Available(cat) == 0 ? "스킬 포인트 부족" : "레벨업 · 1포인트",
             new Vector2(.12f, .03f), new Vector2(.88f, .15f),
             () => { if (!saving) SkillRequested?.Invoke(cat, node); });
-        RefreshSkillResetButton();
+        RefreshSkillPopupAction();
     }
 
     private void ShowSkillResetPopup(OwnedCharacter cat)
@@ -168,7 +149,7 @@ public partial class CatGameSceneUI
         skillPopupAction = Button(panel, $"초기화 · 다이아 {CatSkillTree.ResetCost}개",
             new Vector2(.10f, .04f), new Vector2(.90f, .18f),
             () => { if (!saving) SkillResetRequested?.Invoke(cat); });
-        RefreshSkillResetButton();
+        RefreshSkillPopupAction();
     }
 
     public void RefreshSkillAfterLearning(OwnedCharacter cat, int node)

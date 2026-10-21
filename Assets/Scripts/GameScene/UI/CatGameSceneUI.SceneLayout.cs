@@ -51,7 +51,6 @@ public partial class CatGameSceneUI
         adventureEquipment.text = names.Count == 0 ? "장착 유물 없음 · 유물 메뉴에서 장착하세요" : "장착: " + string.Join(" / ", names);
         adventureJoystick.InputChanged = value => StickChanged?.Invoke(value);
         adventureJoystick.gameObject.SetActive(!automatic);
-        adventureMode.GetComponentInChildren<Text>().text = automatic ? "자동 이동 ON" : "수동 이동";
         adventureMode.onClick.RemoveAllListeners();
         adventureMode.onClick.AddListener(() =>
         {
@@ -59,9 +58,24 @@ public partial class CatGameSceneUI
             automatic = !automatic;
             adventureJoystick.ResetInput();
             adventureJoystick.gameObject.SetActive(!automatic);
-            adventureMode.GetComponentInChildren<Text>().text = automatic ? "자동 이동 ON" : "수동 이동";
             MovementModeChanged?.Invoke(automatic);
+            RefreshMovementButton();
         });
         MovementModeChanged?.Invoke(automatic);
+        foreach (var text in adventureRoot.GetComponentsInChildren<Text>(true)) text.enabled = false;
+        RefreshMovementButton();
+    }
+
+    private void RefreshMovementButton()
+    {
+        var icon = adventureMode.transform.Find("Movement Mode Icon");
+        if (icon != null) icon.gameObject.SetActive(false);
+        var label = adventureMode.GetComponentInChildren<Text>(true);
+        label.gameObject.SetActive(true);
+        label.enabled = true;
+        label.text = "AUTO";
+        label.fontStyle = FontStyle.Bold;
+        label.color = automatic ? Color.white : new Color(.65f, .65f, .62f);
+        CozyButtonStyle.SetColor(adventureMode, automatic ? CozyButtonStyle.Green : new Color(.28f, .29f, .27f));
     }
 }

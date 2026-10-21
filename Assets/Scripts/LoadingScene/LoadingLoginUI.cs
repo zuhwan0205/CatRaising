@@ -1,6 +1,5 @@
 using System.Collections;
 using UnityEngine;
-using UnityEngine.Events;
 using UnityEngine.EventSystems;
 using UnityEngine.UI;
 #if ENABLE_INPUT_SYSTEM
@@ -118,23 +117,19 @@ public class LoadingLoginUI : MonoBehaviour
 
         choice = Box("Choose Account Action", background, Vector2.zero, new Vector2(580, 300)).gameObject;
         choiceGroup = choice.AddComponent<CanvasGroup>();
-        signUpButton = MakeButton("회원가입", choice.transform, new Vector2(0, 90), () => SelectMode(true));
-        loginButton = MakeButton("로그인", choice.transform, Vector2.zero, () => SelectMode(false));
-        googleButton = MakeButton("Google로 계속하기", choice.transform, new Vector2(0, -90), () =>
-        {
-            if (!busy)
-                StartCoroutine(SubmitRoutine(true));
-        });
+        signUpButton = MakeButton("회원가입", choice.transform, new Vector2(0, 90));
+        loginButton = MakeButton("로그인", choice.transform, Vector2.zero);
+        googleButton = MakeButton("Google로 계속하기", choice.transform, new Vector2(0, -90));
 
         form = Box("Account Form", background, Vector2.zero, new Vector2(580, 440)).gameObject;
         formGroup = form.AddComponent<CanvasGroup>();
         idInput = MakeInput("아이디", form.transform, 120, false);
         passwordInput = MakeInput("비밀번호", form.transform, 35, true);
         confirmInput = MakeInput("비밀번호 확인", form.transform, -50, true);
-        submitButton = MakeButton("로그인", form.transform, new Vector2(0, -140), Submit);
+        submitButton = MakeButton("로그인", form.transform, new Vector2(0, -140));
         submitLabel = submitButton.GetComponentInChildren<Text>();
-        backButton = MakeButton("뒤로", form.transform, new Vector2(0, -215), ShowChoice);
-        retry = MakeButton("연결 재시도", background, Vector2.zero, manager.InitializeBackend);
+        backButton = MakeButton("뒤로", form.transform, new Vector2(0, -215));
+        retry = MakeButton("연결 재시도", background, Vector2.zero);
         BindButtons();
         PrepareInitialView();
         textSizeVersion = 1;
@@ -301,7 +296,7 @@ public class LoadingLoginUI : MonoBehaviour
         return text;
     }
 
-    private Button MakeButton(string title, Transform parent, Vector2 position, UnityAction action)
+    private Button MakeButton(string title, Transform parent, Vector2 position)
     {
         var rect = Box(title, parent, position, new Vector2(520, 64));
         var image = rect.gameObject.AddComponent<Image>();

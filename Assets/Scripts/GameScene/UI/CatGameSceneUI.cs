@@ -126,7 +126,7 @@ public partial class CatGameSceneUI : MonoBehaviour
             ApplySafeArea();
         RefreshUpgradeButton();
         RefreshCrystalAdButton();
-        RefreshSkillResetButton();
+        RefreshSkillPopupAction();
         UpdateRaid();
     }
     private void ApplySafeArea()
@@ -157,6 +157,7 @@ public partial class CatGameSceneUI : MonoBehaviour
         ClearPage();
         RefreshWallet();
         status.text = preview ? "씬 미리보기 · 서버 저장 없음" : "";
+        status.enabled = tab != "모험";
         string[] names = { "모험", "상점", "캐릭터", "유물" };
         for (int i = 0; i < tabs.Length; i++)
             CozyButtonStyle.SetColor(tabs[i], names[i] == tab ? CozyButtonStyle.Green : CozyButtonStyle.Cream);
@@ -186,7 +187,7 @@ public partial class CatGameSceneUI : MonoBehaviour
         adventureStage = Label(field, $"STAGE {data.progress.currentStage:00} · 2.5D 필드", 25, new Vector2(.03f, .91f), new Vector2(.97f, 1));
         var mode = Button(field, "", new Vector2(.52f, .80f), new Vector2(.96f, .89f), () => { });
         var modeText = mode.GetComponentInChildren<Text>();
-        modeText.text = automatic ? "자동 이동 ON" : "수동 이동";
+        modeText.text = "AUTO";
         playerHpLabel = Label(field, playerHpText, 22, new Vector2(.02f, .80f), new Vector2(.50f, .89f));
         var equippedNames = new System.Collections.Generic.List<string>();
         foreach (string id in data.loadout.relicIds)
@@ -213,7 +214,7 @@ public partial class CatGameSceneUI : MonoBehaviour
             automatic = !automatic;
             joystick.ResetInput();
             pad.gameObject.SetActive(!automatic);
-            modeText.text = automatic ? "자동 이동 ON" : "수동 이동";
+            modeText.text = "AUTO";
             MovementModeChanged?.Invoke(automatic);
         });
         combatLabel = Label(field, combatMessage, 20, new Vector2(.36f, .18f), new Vector2(.98f, .30f));
@@ -450,7 +451,7 @@ public partial class CatGameSceneUI : MonoBehaviour
         text.resizeTextMaxSize = text.fontSize;
         return text;
     }
-    private Button Button(Transform parent, string title, Vector2 min, Vector2 max, UnityAction action)
+    private Button Button(Transform parent, string title, Vector2 min, Vector2 max, UnityAction action, bool allowWhileSaving = false)
     {
         var rect = Panel(parent, title, min, max, accent);
         var button = rect.gameObject.AddComponent<Button>();
@@ -458,7 +459,7 @@ public partial class CatGameSceneUI : MonoBehaviour
         var color = title.Contains("골드") || title.Contains("뽑기") || title.Contains("조각") ? CozyButtonStyle.Peach :
             title == "목록" ? CozyButtonStyle.Cream : CozyButtonStyle.Green;
         CozyButtonStyle.Apply(button, color);
-        button.onClick.AddListener(() => { if (!saving && drawOverlay == null) action(); });
+        button.onClick.AddListener(() => { if (allowWhileSaving || (!saving && drawOverlay == null)) action(); });
         Label(rect, title, 23, new Vector2(.07f, .15f), new Vector2(.93f, .85f)).color = new Color(.19f, .16f, .10f);
         return button;
     }
