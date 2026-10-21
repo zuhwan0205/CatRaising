@@ -32,9 +32,28 @@ public partial class CatGameSceneUI
         {
             var tab = tabs[i];
             if (tab == null) continue;
+            if (navigationSizeVersion < 2)
+            {
+                // 버튼 자체를 줄여 배경·아이콘·클릭 영역이 함께 축소됩니다.
+                var buttonRect = (RectTransform)tab.transform;
+                Vector2 center = (buttonRect.anchorMin + buttonRect.anchorMax) * .5f;
+                Vector2 halfSize = (buttonRect.anchorMax - buttonRect.anchorMin) * .4f;
+                buttonRect.anchorMin = center - halfSize;
+                buttonRect.anchorMax = center + halfSize;
+                Vector2 offsetCenter = (buttonRect.offsetMin + buttonRect.offsetMax) * .5f;
+                Vector2 offsetHalfSize = (buttonRect.offsetMax - buttonRect.offsetMin) * .4f;
+                buttonRect.offsetMin = offsetCenter - offsetHalfSize;
+                buttonRect.offsetMax = offsetCenter + offsetHalfSize;
+                changed = true;
+            }
             var existing = tab.transform.Find("Navigation Icon");
             if (existing != null)
             {
+                if (existing.localScale != Vector3.one * .9f)
+                {
+                    existing.localScale = Vector3.one * .9f;
+                    changed = true;
+                }
                 var current = existing.GetComponent<RawImage>();
                 var uv = CenteredIconRect(i, false);
                 if (current != null && current.uvRect != uv) { current.uvRect = uv; changed = true; }
@@ -42,6 +61,7 @@ public partial class CatGameSceneUI
             }
             foreach (var label in tab.GetComponentsInChildren<Text>(true)) label.gameObject.SetActive(false);
             var holder = Rect(tab.transform, "Navigation Icon", new Vector2(.08f, .06f), new Vector2(.92f, .94f));
+            holder.localScale = Vector3.one * .9f;
             var image = holder.gameObject.AddComponent<RawImage>();
             image.texture = atlas;
             image.uvRect = CenteredIconRect(i, false);
@@ -51,6 +71,7 @@ public partial class CatGameSceneUI
             aspect.aspectRatio = 1;
             changed = true;
         }
+        if (navigationSizeVersion < 2) navigationSizeVersion = 2;
         return changed;
     }
 

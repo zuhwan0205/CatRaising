@@ -11,12 +11,18 @@ public partial class CatGameSceneUI
     private bool drawingCharacter;
     private ContentDrawResult revealedResult;
     private string drawFailure;
+    private bool skipDrawMotion;
+    private int drawCount;
+    private System.Collections.Generic.List<ContentDrawResult> revealedResults;
 
-    public bool BeginRelicDraw(bool character = false)
+    public bool BeginRelicDraw(bool character = false, int count = 1)
     {
         if (saving || drawOverlay != null)
             return false;
         drawingCharacter = character;
+        drawCount = count;
+        skipDrawMotion = false;
+        revealedResults = null;
         drawCompleted = false;
         revealedResult = null;
         drawFailure = "";
@@ -26,11 +32,11 @@ public partial class CatGameSceneUI
         return true;
     }
 
-    public void CompleteRelicDraw(ContentDrawResult result)
+    public void CompleteRelicDrawBatch(System.Collections.Generic.List<ContentDrawResult> results)
     {
-        if (drawOverlay == null)
-            return;
-        revealedResult = result;
+        if (drawOverlay == null) return;
+        revealedResults = results;
+        revealedResult = results != null && results.Count > 0 ? results[0] : null;
         drawFailure = status.text;
         drawCompleted = true;
         RefreshWallet();
@@ -40,7 +46,7 @@ public partial class CatGameSceneUI
     {
         var title = Label(drawOverlay, drawingCharacter ? "캐릭터 상자를 여는 중…" : "유물 상자를 여는 중…", 32, new Vector2(.06f, .79f), new Vector2(.94f, .91f));
         title.color = Color.white;
-        var hint = Label(drawOverlay, "잠시만 기다려 주세요", 21, new Vector2(.06f, .15f), new Vector2(.94f, .29f));
+        var hint = Label(drawOverlay, "상자를 누르면 연출을 건너뜁니다", 21, new Vector2(.06f, .15f), new Vector2(.94f, .29f));
         hint.color = new Color(.85f, .83f, .94f);
         var chest = Rect(drawOverlay, "Treasure Chest", new Vector2(.26f, .36f), new Vector2(.74f, .60f));
         Panel(chest, "Body Outline", new Vector2(0, 0), new Vector2(1, .65f), new Color(.18f, .10f, .06f));
@@ -56,14 +62,27 @@ public partial class CatGameSceneUI
         Panel(lid, "Lid Band Right", new Vector2(.77f, 0), new Vector2(.86f, 1), gold);
         var lockPlate = Panel(chest, "Lock", new Vector2(.40f, .39f), new Vector2(.60f, .73f), gold);
         Panel(lockPlate, "Keyhole", new Vector2(.40f, .30f), new Vector2(.60f, .70f), new Color(.18f, .10f, .06f));
+        var hit = chest.gameObject.AddComponent<Image>();
+        hit.color = Color.clear;
+        foreach (var graphic in chest.GetComponentsInChildren<Graphic>())
+            if (graphic != hit) graphic.raycastTarget = false;
+        var skip = chest.gameObject.AddComponent<Button>();
+        skip.targetGraphic = hit;
+        skip.transition = Selectable.Transition.None;
+        skip.onClick.AddListener(() => { skipDrawMotion = true; hint.text = "저장 결과를 기다리고 있어요…"; });
         float elapsed = 0;
         var shake = DOTween.Sequence().SetUpdate(true).SetLink(chest.gameObject, LinkBehaviour.KillOnDisable);
         shake.Append(DOTween.To(() => chest.localEulerAngles.z, v => chest.localRotation = Quaternion.Euler(0, 0, v), 5f, .08f));
         shake.Append(DOTween.To(() => 5f, v => chest.localRotation = Quaternion.Euler(0, 0, v), -5f, .16f));
         shake.Append(DOTween.To(() => -5f, v => chest.localRotation = Quaternion.Euler(0, 0, v), 0f, .08f));
         shake.SetLoops(-1);
-        while (!drawCompleted || (revealedResult != null && elapsed < 1.2f))
+        while (!drawCompleted || (revealedResult != null && !skipDrawMotion && elapsed < 1.2f))
         {
+            if (skipDrawMotion)
+            {
+                shake.Kill();
+                chest.localRotation = Quaternion.identity;
+            }
             elapsed += Mathf.Min(Time.unscaledDeltaTime, .1f);
             if (elapsed > 3)
                 hint.text = "저장 결과를 기다리고 있어요…";
@@ -80,6 +99,15 @@ public partial class CatGameSceneUI
             yield break;
         }
 
+        if (drawCount > 1)
+        {
+            chest.gameObject.SetActive(false);
+            title.text = $"{(drawingCharacter ? "캐릭터" : "유물")} {revealedResults.Count}회 뽑기 결과";
+            hint.gameObject.SetActive(false);
+            ShowBatchDrawResults();
+            AddDrawCloseButton();
+            yield break;
+        }
         var result = revealedResult;
         SetDrawResult(result);
         Color rarityColor = new[] { new Color(.8f, .84f, .88f), new Color(.64f, .40f, 1), new Color(1, .44f, .23f), new Color(1, .84f, .20f) }[Mathf.Clamp((int)result.rarity, 0, 3)];
@@ -107,7 +135,10 @@ public partial class CatGameSceneUI
         reveal.Insert(.15f, DOTween.To(() => reward.localScale, v => reward.localScale = v, Vector3.one, .55f).SetEase(Ease.OutBack));
         reveal.Insert(.15f, DOTween.To(() => group.alpha, v => group.alpha = v, 1f, .25f));
         while (reveal.IsActive() && !reveal.IsComplete())
+        {
+            if (skipDrawMotion) { reveal.Complete(); break; }
             yield return null;
+        }
         if (drawOverlay == null)
             yield break;
         group.alpha = 1;
@@ -118,6 +149,26 @@ public partial class CatGameSceneUI
         string kind = result.character ? "캐릭터" : "유물";
         hint.text = result.duplicate ? $"중복 {kind} · 조각 +{result.fragments}\n보유 {kind}에 조각을 더했습니다." : $"새 {kind}를 획득했어요!\n{kind} 메뉴에서 확인하세요.";
         AddDrawCloseButton();
+    }
+
+    private void ShowBatchDrawResults()
+    {
+        for (int i = 0; i < revealedResults.Count; i++)
+        {
+            var result = revealedResults[i];
+            float left = .06f + (i % 2) * .46f, top = .77f - (i / 2) * .12f;
+            Color color = new[] { new Color(.8f, .84f, .88f), new Color(.64f, .40f, 1), new Color(1, .44f, .23f), new Color(1, .84f, .20f) }[(int)result.rarity];
+            var card = Panel(drawOverlay, "Draw Result " + i, new Vector2(left, top - .105f), new Vector2(left + .42f, top), color);
+            var face = Panel(card, "Card Face", new Vector2(.015f, .03f), new Vector2(.985f, .97f), new Color(.17f, .12f, .26f));
+            var portrait = Rect(face, "Portrait", new Vector2(.02f, .08f), new Vector2(.38f, .92f));
+            if (result.character) CharacterPortrait(portrait, catalog.FindCharacter(result.id));
+            else RelicIcon(portrait, catalog.FindRelic(result.id));
+            Label(face, result.name, 16, new Vector2(.39f, .48f), new Vector2(.98f, .94f)).color = Color.white;
+            Label(face, result.duplicate ? $"조각 +{result.fragments}" : "새로 획득!", 15, new Vector2(.39f, .06f), new Vector2(.98f, .46f)).color = color;
+        }
+        string summary = $"최근 결과: {revealedResults.Count}회 뽑기 완료";
+        if (drawingCharacter) lastCharacterDrawResult = summary; else lastDrawResult = summary;
+        if (lastDrawLabel != null) lastDrawLabel.text = summary;
     }
 
     private void AddDrawCloseButton()

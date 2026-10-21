@@ -7,7 +7,8 @@ public partial class CatGameSceneUI
 {
     private RectTransform profilePopup;
     private bool profileSaving;
-    public Func<string, string, Task<bool>> ProfileSaveRequested;
+    public Func<string, string, bool, Task<bool>> ProfileSaveRequested;
+    public Func<string> ProfileSaveError;
     private string ProfilePortraitId => data == null ? CatGameCatalog.StarterCharacterId :
         string.IsNullOrEmpty(data.progress.profileCharacterId) ? data.loadout.characterId : data.progress.profileCharacterId;
     private string ProfileName => string.IsNullOrWhiteSpace(data.progress.profileName) ? "고양이 집사" : data.progress.profileName;
@@ -83,18 +84,10 @@ public partial class CatGameSceneUI
         {
             drawing.anchorMin = new Vector2(.03f, .03f);
             drawing.anchorMax = new Vector2(.97f, .97f);
-            // 작은 사진과 위/아래로 서로 반대 방향을 향하는 교체 화살표.
-            ProfileIconStroke(drawing, new Vector2(.23f, .25f), new Vector2(.77f, .75f), dark);
-            ProfileIconStroke(drawing, new Vector2(.30f, .32f), new Vector2(.70f, .68f), new Color(.82f, .91f, .87f));
-            ProfileIconStroke(drawing, new Vector2(.55f, .53f), new Vector2(.65f, .63f), new Color(.98f, .72f, .24f));
-            ProfileIconLine(drawing, new Vector2(.33f, .37f), new Vector2(.45f, .49f), dark);
-            ProfileIconLine(drawing, new Vector2(.45f, .49f), new Vector2(.61f, .35f), dark);
-            ProfileIconArc(drawing, 35, 145, dark);
-            ProfileIconArc(drawing, 215, 325, dark);
-            ProfileIconLine(drawing, new Vector2(.16f, .74f), new Vector2(.19f, .95f), dark);
-            ProfileIconLine(drawing, new Vector2(.16f, .74f), new Vector2(.37f, .75f), dark);
-            ProfileIconLine(drawing, new Vector2(.84f, .26f), new Vector2(.81f, .05f), dark);
-            ProfileIconLine(drawing, new Vector2(.84f, .26f), new Vector2(.63f, .25f), dark);
+            var image = drawing.gameObject.AddComponent<RawImage>();
+            image.texture = Resources.Load<Texture2D>("GameUIArt/ProfileRefreshWhite");
+            image.raycastTarget = false;
+
         }
         else if (icon == "close")
         {
@@ -156,7 +149,7 @@ public partial class CatGameSceneUI
         input.lineType = InputField.LineType.SingleLine;
         input.text = ProfileName;
         var message = Label(body, "1~12자까지 입력할 수 있어요", 18, new Vector2(.05f, .27f), new Vector2(.95f, .41f));
-        ProfileIconButton(body, "저장", "check", new Vector2(.62f, .04f), new Vector2(.83f, .26f), () => SaveProfileChanges(input.text, ProfilePortraitId, message));
+        ProfileIconButton(body, "저장", "check", new Vector2(.62f, .04f), new Vector2(.83f, .26f), () => SaveProfileChanges(input.text, ProfilePortraitId, message, true));
         ProfileIconButton(body, "취소", "back", new Vector2(.17f, .04f), new Vector2(.38f, .26f), ReturnToProfile);
         input.ActivateInputField();
     }
@@ -191,7 +184,7 @@ public partial class CatGameSceneUI
         }
     }
 
-    private async void SaveProfileChanges(string name, string portrait, Text message)
+    private async void SaveProfileChanges(string name, string portrait, Text message, bool rename = false)
     {
         if (profileSaving) return;
         name = name?.Trim();
@@ -201,13 +194,29 @@ public partial class CatGameSceneUI
         profileSaving = true;
         message.text = "저장 중…";
         bool success = false;
-        try { success = await ProfileSaveRequested(name, portrait); }
+        try { success = await ProfileSaveRequested(name, portrait, rename); }
         catch (Exception exception) { Debug.LogException(exception); }
         finally { profileSaving = false; }
         if (this == null) return;
         RefreshProfile();
         if (success) ReturnToProfile();
-        else if (message != null) message.text = "저장하지 못했어요. 다시 시도해주세요";
+        else if (message != null)
+        {
+            string error = ProfileSaveError?.Invoke() ?? "저장하지 못했어요. 다시 시도해주세요";
+            message.text = error;
+            ShowProfileErrorPopup(error);
+        }
+    }
+
+    private void ShowProfileErrorPopup(string error)
+    {
+        if (profilePopup == null) return;
+        var overlay = Panel(profilePopup, "Profile Error", Vector2.zero, Vector2.one, new Color(0, 0, 0, .65f));
+        UnityEngine.Events.UnityAction close = () => { if (overlay != null) RemoveUI(overlay.gameObject); };
+        var body = PopupContent(overlay, "Error Frame", "Error Content", new Vector2(.09f, .37f), new Vector2(.91f, .66f), new Color(.35f, .23f, .17f), close, out _);
+        Label(body, error.Contains("중복") ? "이름 중복" : "프로필 변경 안내", 27, new Vector2(.05f, .73f), new Vector2(.95f, .95f));
+        Label(body, error, 22, new Vector2(.07f, .32f), new Vector2(.93f, .72f));
+        Button(body, "확인", new Vector2(.28f, .06f), new Vector2(.72f, .27f), close, true);
     }
 
     private void ReturnToProfile()
