@@ -76,7 +76,7 @@ public partial class CatGameSceneUI
     {
         if (profileLevel == null || profilePortrait == null) return;
         profileLevel.text = $"Lv.{(data == null ? 1 : data.progress.accountLevel)}";
-        string id = data == null ? CatGameCatalog.StarterCharacterId : data.loadout.characterId;
+        string id = ProfilePortraitId;
         if (profileCharacterId == id) return;
         for (int i = profilePortrait.childCount - 1; i >= 0; i--)
         {

@@ -20,6 +20,8 @@ public class BackendGameData
         get; private set;
     }
     private bool busy;
+    private bool requiresReload;
+    public CombatRewardJournal RewardJournal { get; private set; }
 
     // 개발자가 한 번 실행하는 스키마 설정. 기존 테이블은 수정/삭제하지 않습니다.
     public static async Task CreateTableAsync(string databaseUuid)
@@ -50,6 +52,8 @@ public class BackendGameData
             return false;
         busy = true;
         userData = null;
+        RewardJournal = null;
+        requiresReload = false;
         LastError = "";
         try
         {
@@ -78,10 +82,17 @@ public class BackendGameData
             }
             EnsureOwner(owner);
             var loaded = FromRow(row);
+            var journal = new CombatRewardJournal(
+                System.IO.Path.Combine(Application.persistentDataPath, "CombatRewards"),
+                databaseUuid + ":" + key, loaded.progress.combatSaveReceipt);
+            if (!journal.Reconcile(loaded.progress.combatSaveReceipt))
+                throw new InvalidOperationException("다른 기기 등의 저장과 로컬 미저장 기록이 충돌했습니다. 중복 지급을 방지하기 위해 자동 복구를 중단했고 기록은 보존했습니다.");
+            journal.Restore(loaded);
             ownerInDate = owner;
             saveId = key;
             revision = row.Revision;
             userData = loaded;
+            RewardJournal = journal;
             return true;
 #else
             await Task.CompletedTask;
@@ -109,7 +120,24 @@ public class BackendGameData
             if (client == null || userData == null || string.IsNullOrEmpty(ownerInDate))
                 throw new InvalidOperationException("현재 계정의 데이터가 준비되지 않았습니다.");
             EnsureOwner(ownerInDate);
+            if (requiresReload) throw new InvalidOperationException("저장 결과를 확인하려면 다시 로그인해주세요. 로컬 전투 보상은 보존됩니다.");
+            // 이전 요청의 응답이 끊겼다면 먼저 서버가 실제로 저장했는지 확인합니다.
+            if (RewardJournal != null && RewardJournal.HasAttempts)
+            {
+                string lookupKey = saveId;
+                var current = await client.From<PlayerSaveRow>().OfCurrentUser()
+                    .Where(x => x.SaveId == lookupKey).FirstOrDefault();
+                if (current == null || current.Revision != revision)
+                {
+                    requiresReload = true;
+                    throw new InvalidOperationException("이전 저장 결과가 서버에 반영되었거나 다른 기기에서 변경되었습니다. 다시 로그인해주세요.");
+                }
+                if (!RewardJournal.Reconcile(current.Progress.combatSaveReceipt))
+                    throw new InvalidOperationException("저장 상태 확인이 필요합니다. 로컬 보상 기록을 보존하고 다시 로그인해주세요.");
+                revision = current.Revision;
+            }
             long expectedRevision = revision;
+            if (RewardJournal != null) userData.progress.combatSaveReceipt = RewardJournal.BeginUpload();
             var row = ToRow(userData, saveId, checked(expectedRevision + 1));
             string key = saveId;
             var result = await client.From<PlayerSaveRow>().OfCurrentUser()
@@ -117,6 +145,9 @@ public class BackendGameData
             if (result.AffectedRows != 1)
                 throw new InvalidOperationException("저장 버전이 변경됐거나 행이 없습니다. 다시 로그인해 최신 데이터를 불러와주세요.");
             revision = row.Revision;
+            // 서버 저장 성공 후 로컬 디스크 오류가 나도 구매 등을 롤백하면 안 됩니다.
+            try { RewardJournal?.Reconcile(row.Progress.combatSaveReceipt); }
+            catch (Exception exception) { Debug.LogException(exception); }
             return true;
 #else
             await Task.CompletedTask;

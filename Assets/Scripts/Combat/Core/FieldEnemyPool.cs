@@ -23,8 +23,7 @@ public sealed class FieldEnemyPool : MonoBehaviour
             var enemy = factory(count);
             if (count >= FieldCombatController.InitialMonsterCount)
             {
-                int step = (count - FieldCombatController.InitialMonsterCount) / 10 + 1;
-                enemy.ConfigureMonster(step <= 6 ? Mathf.Min(3, step / 2) : step % 4);
+                enemy.ConfigureMonster(KindForSlot(count));
             }
             enemy.gameObject.SetActive(false);
             Enemies[count] = enemy;
@@ -35,5 +34,12 @@ public sealed class FieldEnemyPool : MonoBehaviour
     public void Release(FieldEnemy enemy)
     {
         enemy.gameObject.SetActive(false);
+    }
+
+    public static int KindForSlot(int index)
+    {
+        if (index < FieldCombatController.InitialMonsterCount) return 0;
+        int step = (index - FieldCombatController.InitialMonsterCount) / 10 + 1;
+        return step <= 6 ? Mathf.Min(3, step / 2) : step % 4;
     }
 }

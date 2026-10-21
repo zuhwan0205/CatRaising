@@ -137,10 +137,8 @@ public partial class FieldCombatController : MonoBehaviour
                 var enemy = enemies[i];
                 if (enemy == null)
                     continue;
-                int step = (i - InitialMonsterCount) / 10 + 1;
                 // 새 종류 해금 시 해당 종류를 먼저 추가하고 이후에는 네 종류를 순환합니다.
-                int kind = step <= 6 ? Math.Min(3, step / 2) : step % 4;
-                enemy.ConfigureMonster(kind);
+                enemy.ConfigureMonster(FieldEnemyPool.KindForSlot(i));
                 enemy.Respawn(SpawnPosition());
             }
         contactCooldown = Mathf.Max(0, contactCooldown - delta);
@@ -279,7 +277,6 @@ public partial class FieldCombatController : MonoBehaviour
                 result += $"\n적 HP {closest.Health.Current:0.#}/{closest.Health.Maximum:0.#}";
             MessageChanged?.Invoke($"공격 피해 {damageText}{bonusText}{result}");
         }
-        // 범위 공격은 한 번에 합산 저장하여 저장 중 중복 보상 누락을 막습니다.
     }
 
     private void TriggerRelics(EffectTrigger trigger, Action<double> bonusDamage)

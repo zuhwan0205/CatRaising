@@ -1,4 +1,5 @@
 using System;
+using System.Linq;
 using UnityEngine;
 
 // 상점 화면은 별도 파일로 관리하며 구매/저장은 세션에 요청합니다.
@@ -43,7 +44,7 @@ public partial class CatGameSceneUI
             CharacterDrawPanel();
         int count = 0;
         if (characterShop)
-            foreach (var definition in catalog.AllCharacters())
+            foreach (var definition in catalog.AllCharacters().OrderBy(character => character.rarity))
             {
                 if ((definition.shop == null || !definition.shop.CanSell) && !definition.inCharacterDraw)
                     continue;

@@ -33,6 +33,10 @@ public class BackendUserData
 [Serializable]
 public class PlayerProgress
 {
+    // 기존 progress JSON 안에 저장되므로 DB 컬럼 추가가 필요하지 않습니다.
+    public string combatSaveReceipt = "";
+    public string profileName = "고양이 집사";
+    public string profileCharacterId = "";
     public int dungeonClearedStage;
     public int accountLevel = 1;
     public long accountExperience;

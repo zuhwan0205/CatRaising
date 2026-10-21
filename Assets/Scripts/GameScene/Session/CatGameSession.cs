@@ -6,14 +6,14 @@ public class CatGameSession
 {
     public async Task CompleteDungeonAsync(int stage)
     {
-        if (IsSaving || HasPendingReward || stage < 1 || stage > 15 || stage != data.progress.dungeonClearedStage + 1) return;
+        if (MutationBlocked || stage < 1 || stage > 15 || stage != data.progress.dungeonClearedStage + 1) return;
         data.progress.dungeonClearedStage = stage;
         HasPendingReward = true;
         await SaveAsync();
     }
     public async Task GrantCrystalAdRewardAsync()
     {
-        if (IsSaving || HasPendingReward || CrystalAdRewards.Remaining(data.wallet) == 0)
+        if (MutationBlocked || CrystalAdRewards.Remaining(data.wallet) == 0)
             return;
         if (data.wallet.gems > long.MaxValue - CrystalAdRewards.Amount)
             return;
@@ -30,6 +30,8 @@ public class CatGameSession
     private readonly bool preview;
     private readonly Func<Task<bool>> saveData;
     private readonly CatGameCatalog catalog;
+    private readonly CombatRewardJournal rewardJournal;
+    public void CheckpointRewards() => rewardJournal?.Checkpoint();
     private readonly Random drawRandom = new Random();
     public bool IsSaving
     {
@@ -40,64 +42,87 @@ public class CatGameSession
         get; private set;
     }
     private bool rewardLimitReached;
-    private bool savingExperience;
-    private long experienceRevision, savedExperienceRevision, queuedGold;
+    private bool savingCombatRewards;
+    private long experienceRevision, savedExperienceRevision;
+    private long goldRevision, savedGoldRevision, queuedGold;
 
-    public async Task SaveExperienceAsync()
+    // 네트워크 요청 시작 시점의 리비전만 완료 처리합니다.
+    // 요청 중 들어온 보상은 다음 주기에 저장하므로 중복 지급/누락이 없습니다.
+    public async Task SaveCombatRewardsAsync()
     {
-        if (IsSaving || HasPendingReward || experienceRevision == savedExperienceRevision) return;
-        long snapshot = experienceRevision;
-        savingExperience = IsSaving = true;
+        if (MutationBlocked || (experienceRevision == savedExperienceRevision && goldRevision == savedGoldRevision)) return;
+        long experienceSnapshot = experienceRevision, goldSnapshot = goldRevision;
+        savingCombatRewards = IsSaving = true;
         bool success = false;
         try { success = preview || await saveData(); }
         catch (Exception) { success = false; }
         finally
         {
-            if (success) savedExperienceRevision = snapshot;
-            savingExperience = IsSaving = false;
+            if (success)
+            {
+                savedExperienceRevision = experienceSnapshot;
+                savedGoldRevision = goldSnapshot;
+            }
+            savingCombatRewards = IsSaving = false;
         }
-        // 경험치 저장 중 처치한 몬스터의 골드도 유실하지 않습니다.
-        long gold = queuedGold;
-        queuedGold = 0;
-        if (gold > 0) await AwardGoldAsync(gold);
+        if (!success) StatusChanged?.Invoke("전투 보상 저장 실패 · 보상을 보관하고 자동 재시도합니다.");
     }
     public event Action<bool> GameplayBlockedChanged;
     public event Action<bool> BusyChanged;
     public event Action<string> StatusChanged;
 
-    public async Task AwardGoldAsync(long amount)
+    public Task AwardGoldAsync(long amount)
     {
-        if (savingExperience && amount > 0)
+        if (amount <= 0 || rewardLimitReached) return Task.CompletedTask;
+        // 구매 등은 저장 실패 시 잔액을 복원하므로 그 사이의 보상을 별도로 보관합니다.
+        if ((IsSaving && !savingCombatRewards) || HasPendingReward)
         {
-            queuedGold = checked(queuedGold + amount);
-            return;
+            if (queuedGold > long.MaxValue - amount) StopAtGoldLimit();
+            else queuedGold += amount;
         }
-        if (IsSaving || HasPendingReward || rewardLimitReached || amount < 0)
-            return;
+        else ApplyGold(amount);
+        return Task.CompletedTask;
+    }
+
+    private void ApplyGold(long amount)
+    {
+        if (amount <= 0) return;
         if (data.wallet.gold > long.MaxValue - amount)
         {
-            rewardLimitReached = true;
-            GameplayBlockedChanged?.Invoke(true);
-            StatusChanged?.Invoke("골드 한도에 도달해 전투를 중단했습니다.");
+            StopAtGoldLimit();
             return;
         }
         data.wallet.gold += amount;
-        HasPendingReward = true;
-        GameplayBlockedChanged?.Invoke(true);
-        await SaveAsync();
+        rewardJournal?.AddGold(amount);
+        goldRevision++;
     }
 
-    public CatGameSession(BackendUserData data, bool preview, Func<Task<bool>> saveData, CatGameCatalog catalog = null)
+    private void StopAtGoldLimit()
+    {
+        rewardLimitReached = true;
+        GameplayBlockedChanged?.Invoke(true);
+        StatusChanged?.Invoke("골드 한도에 도달해 전투를 중단했습니다.");
+    }
+
+    private void ApplyQueuedGold()
+    {
+        long gold = queuedGold;
+        queuedGold = 0;
+        ApplyGold(gold);
+    }
+    public CatGameSession(BackendUserData data, bool preview, Func<Task<bool>> saveData, CatGameCatalog catalog = null, CombatRewardJournal rewardJournal = null)
     {
         this.data = data ?? throw new ArgumentNullException(nameof(data));
         this.preview = preview;
         this.saveData = saveData ?? throw new ArgumentNullException(nameof(saveData));
         this.catalog = catalog;
+        this.rewardJournal = preview ? null : rewardJournal;
+        if (this.rewardJournal != null && this.rewardJournal.HasPending) goldRevision++;
     }
 
     public async Task LevelUpCharacterAsync(OwnedCharacter character)
     {
-        if (IsSaving || HasPendingReward || character == null || !data.characters.Contains(character))
+        if (MutationBlocked || character == null || !data.characters.Contains(character))
             return;
         if (!CatProgression.TryStarCost(character.ascension, out long cost))
         {
@@ -118,17 +143,18 @@ public class CatGameSession
 
     public bool TryAwardExperience(long amount)
     {
-        if ((IsSaving && !savingExperience) || HasPendingReward || amount <= 0) return false;
+        if ((IsSaving && !savingCombatRewards) || HasPendingReward || amount <= 0) return false;
         var cat = data.characters.Find(x => x != null && x.characterId == data.loadout.characterId);
         if (cat == null) return false;
         CatProgression.AddExperience(cat, amount);
+        rewardJournal?.AddExperience(cat.characterId, amount);
         experienceRevision++;
         return true;
     }
 
     public async Task ResetSkillsAsync(OwnedCharacter cat)
     {
-        if (IsSaving || HasPendingReward || cat == null || !data.characters.Contains(cat) ||
+        if (MutationBlocked || cat == null || !data.characters.Contains(cat) ||
             !CatSkillTree.HasLearnedSkills(cat) || data.wallet.gems < CatSkillTree.ResetCost) return;
         var previousRanks = cat.skillRanks;
         long previousGems = data.wallet.gems;
@@ -143,7 +169,7 @@ public class CatGameSession
 
     public async Task LearnSkillAsync(OwnedCharacter cat, int node)
     {
-        if (IsSaving || HasPendingReward || cat == null || !data.characters.Contains(cat) || !CatSkillTree.CanLearn(cat, node)) return;
+        if (MutationBlocked || cat == null || !data.characters.Contains(cat) || !CatSkillTree.CanLearn(cat, node)) return;
         var previous = cat.skillRanks;
         var ranks = new int[CatSkillTree.Count];
         for (int i = 0; i < ranks.Length; i++) ranks[i] = CatSkillTree.Rank(cat, i);
@@ -163,7 +189,7 @@ public class CatGameSession
 
     public async Task<ContentDrawResult> DrawRelicAsync()
     {
-        if (IsSaving || HasPendingReward || catalog == null)
+        if (MutationBlocked || catalog == null)
             return null;
         var rules = catalog.relicDraw;
         var pool = catalog.RelicDrawPool();
@@ -189,30 +215,16 @@ public class CatGameSession
         }
         var definition = rules.Pick(pool, drawRandom.NextDouble(), drawRandom.NextDouble());
         var owned = data.relics.Find(x => x != null && x.relicId == definition.id);
-        bool duplicate = owned != null;
-        long previousGold = data.wallet.gold, previousFragments = owned == null ? 0 : owned.fragments;
-        if (!duplicate)
-        {
-            owned = new OwnedRelic { relicId = definition.id };
-            data.relics.Add(owned);
-        }
-        else
-            owned.fragments += rules.duplicateFragments;
-        data.wallet.gold -= rules.goldCost;
-        bool saved = await SaveAsync(() =>
-        {
-            data.wallet.gold = previousGold;
-            if (duplicate)
-                owned.fragments = previousFragments;
-            else
-                data.relics.Remove(owned);
-        });
-        return saved ? new ContentDrawResult { id = definition.id, name = definition.displayName, rarity = definition.rarity, duplicate = duplicate, fragments = duplicate ? rules.duplicateFragments : 0 } : null;
+        return await CommitDrawAsync(data.relics, owned,
+            () => new OwnedRelic { relicId = definition.id },
+            item => item.fragments, (item, value) => item.fragments = value,
+            rules.goldCost, rules.duplicateFragments,
+            new ContentDrawResult { id = definition.id, name = definition.displayName, rarity = definition.rarity });
     }
 
     public async Task<ContentDrawResult> DrawCharacterAsync()
     {
-        if (IsSaving || HasPendingReward || catalog == null)
+        if (MutationBlocked || catalog == null)
             return null;
         var rules = catalog.characterDraw;
         var pool = catalog.CharacterDrawPool();
@@ -238,30 +250,42 @@ public class CatGameSession
         }
         var definition = rules.Pick(pool, drawRandom.NextDouble(), drawRandom.NextDouble());
         var owned = data.characters.Find(x => x != null && x.characterId == definition.id);
+        return await CommitDrawAsync(data.characters, owned,
+            () => new OwnedCharacter { characterId = definition.id },
+            item => item.fragments, (item, value) => item.fragments = value,
+            rules.goldCost, rules.duplicateFragments,
+            new ContentDrawResult { character = true, id = definition.id, name = definition.displayName, rarity = definition.rarity });
+    }
+
+    private bool MutationBlocked => IsSaving || HasPendingReward;
+
+    private async Task<ContentDrawResult> CommitDrawAsync<T>(System.Collections.Generic.List<T> collection,
+        T owned, Func<T> create, Func<T, long> fragments, Action<T, long> setFragments,
+        long goldCost, long duplicateFragments, ContentDrawResult result) where T : class
+    {
         bool duplicate = owned != null;
-        long previousGold = data.wallet.gold, previousFragments = owned == null ? 0 : owned.fragments;
-        if (!duplicate)
-        {
-            owned = new OwnedCharacter { characterId = definition.id };
-            data.characters.Add(owned);
-        }
+        long previousGold = data.wallet.gold;
+        long previousFragments = duplicate ? fragments(owned) : 0;
+        if (duplicate) setFragments(owned, previousFragments + duplicateFragments);
         else
-            owned.fragments += rules.duplicateFragments;
-        data.wallet.gold -= rules.goldCost;
+        {
+            owned = create();
+            collection.Add(owned);
+        }
+        data.wallet.gold -= goldCost;
         bool saved = await SaveAsync(() =>
         {
             data.wallet.gold = previousGold;
-            if (duplicate)
-                owned.fragments = previousFragments;
-            else
-                data.characters.Remove(owned);
+            if (duplicate) setFragments(owned, previousFragments);
+            else collection.Remove(owned);
         });
-        return saved ? new ContentDrawResult { character = true, id = definition.id, name = definition.displayName, rarity = definition.rarity, duplicate = duplicate, fragments = duplicate ? rules.duplicateFragments : 0 } : null;
+        result.duplicate = duplicate;
+        result.fragments = duplicate ? duplicateFragments : 0;
+        return saved ? result : null;
     }
-
     private async Task PurchaseAsync(ShopOffer offer, bool alreadyOwned, Action grant, Action revoke)
     {
-        if (IsSaving || HasPendingReward)
+        if (MutationBlocked)
             return;
         if (offer == null || !offer.CanSell)
         {
@@ -294,7 +318,7 @@ public class CatGameSession
 
     private async Task LevelUpAsync(int level, LevelUpRules rules, Action<int> setLevel)
     {
-        if (IsSaving || HasPendingReward)
+        if (MutationBlocked)
             return;
         if (rules == null || !rules.TryGetCost(level, out long cost))
         {
@@ -314,7 +338,7 @@ public class CatGameSession
 
     public async Task SelectCharacterAsync(OwnedCharacter character)
     {
-        if (IsSaving || HasPendingReward || character == null || !data.characters.Contains(character))
+        if (MutationBlocked || character == null || !data.characters.Contains(character))
             return;
         string previous = data.loadout.characterId;
         data.loadout.characterId = character.characterId;
@@ -323,7 +347,7 @@ public class CatGameSession
 
     public async Task ToggleRelicAsync(OwnedRelic relic)
     {
-        if (IsSaving || HasPendingReward || relic == null || !data.relics.Contains(relic))
+        if (MutationBlocked || relic == null || !data.relics.Contains(relic))
             return;
         var previous = new System.Collections.Generic.List<string>(data.loadout.relicIds);
         if (data.loadout.relicIds.Contains(relic.relicId))
@@ -340,14 +364,27 @@ public class CatGameSession
         await SaveAsync(() => data.loadout.relicIds = previous);
     }
 
+    public async Task<bool> UpdateProfileAsync(string name, string portraitId)
+    {
+        name = name?.Trim();
+        if (MutationBlocked || string.IsNullOrEmpty(name) || name.Length > 12 ||
+            !data.characters.Exists(x => x != null && x.characterId == portraitId)) return false;
+        foreach (char ch in name) if (char.IsControl(ch) || ch == '<' || ch == '>') return false;
+        string oldName = data.progress.profileName, oldPortrait = data.progress.profileCharacterId;
+        data.progress.profileName = name;
+        data.progress.profileCharacterId = portraitId;
+        return await SaveAsync(() => { data.progress.profileName = oldName; data.progress.profileCharacterId = oldPortrait; });
+    }
+
     public async Task<bool> SaveAsync(Action rollback = null)
     {
         if (IsSaving)
             return false;
-        long experienceSnapshot = experienceRevision;
+        long experienceSnapshot = experienceRevision, goldSnapshot = goldRevision;
         if (preview)
         {
             savedExperienceRevision = experienceSnapshot;
+            savedGoldRevision = goldSnapshot;
             HasPendingReward = false;
             GameplayBlockedChanged?.Invoke(rewardLimitReached);
             StatusChanged?.Invoke("미리보기 변경입니다. 서버에는 저장하지 않습니다.");
@@ -371,8 +408,10 @@ public class CatGameSession
             {
                 HasPendingReward = false;
                 savedExperienceRevision = experienceSnapshot;
+                savedGoldRevision = goldSnapshot;
             }
             IsSaving = false;
+            if (!HasPendingReward) ApplyQueuedGold();
             GameplayBlockedChanged?.Invoke(HasPendingReward || rewardLimitReached);
             BusyChanged?.Invoke(false);
         }
