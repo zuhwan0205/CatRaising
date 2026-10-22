@@ -35,6 +35,13 @@ public static class GameSceneUISetup
                 FieldMapSize.Expand(existingMap.gameObject);
                 EditorSceneManager.MarkSceneDirty(scene);
             }
+            if (existingMap != null)
+            {
+                foreach (var facing in existingMap.GetComponentsInChildren<FieldBillboard>(true))
+                    if (previewCamera != null) facing.ViewCamera = previewCamera;
+                if (FieldPropGrounding.Apply(existingMap.gameObject))
+                    EditorSceneManager.MarkSceneDirty(scene);
+            }
             var ui = entry.GetComponent<CatGameSceneUI>();
             if (ui != null && ui.HasSceneUI)
             {
@@ -77,6 +84,7 @@ public static class GameSceneUISetup
                 billboard.ViewCamera = camera;
                 billboard.transform.rotation = camera.transform.rotation;
             }
+            FieldPropGrounding.Apply(map);
             entry.PrepareSceneUI(map, camera);
             EditorUtility.SetDirty(entry);
             EditorUtility.SetDirty(entry.GetComponent<CatGameSceneUI>());

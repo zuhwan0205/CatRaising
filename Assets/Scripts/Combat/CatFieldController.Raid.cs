@@ -141,7 +141,7 @@ public partial class CatFieldController
             cat.transform.position = FindRaidPosition(new Vector3((raidFighters.Count - (team.Count - 1) * .5f) * 2, 0, -4));
             if (raidParty != null) cat.transform.position = raidParty.transform.position;
             var catArt = Billboard("Cat Artwork", cat.transform);
-            catArt.localScale = Vector3.one * 1.2f;
+            catArt.localScale = Vector3.one * 1.56f;
             var fallback = new GameObject("Fallback").transform;
             fallback.SetParent(catArt, false);
             Paint("Body", fallback, Vector2.zero, Vector2.one, Color.yellow, 0);

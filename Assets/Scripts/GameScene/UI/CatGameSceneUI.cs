@@ -1,4 +1,5 @@
-using System;
+﻿using System;
+using System.Linq;
 using UnityEngine;
 using UnityEngine.Events;
 using UnityEngine.EventSystems;
@@ -171,7 +172,7 @@ public partial class CatGameSceneUI : MonoBehaviour
         else if (tab == "레이드")
             RaidList();
         else if (tab == "던전")
-            DungeonMap();
+            DungeonChapters();
         else
             Relics();
     }
@@ -261,7 +262,7 @@ public partial class CatGameSceneUI : MonoBehaviour
     private void Characters()
     {
         var grid = Grid("캐릭터  ·  " + data.characters.Count, transparent: true);
-        foreach (var owned in data.characters)
+        foreach (var owned in data.characters.Where(item => item != null).OrderBy(item => catalog.FindCharacter(item.characterId)?.rarity ?? ItemRarity.Common))
         {
             if (owned == null)
                 continue;
@@ -318,7 +319,7 @@ public partial class CatGameSceneUI : MonoBehaviour
         var grid = Grid("유물  ·  " + data.relics.Count, transparent: true);
         var layout = grid.GetComponent<GridLayoutGroup>();
         layout.cellSize = new Vector2(layout.cellSize.x, 220);
-        foreach (var owned in data.relics)
+        foreach (var owned in data.relics.Where(item => item != null).OrderBy(item => catalog.FindRelic(item.relicId)?.rarity ?? ItemRarity.Common))
         {
             if (owned == null)
                 continue;
