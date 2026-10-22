@@ -5,8 +5,9 @@ using UnityEngine;
 // 이미지 좌표는 텍스처당 한 번만 읽고, 배치가 끝나면 CPU 복사본을 해제합니다.
 public static class FieldPropGrounding
 {
-    public static void Apply(GameObject map)
+    public static bool Apply(GameObject map)
     {
+        bool changed = false;
         var pixels = new Dictionary<Texture2D, Color32[]>();
         var bottoms = new Dictionary<Sprite, float>();
         foreach (var billboard in map.GetComponentsInChildren<FieldBillboard>(true))
@@ -31,7 +32,7 @@ public static class FieldPropGrounding
                     int first = -1;
                     for (int y = (int)rect.yMin; y < (int)rect.yMax && first < 0; y++)
                         for (int x = (int)rect.xMin; x < (int)rect.xMax; x++)
-                            if (colors[y * texture.width + x].a >= 32) { first = y; break; }
+                            if (colors[y * texture.width + x].a >= 128) { first = y; break; }
                     localBottom = first < 0 ? sprite.bounds.min.y : (first - rect.yMin - sprite.pivot.y) / sprite.pixelsPerUnit;
                     bottoms.Add(sprite, localBottom);
                 }
@@ -41,8 +42,39 @@ public static class FieldPropGrounding
                 bottom = Mathf.Min(bottom, point.y);
             }
             if (!float.IsInfinity(bottom))
-                billboard.CenterHeight = -bottom * billboard.transform.lossyScale.y;
+            {
+                float height = -bottom * billboard.transform.lossyScale.y;
+                if (!Mathf.Approximately(billboard.CenterHeight, height)) changed = true;
+                billboard.CenterHeight = height;
+                if (billboard.ViewCamera != null)
+                {
+                    var rotation = billboard.ViewCamera.transform.rotation;
+                    var position = billboard.Feet.position + billboard.ViewCamera.transform.up * height;
+                    if (Vector3.Distance(billboard.transform.position, position) > .0001f || Quaternion.Angle(billboard.transform.rotation, rotation) > .001f) changed = true;
+                    billboard.transform.SetPositionAndRotation(position, rotation);
+                }
+            }
         }
+        // 기존에 옆으로 밀어 둔 바닥 그림자를 각 구조물의 접지 위치로 옮깁니다.
+        foreach (var obstacle in map.GetComponentsInChildren<FieldMapObstacle>(true))
+        {
+            Transform parent = obstacle.transform.parent;
+            if (parent == null) continue;
+            Transform nearest = null;
+            float distance = float.PositiveInfinity;
+            foreach (Transform candidate in parent)
+            {
+                if (candidate.name != obstacle.name + " Shadow") continue;
+                float current = (candidate.position - obstacle.transform.position).sqrMagnitude;
+                if (current < distance) { nearest = candidate; distance = current; }
+            }
+            if (nearest == null || distance > 4f) continue;
+            Vector3 position = obstacle.transform.position;
+            position.y = nearest.position.y;
+            if ((nearest.position - position).sqrMagnitude > .000001f)
+            { nearest.position = position; changed = true; }
+        }
+        return changed;
     }
 
     private static Color32[] ReadPixels(Texture2D source)

@@ -270,7 +270,7 @@ public sealed class FieldScenery : MonoBehaviour
     private Transform Structure(string name, Vector3 position, float radius)
     {
         Navigation.Add(position, radius, !name.StartsWith("Loose Stone", System.StringComparison.Ordinal));
-        Floor(name + " Shadow", position + new Vector3(.45f, 0, -.2f), new Vector2(radius * 3.2f, radius * 1.9f), new Color(.16f, .22f, .14f, .30f), oval, -9100);
+        Floor(name + " Shadow", position, new Vector2(radius * 3.2f, radius * 1.9f), new Color(.16f, .22f, .14f, .30f), oval, -9100);
         var feet = new GameObject(name).transform;
         feet.SetParent(transform, false);
         feet.localPosition = position;

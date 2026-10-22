@@ -44,9 +44,9 @@ public partial class CatGameSceneUI
 
     private IEnumerator AnimateRelicDraw()
     {
-        var title = Label(drawOverlay, drawingCharacter ? "캐릭터 상자를 여는 중…" : "유물 상자를 여는 중…", 32, new Vector2(.06f, .79f), new Vector2(.94f, .91f));
+        var title = Label(drawOverlay, drawingCharacter ? "캐릭터 상자를 여는 중…" : "유물 상자를 여는 중…", 35, new Vector2(.06f, .79f), new Vector2(.94f, .91f));
         title.color = Color.white;
-        var hint = Label(drawOverlay, "상자를 누르면 연출을 건너뜁니다", 21, new Vector2(.06f, .15f), new Vector2(.94f, .29f));
+        var hint = Label(drawOverlay, "상자를 누르면 연출을 건너뜁니다", 24, new Vector2(.06f, .15f), new Vector2(.94f, .29f));
         hint.color = new Color(.85f, .83f, .94f);
         var chest = Rect(drawOverlay, "Treasure Chest", new Vector2(.26f, .36f), new Vector2(.74f, .60f));
         Panel(chest, "Body Outline", new Vector2(0, 0), new Vector2(1, .65f), new Color(.18f, .10f, .06f));
@@ -110,11 +110,11 @@ public partial class CatGameSceneUI
         }
         var result = revealedResult;
         SetDrawResult(result);
-        Color rarityColor = new[] { new Color(.8f, .84f, .88f), new Color(.64f, .40f, 1), new Color(1, .44f, .23f), new Color(1, .84f, .20f) }[Mathf.Clamp((int)result.rarity, 0, 3)];
+        Color rarityColor = CharacterRarityColor(result.rarity);
         title.text = "상자가 열립니다!";
         lockPlate.gameObject.SetActive(false);
         var reward = Panel(drawOverlay, "Relic Reward", new Vector2(.32f, .44f), new Vector2(.68f, .64f), rarityColor);
-        var inner = Panel(reward, "Reward Face", new Vector2(.045f, .045f), new Vector2(.955f, .955f), new Color(.17f, .12f, .26f));
+        var inner = Panel(reward, "Reward Face", new Vector2(.045f, .045f), new Vector2(.955f, .955f), Color.Lerp(Color.black, rarityColor, .5f));
         if (!result.character)
         {
             RelicIcon(inner, catalog.FindRelic(result.id));
@@ -157,14 +157,14 @@ public partial class CatGameSceneUI
         {
             var result = revealedResults[i];
             float left = .06f + (i % 2) * .46f, top = .77f - (i / 2) * .12f;
-            Color color = new[] { new Color(.8f, .84f, .88f), new Color(.64f, .40f, 1), new Color(1, .44f, .23f), new Color(1, .84f, .20f) }[(int)result.rarity];
+            Color color = CharacterRarityColor(result.rarity);
             var card = Panel(drawOverlay, "Draw Result " + i, new Vector2(left, top - .105f), new Vector2(left + .42f, top), color);
-            var face = Panel(card, "Card Face", new Vector2(.015f, .03f), new Vector2(.985f, .97f), new Color(.17f, .12f, .26f));
+            var face = Panel(card, "Card Face", new Vector2(.015f, .03f), new Vector2(.985f, .97f), Color.Lerp(Color.black, color, .5f));
             var portrait = Rect(face, "Portrait", new Vector2(.02f, .08f), new Vector2(.38f, .92f));
             if (result.character) CharacterPortrait(portrait, catalog.FindCharacter(result.id));
             else RelicIcon(portrait, catalog.FindRelic(result.id));
-            Label(face, result.name, 16, new Vector2(.39f, .48f), new Vector2(.98f, .94f)).color = Color.white;
-            Label(face, result.duplicate ? $"조각 +{result.fragments}" : "새로 획득!", 15, new Vector2(.39f, .06f), new Vector2(.98f, .46f)).color = color;
+            Label(face, result.name, 19, new Vector2(.39f, .48f), new Vector2(.98f, .94f)).color = Color.white;
+            Label(face, result.duplicate ? $"조각 +{result.fragments}" : "새로 획득!", 17, new Vector2(.39f, .06f), new Vector2(.98f, .46f)).color = color;
         }
         string summary = $"최근 결과: {revealedResults.Count}회 뽑기 완료";
         if (drawingCharacter) lastCharacterDrawResult = summary; else lastDrawResult = summary;
@@ -178,7 +178,7 @@ public partial class CatGameSceneUI
         var button = rect.gameObject.AddComponent<Button>();
         button.targetGraphic = rect.GetComponent<Image>();
         CozyButtonStyle.Apply(button, CozyButtonStyle.Green);
-        Label(rect, "확인", 25, Vector2.zero, Vector2.one).color = new Color(.19f, .16f, .10f);
+        Label(rect, "확인", 27, Vector2.zero, Vector2.one).color = new Color(.19f, .16f, .10f);
         button.onClick.AddListener(() =>
         {
             if (drawOverlay == null)

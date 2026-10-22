@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Linq;
 using UnityEngine;
 
@@ -41,6 +41,7 @@ public partial class CatGameSceneUI
         var relicsTab = Button(page, "유물", new Vector2(.52f, .79f), new Vector2(1, .88f), () => SelectShop(false));
         CozyButtonStyle.SetColor(charactersTab, characterShop ? CozyButtonStyle.Green : CozyButtonStyle.Cream);
         CozyButtonStyle.SetColor(relicsTab, characterShop ? CozyButtonStyle.Cream : CozyButtonStyle.Green);
+        AddDrawInfoBackground();
         if (characterShop)
             CharacterDrawPanel();
         int count = 0;
@@ -67,13 +68,23 @@ public partial class CatGameSceneUI
             Label(page, characterShop ? "판매 중인 캐릭터가 없습니다." : "판매 중인 유물이 없습니다.", 25, new Vector2(0, .3f), new Vector2(1, .7f));
     }
 
+    private void AddDrawInfoBackground()
+    {
+        var frame = MapDecoration(page, "Draw Info Frame", new Vector2(0, .54f), new Vector2(1, .77f), new Color(.56f, .38f, .23f));
+        RoundCollectionPanel(frame);
+        var face = MapDecoration(frame, "Draw Info Cream", Vector2.zero, Vector2.one, new Color(1f, .95f, .85f));
+        face.offsetMin = new Vector2(3, 3);
+        face.offsetMax = new Vector2(-3, -3);
+        RoundCollectionPanel(face);
+    }
+
     private void CharacterDrawPanel()
     {
         var rules = catalog.characterDraw;
         bool valid = rules != null && rules.Validate(catalog.CharacterDrawPool());
         Label(page, rules == null ? "뽑기 설정 없음" : $"Common {rules.commonPercent}% · Epic {rules.epicPercent}%\nUnique {rules.uniquePercent}% · Legendary {rules.legendaryPercent}%", 23, new Vector2(0, .64f), new Vector2(1, .76f));
         Label(page, rules == null ? "" : $"최초 획득: 골드 해금 또는 뽑기\n중복: 해당 캐릭터 조각 +{rules.duplicateFragments} · 조각으로 강화", 19, new Vector2(0, .54f), new Vector2(1, .64f));
-        var button = Button(page, valid ? $"캐릭터 1회 뽑기 · {rules.goldCost:N0} 골드" : "뽑기 설정 확인 필요", new Vector2(0, .44f), new Vector2(.48f, .53f), () => CharacterDrawRequested?.Invoke());
+        var button = Button(page, valid ? $"1회 뽑기 · {rules.goldCost:N0} 골드" : "뽑기 설정 확인 필요", new Vector2(0, .44f), new Vector2(.48f, .53f), () => CharacterDrawRequested?.Invoke());
         button.interactable = valid;
         AddTenDrawButton(true, valid, rules == null ? 0 : rules.goldCost);
         lastDrawLabel = Label(page, lastCharacterDrawResult, 21, new Vector2(0, .35f), new Vector2(1, .44f));

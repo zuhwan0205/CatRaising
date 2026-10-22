@@ -25,6 +25,7 @@ public partial class CatGameSceneUI
         detailOverlay.SetAsLastSibling();
         var content = PopupContent(detailOverlay, "Popup Wood Frame", "Popup Content",
             new Vector2(.035f, .15f), new Vector2(.965f, .90f), new Color(.44f, .28f, .12f), CloseDetailPopup, out var frame);
+        DecorateCatPopup(content);
         if (opening)
         {
             frame.localScale = Vector3.one * .9f;
@@ -32,6 +33,28 @@ public partial class CatGameSceneUI
                 .SetEase(Ease.OutBack).SetUpdate(true).SetLink(frame.gameObject, LinkBehaviour.KillOnDisable);
         }
         return content;
+    }
+
+    private void DecorateCatPopup(RectTransform content)
+    {
+        content.GetComponent<Image>().color = new Color(1f, .95f, .87f);
+        RoundCollectionPanel(content);
+        // 장식을 먼저 만들어 내용 아래에 두고 입력을 가로채지 않습니다.
+        var decorations = Rect(content, "Soft Paw Pattern", Vector2.zero, Vector2.one);
+        for (int i = 0; i < 8; i++)
+        {
+            bool left = i % 2 == 0;
+            var position = new Vector2(left ? .075f : .925f, .13f + (i / 2) * .235f);
+            var paw = Rect(decorations, "Paw " + i, position, position);
+            paw.sizeDelta = new Vector2(76, 82);
+            paw.localRotation = Quaternion.Euler(0, 0, left ? -22 : 22);
+            Color tint = i % 3 == 0 ? new Color(.81f, .49f, .43f, .48f) : new Color(.66f, .45f, .29f, .38f);
+            MapOval(paw, "Soft Pad", new Vector2(.5f, .30f), new Vector2(.28f, .23f), tint);
+            MapOval(paw, "Left Toe", new Vector2(.16f, .60f), new Vector2(.12f, .15f), tint);
+            MapOval(paw, "Upper Left Toe", new Vector2(.38f, .80f), new Vector2(.12f, .16f), tint);
+            MapOval(paw, "Upper Right Toe", new Vector2(.64f, .80f), new Vector2(.12f, .16f), tint);
+            MapOval(paw, "Right Toe", new Vector2(.86f, .59f), new Vector2(.12f, .15f), tint);
+        }
     }
 
     private RectTransform PopupContent(RectTransform overlay, string frameName, string contentName,
