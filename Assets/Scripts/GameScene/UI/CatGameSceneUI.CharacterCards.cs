@@ -1,4 +1,4 @@
-using UnityEngine;
+﻿using UnityEngine;
 using UnityEngine.UI;
 
 public partial class CatGameSceneUI
@@ -20,17 +20,26 @@ public partial class CatGameSceneUI
         }
     }
 
-    private void CharacterCard(Transform grid, OwnedCharacter owned, CharacterDefinition definition)
+    private void CharacterCard(Transform grid, OwnedCharacter owned, CharacterDefinition definition,
+        UnityEngine.Events.UnityAction onSelected = null, string badge = null, bool interactable = true, bool showEquipped = true)
     {
         Color rarity = CharacterRarityColor(definition == null ? ItemRarity.Common : definition.rarity);
         var card = CollectionFrame(grid, "Character Card " + owned.characterId, rarity);
         var button = card.gameObject.AddComponent<Button>();
         button.targetGraphic = card.GetComponent<Image>();
         button.gameObject.AddComponent<ButtonTweenEffect>();
-        button.onClick.AddListener(() => { if (!saving && drawOverlay == null) CharacterDetail(owned); });
+        button.interactable = interactable;
+        button.onClick.AddListener(() =>
+        {
+            if (saving || drawOverlay != null) return;
+            if (onSelected != null) onSelected(); else CharacterDetail(owned);
+        });
         CharacterPortrait(Rect(card, "Large Portrait", new Vector2(.07f, .23f), new Vector2(.93f, .94f)), definition);
 
-        if (data.loadout.characterId == owned.characterId)
+        if (!string.IsNullOrEmpty(badge))
+            CollectionBadge(card, badge, new Vector2(.08f, .79f), new Vector2(.92f, .94f),
+                interactable ? new Color(.28f, .64f, .42f) : new Color(.44f, .41f, .48f));
+        else if (showEquipped && data.loadout.characterId == owned.characterId)
             CollectionBadge(card, "선택", new Vector2(.65f, .81f), new Vector2(.92f, .94f), new Color(.28f, .64f, .42f));
         var footer = Panel(card, "Growth", new Vector2(.055f, .06f), new Vector2(.945f, .30f), new Color(.06f, .05f, .10f, .92f));
         Label(footer, $"Lv.{owned.level}", 18, new Vector2(.04f, .05f), new Vector2(.49f, .95f)).color = Color.white;

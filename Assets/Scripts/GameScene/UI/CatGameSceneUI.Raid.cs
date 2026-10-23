@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
@@ -181,7 +181,7 @@ public partial class CatGameSceneUI
     {
         try
         {
-            if (dungeonMode) DungeonRequested?.Invoke(selectedDungeon, new List<OwnedCharacter>(raidTeam));
+            if (dungeonMode) { DungeonRequested?.Invoke(selectedDungeon, new List<OwnedCharacter>(raidTeam)); return; }
             else RaidRequested?.Invoke(selectedRaid, new List<OwnedCharacter>(raidTeam));
             if (RaidField == null || !RaidField.RaidRunning) return;
         }
@@ -225,14 +225,16 @@ public partial class CatGameSceneUI
 
     public void ShowRaidResult(bool won)
     {
+        CloseDefenseScreen();
         ClearPage();
-        Label(page, won ? $"{EncounterTab} 승리!" : $"{EncounterTab} 실패 · 시간 초과 또는 전멸", 32, new Vector2(0, .55f), new Vector2(1, .80f));
+        Label(page, won ? $"{EncounterTab} 승리!" : dungeonMode ? "던전 실패 · 기지가 무너졌어요" : $"{EncounterTab} 실패 · 시간 초과 또는 전멸", 32, new Vector2(0, .55f), new Vector2(1, .80f));
         Label(page, dungeonMode ? "클리어 진행은 저장됩니다. 재화 보상은 추후 추가됩니다." : "레이드 보상은 추후 추가됩니다.", 24, new Vector2(0, .4f), new Vector2(1, .55f));
         Button(page, $"{EncounterTab} 목록으로", new Vector2(.15f, .2f), new Vector2(.85f, .32f), ExitRaid);
     }
 
     private void ExitRaid()
     {
+        CloseDefenseScreen();
         raidActive = false;
         RaidActiveChanged?.Invoke(false);
         Show(EncounterTab);

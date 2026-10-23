@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
@@ -9,7 +9,7 @@ public partial class CatGameSceneUI
     public event Action<int, IList<OwnedCharacter>> DungeonRequested;
     private bool dungeonMode;
     private int selectedDungeon = 1;
-    private int TeamSize => dungeonMode ? 2 : 4;
+    private int TeamSize => dungeonMode ? 3 : 4;
     private string EncounterTab => dungeonMode ? "던전" : "레이드";
     private string EncounterTitle => dungeonMode ? $"던전 1-{selectedDungeon}" : RaidBattle.Names[selectedRaid];
 
@@ -43,21 +43,10 @@ public partial class CatGameSceneUI
             float y = i < 8 ? .43f + Mathf.Sin(i * 1.1f) * .035f : .59f + Mathf.Sin(i * 1.1f) * .025f;
             points[i] = new Vector2(x, y);
         }
-        // 곡선을 촘촘하게 이어 밝은 흙길과 점선 발자국을 만듭니다.
-        for (int i = 0; i < 14; i++)
-        {
-            for (int step = 0; step < 20; step++)
-            {
-                float t = step / 20f;
-                Vector2 point = DungeonPathPoint(points, i, t);
-                MapOval(map, "Sand Path", point, new Vector2(.007f, .012f), new Color(.94f, .82f, .51f, .85f));
-            }
-        }
-        for (int i = 0; i < 140; i++)
-        {
-            var point = DungeonPathPoint(points, i / 10, (i % 10) / 10f);
-            MapOval(map, "Trail Mark", point, new Vector2(.0017f, .0026f), new Color(.75f, .53f, .27f));
-        }
+        // 420개의 개별 장식을 한 Graphic으로 묶어 생성·마스킹 비용을 줄입니다.
+        var path = Rect(map, "Dungeon Trail", Vector2.zero, Vector2.one);
+        path.gameObject.AddComponent<CanvasRenderer>();
+        path.gameObject.AddComponent<DungeonMapTrail>().Initialize(points);
         for (int i = 0; i < points.Length; i++)
         {
             int stage = i + 1;
@@ -92,7 +81,7 @@ public partial class CatGameSceneUI
         }
         var header = MapDecoration(page, "Chapter Plaque", new Vector2(.26f, .88f), new Vector2(.975f, .985f), new Color(.16f, .29f, .16f, .92f));
         Label(header, "CHAPTER 1 · 고양이 마을", 25, new Vector2(0, .40f), Vector2.one).color = new Color(1, .95f, .77f);
-        Label(header, $"클리어 {clearedCount} / 15 · 고양이 2마리", 17, Vector2.zero, new Vector2(1, .43f)).color = new Color(.86f, .93f, .76f);
+        Label(header, $"클리어 {clearedCount} / 15 · 고양이 3종", 17, Vector2.zero, new Vector2(1, .43f)).color = new Color(.86f, .93f, .76f);
         Button(page, "챕터", new Vector2(.025f, .91f), new Vector2(.23f, .98f), () => Show("던전"));
         var footer = MapDecoration(page, "Map Guide", new Vector2(.1f, .015f), new Vector2(.9f, .08f), new Color(.16f, .29f, .16f, .85f));
         Label(footer, "지도를 밀어서 탐험하세요", 18, Vector2.zero, Vector2.one).color = Color.white;
@@ -101,13 +90,6 @@ public partial class CatGameSceneUI
         float target = points[Mathf.Min(clearedCount, 14)].x * map.rect.width - viewport.rect.width * .5f;
         scroll.horizontalNormalizedPosition = width > 0 ? Mathf.Clamp01(target / width) : 0;
         scroll.verticalNormalizedPosition = .5f;
-    }
-
-    private static Vector2 DungeonPathPoint(Vector2[] points, int segment, float t)
-    {
-        var start = points[segment];
-        var end = points[segment + 1];
-        return new Vector2(Mathf.Lerp(start.x, end.x, t), Mathf.Lerp(start.y, end.y, Mathf.SmoothStep(0, 1, t)));
     }
 
     private RectTransform MapOval(Transform parent, string name, Vector2 center, Vector2 radius, Color color)
@@ -127,7 +109,7 @@ public partial class CatGameSceneUI
         return panel;
     }
 
-    private readonly OwnedCharacter[] dungeonSlots = new OwnedCharacter[2];
+    private readonly OwnedCharacter[] dungeonSlots = new OwnedCharacter[3];
 
     private void DungeonPreparation()
     {
@@ -155,17 +137,17 @@ public partial class CatGameSceneUI
             Label(portrait, DungeonStageRules.MonsterNames[i], 15, Vector2.zero, new Vector2(1, .22f));
         }
         Label(monsters, "출현 몬스터", 25, new Vector2(0, .22f), new Vector2(1, .40f)).color = Color.white;
-        Label(monsters, $"3 웨이브 · 총 60초 · 웨이브 사이 3초" + (selectedDungeon % 5 == 0 ? "\n마지막 웨이브에 보스 출현" : ""), 18,
+        Label(monsters, $"타워 디펜스 · 3 웨이브 · 기지 방어" + (selectedDungeon % 5 == 0 ? "\n마지막 웨이브에 보스 출현" : ""), 18,
             new Vector2(0, .02f), new Vector2(1, .22f)).color = Color.white;
 
         var cats = Panel(page, "Dungeon Team", new Vector2(.02f, .17f), new Vector2(.98f, .48f), new Color(.20f, .25f, .23f));
-        for (int i = 0; i < 2; i++)
+        for (int i = 0; i < 3; i++)
         {
             int slot = i;
             var owned = dungeonSlots[i];
             if (owned != null && !data.characters.Contains(owned)) dungeonSlots[i] = owned = null;
             var definition = owned == null ? null : catalog.FindCharacter(owned.characterId);
-            var card = Panel(cats, "Cat Slot " + i, new Vector2(.06f + i * .47f, .25f), new Vector2(.47f + i * .47f, .94f), owned == null ? cream : CharacterRarityColor(definition == null ? ItemRarity.Common : definition.rarity));
+            var card = Panel(cats, "Cat Slot " + i, new Vector2(.025f + i * .325f, .25f), new Vector2(.325f + i * .325f, .94f), owned == null ? cream : CharacterRarityColor(definition == null ? ItemRarity.Common : definition.rarity));
             RoundCollectionPanel(card);
             var slotFace = MapDecoration(card, "Slot Cushion", new Vector2(.025f, .035f), new Vector2(.975f, .965f),
                 owned == null ? new Color(.98f, .88f, .71f) : Color.Lerp(CharacterRarityColor(definition == null ? ItemRarity.Common : definition.rarity), new Color(1, .95f, .85f), .75f));
@@ -201,7 +183,7 @@ public partial class CatGameSceneUI
             raidTeam.AddRange(dungeonSlots);
             StartRaid();
         });
-        start.interactable = dungeonSlots[0] != null && dungeonSlots[1] != null && dungeonSlots[0].characterId != dungeonSlots[1].characterId;
+        start.interactable = dungeonSlots.All(cat => cat != null) && dungeonSlots.Select(cat => cat.characterId).Distinct().Count() == 3;
     }
 
     private void DungeonCatPicker(int slot)
@@ -223,14 +205,18 @@ public partial class CatGameSceneUI
         var layout = content.gameObject.AddComponent<GridLayoutGroup>();
         layout.constraint = GridLayoutGroup.Constraint.FixedColumnCount;
         layout.constraintCount = 3;
-        layout.cellSize = new Vector2(Mathf.Max(60, (viewport.rect.width - 24) / 3), 180);
+        float cardWidth = Mathf.Max(60, (viewport.rect.width - 32) / 3);
+        layout.cellSize = new Vector2(cardWidth, cardWidth * 1.22f);
+        layout.padding = new RectOffset(8, 8, 8, 12);
         layout.spacing = new Vector2(8, 8);
         content.gameObject.AddComponent<ContentSizeFitter>().verticalFit = ContentSizeFitter.FitMode.PreferredSize;
         var scroll = viewport.gameObject.AddComponent<ScrollRect>();
         scroll.viewport = viewport;
         scroll.content = content;
         scroll.horizontal = false;
-        scroll.scrollSensitivity = 60;
+        scroll.scrollSensitivity = 25;
+        scroll.decelerationRate = .05f;
+        scroll.movementType = ScrollRect.MovementType.Clamped;
         var seen = new HashSet<string>();
         foreach (var owned in data.characters.Where(item => item != null).OrderBy(item => catalog.FindCharacter(item.characterId)?.rarity ?? ItemRarity.Common))
         {
@@ -241,18 +227,12 @@ public partial class CatGameSceneUI
             bool otherSlot = false;
             for (int i = 0; i < slots.Length; i++)
                 if (i != slot && slots[i]?.characterId == cat.characterId) otherSlot = true;
-            var card = Panel(content, "Owned Cat", Vector2.zero, Vector2.one, CharacterRarityColor(definition.rarity));
-            CharacterPortrait(Rect(card, "Portrait", new Vector2(0, .23f), Vector2.one), definition);
-            Label(card, otherSlot ? "다른 슬롯 편성 중" : $"Lv.{cat.level}", 16, Vector2.zero, new Vector2(1, .23f));
-            var button = card.gameObject.AddComponent<Button>();
-            button.targetGraphic = card.GetComponent<Image>();
-            button.interactable = !otherSlot;
-            button.onClick.AddListener(() =>
+            CharacterCard(content, cat, definition, () =>
             {
-                if (saving) return;
                 slots[slot] = cat;
                 refresh();
-            });
+            }, otherSlot ? "다른 슬롯 편성 중" : slots[slot]?.characterId == cat.characterId ? "현재 편성" : null,
+                interactable: !otherSlot, showEquipped: false);
         }
     }
 }

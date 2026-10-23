@@ -1,4 +1,4 @@
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using UnityEngine;
 
 public partial class CatFieldController
@@ -6,7 +6,15 @@ public partial class CatFieldController
     private int activeDungeonStage;
     private readonly List<FieldEnemy> dungeonEnemies = new List<FieldEnemy>();
     public int DungeonWave { get; private set; }
-    public int DungeonEnemiesRemaining => dungeonEnemies.FindAll(enemy => enemy != null && enemy.Alive).Count;
+    public int DungeonEnemiesRemaining
+    {
+        get
+        {
+            int count = 0;
+            foreach (var enemy in dungeonEnemies) if (enemy != null && enemy.Alive) count++;
+            return count;
+        }
+    }
     public float DungeonWaveCountdown { get; private set; }
 
     private void SetupDungeonWaves(int stage)
@@ -59,8 +67,8 @@ public partial class CatFieldController
     private void TickDungeonWaves()
     {
         RaidSeconds = Mathf.Max(0, RaidSeconds - Time.deltaTime);
-        var living = raidFighters.FindAll(fighter => fighter != null && fighter.gameObject.activeSelf);
-        if (living.Count == 0 || RaidSeconds <= 0) { FinishDungeon(false); return; }
+        bool anyLiving = raidFighters.Exists(fighter => fighter != null && fighter.gameObject.activeSelf);
+        if (!anyLiving || RaidSeconds <= 0) { FinishDungeon(false); return; }
         if (DungeonEnemiesRemaining == 0)
         {
             if (DungeonWave == DungeonStageRules.WaveCount) { FinishDungeon(true); return; }
@@ -77,13 +85,14 @@ public partial class CatFieldController
         {
             if (!enemy.Alive) continue;
             enemy.StepVisual(Time.deltaTime);
-            Transform nearest = living[0].transform;
+            Transform nearest = null;
             Vector3 start = enemy.transform.position;
-            foreach (var fighter in living)
-                if ((fighter.transform.position - start).sqrMagnitude < (nearest.position - start).sqrMagnitude)
+            foreach (var fighter in raidFighters)
+                if (fighter != null && fighter.gameObject.activeSelf &&
+                    (nearest == null || (fighter.transform.position - start).sqrMagnitude < (nearest.position - start).sqrMagnitude))
                     nearest = fighter.transform;
-            if ((nearest.position - start).sqrMagnitude <= .8f) continue;
-            Vector3 goal = Combat.Navigation == null ? nearest.position : Combat.Navigation.Waypoint(start, nearest.position);
+            if (nearest == null || (nearest.position - start).sqrMagnitude <= .8f) continue;
+            Vector3 goal = enemy.NextWaypoint(Combat.Navigation, nearest.position, staggered: true);
             Vector3 offset = goal - start;
             Vector3 step = offset.normalized * Mathf.Min(offset.magnitude, enemy.MoveSpeed * enemy.MovementMultiplier * Time.deltaTime);
             enemy.transform.position = Combat.Navigation == null ? start + step : Combat.Navigation.Move(start, step);
