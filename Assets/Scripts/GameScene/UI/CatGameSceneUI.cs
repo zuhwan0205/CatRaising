@@ -144,6 +144,7 @@ public partial class CatGameSceneUI : MonoBehaviour
 
     private void Show(string tab)
     {
+        if (raidActive) { ShowStatus("전투를 종료한 뒤 이동해주세요."); return; }
         // 보상 자동 저장 중에도 화면 탐색은 허용합니다.
         // 데이터 변경 작업은 각 버튼과 세션의 저장 상태 검사로 보호합니다.
         if (drawOverlay != null || detailOverlay != null)

@@ -1,4 +1,4 @@
-using UnityEngine;
+﻿using UnityEngine;
 
 // 몸의 연출만 담당합니다. 이동/피해/HP 바와 별도의 계층에서 움직입니다.
 [DefaultExecutionOrder(205)]
@@ -31,6 +31,8 @@ public sealed class CatCharacterVisual : MonoBehaviour
     private float attackRemaining, facingRemaining;
     private bool facingBack;
     private Vector2 attackDirection;
+    private int pendingFacing;
+    private float pendingFacingTime;
     private float AttackDuration => UsesHammer ? .52f : .32f;
 
     public void Build(Transform player, Camera camera, BackendUserData playerData, Sprite square, Transform fallbackArt)
@@ -97,27 +99,46 @@ public sealed class CatCharacterVisual : MonoBehaviour
         phase = motion = idleTime = 0;
         previous = feet.position;
         attackRemaining = facingRemaining = 0;
+        pendingFacing = 0;
+        pendingFacingTime = 0;
     }
 
     public void Attack(Vector3 source, Vector3 target)
     {
         if (selectedId != data.loadout.characterId)
             ApplySelection();
-        Face(target - source);
+        Face(target - source, false);
         attackRemaining = AttackDuration;
-        facingRemaining = .45f;
+        facingRemaining = Mathf.Max(.45f, AttackDuration + .1f);
     }
 
-    private void Face(Vector3 direction)
+    private void Face(Vector3 direction, bool moving)
     {
         Vector2 screen = new Vector2(Vector3.Dot(direction, view.transform.right), Vector3.Dot(direction, view.transform.up));
         if (screen.sqrMagnitude < .00001f)
             return;
         screen = screen.normalized;
         attackDirection = screen;
-        if (catSprite != null && Mathf.Abs(screen.x) > .01f)
-            catSprite.flipX = screen.x < 0;
-        if (Mathf.Abs(screen.y) > .03f)
+        // 세로 이동 중 경로 보정으로 생긴 작은 X 값은 바라보는 방향을 바꾸지 않습니다.
+        int desired = Mathf.Abs(screen.x) >= .25f ? (screen.x < 0 ? -1 : 1) : 0;
+        if (!moving)
+        {
+            pendingFacing = 0;
+            pendingFacingTime = 0;
+            if (catSprite != null && desired != 0) catSprite.flipX = desired < 0;
+        }
+        else if (desired == 0 || catSprite == null || (catSprite.flipX ? -1 : 1) == desired)
+        {
+            pendingFacing = 0;
+            pendingFacingTime = 0;
+        }
+        else
+        {
+            if (pendingFacing != desired) { pendingFacing = desired; pendingFacingTime = 0; }
+            pendingFacingTime += Mathf.Min(Time.deltaTime, .1f);
+            if (pendingFacingTime >= .08f) catSprite.flipX = desired < 0;
+        }
+        if (Mathf.Abs(screen.y) > .25f)
             facingBack = screen.y > 0;
     }
     private void LateUpdate()
@@ -140,7 +161,12 @@ public sealed class CatCharacterVisual : MonoBehaviour
         {
             phase += distance * 13;
             if (facingRemaining <= 0)
-                Face(delta);
+                Face(delta, true);
+        }
+        if (!walking || facingRemaining > 0)
+        {
+            pendingFacing = 0;
+            pendingFacingTime = 0;
         }
         float progress = 1 - attackRemaining / AttackDuration;
         bool striking = attackRemaining > 0 && progress >= .15f && progress < .8f;

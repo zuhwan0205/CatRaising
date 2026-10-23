@@ -1,4 +1,4 @@
-using UnityEngine;
+﻿using UnityEngine;
 
 // 씬 진입점: 데이터 기능과 UI를 생성하고 이벤트만 연결합니다.
 public class CatGameScene : MonoBehaviour
@@ -59,7 +59,7 @@ public class CatGameScene : MonoBehaviour
         SetRaidActive(true);
         try
         {
-            field.BeginDungeon(stage, team, activeData, catalog);
+            view.BeginDungeonDefense(stage, team);
             dungeonStage = stage;
         }
         catch { SetRaidActive(false); throw; }
@@ -128,6 +128,7 @@ public class CatGameScene : MonoBehaviour
         view.RaidField = field;
         field.RaidFinished += OnEncounterFinished;
         view.DungeonRequested += BeginFieldDungeon;
+        view.DungeonDefenseFinished += OnEncounterFinished;
         field.Combat.GoldEarned += AwardGold;
         field.Combat.MessageChanged += view.ShowCombatMessage;
         field.Combat.RelicMessageChanged += view.ShowRelicMessage;
@@ -339,6 +340,7 @@ public class CatGameScene : MonoBehaviour
             view.RaidActiveChanged -= SetRaidActive;
             view.RaidRequested -= BeginFieldRaid;
             view.DungeonRequested -= BeginFieldDungeon;
+            view.DungeonDefenseFinished -= OnEncounterFinished;
             if (field != null) field.RaidFinished -= OnEncounterFinished;
             if (session != null)
             {

@@ -1,4 +1,4 @@
-using UnityEngine;
+﻿using UnityEngine;
 
 public class FieldEnemy : MonoBehaviour
 {
@@ -37,13 +37,27 @@ public class FieldEnemy : MonoBehaviour
             foreach (var sprite in set) if (sprite != null) Destroy(sprite);
         sharedFrames.Clear();
     }
+    private static int dungeonPathFrame = -1;
+    private static int dungeonPathsThisFrame;
     private float nextPathTime;
     private Vector3 pathGoal;
-    public Vector3 NextWaypoint(FieldNavigation navigation, Vector3 target)
+    public Vector3 NextWaypoint(FieldNavigation navigation, Vector3 target, bool staggered = false)
     {
         if (navigation == null) return target;
-        if (Time.time >= nextPathTime || (pathGoal - transform.position).sqrMagnitude < .16f)
+        bool reached = (pathGoal - transform.position).sqrMagnitude < .16f;
+        if (Time.time >= nextPathTime || (!staggered && reached))
         {
+            if (staggered)
+            {
+                if (dungeonPathFrame != Time.frameCount)
+                {
+                    dungeonPathFrame = Time.frameCount;
+                    dungeonPathsThisFrame = 0;
+                }
+                // 소환 직후에도 비싼 경로 탐색은 한 프레임에 최대 두 마리만 수행합니다.
+                if (dungeonPathsThisFrame >= 2) return pathGoal;
+                dungeonPathsThisFrame++;
+            }
             pathGoal = navigation.Waypoint(transform.position, target);
             nextPathTime = Time.time + .25f + UnityEngine.Random.Range(0f, .1f);
         }
@@ -87,17 +101,17 @@ public class FieldEnemy : MonoBehaviour
         Defense = kind == 3 ? 2 : 0;
         healthBar.localScale = Vector3.one;
         string[] names = { "DustBunnyMonster", "CheeseMouseMonster", "YarnSlimeMonster", "TinCanCrabMonster" };
-        var sheet = Resources.Load<Texture2D>("MonsterArt/" + names[kind]);
-        if (sheet == null)
-            return;
-        if (!sharedFrames.TryGetValue(kind, out frames))
+        if (!sharedFrames.TryGetValue(kind, out var cachedFrames))
         {
+        var sheet = Resources.Load<Texture2D>("MonsterArt/" + names[kind]);
+        if (sheet == null) return;
         frames = new Sprite[8];
         float w = sheet.width / 4f, h = sheet.height / 2f;
         for (int i = 0; i < 8; i++)
             frames[i] = Sprite.Create(sheet, new Rect(i % 4 * w, (1 - i / 4) * h, w, h), new Vector2(.5f, .07f), h / 1.15f, 0, SpriteMeshType.FullRect);
         sharedFrames[kind] = frames;
         }
+        else frames = cachedFrames;
         artwork.sprite = frames[0];
         artwork.transform.localScale = Vector3.one;
         color = Color.white;
@@ -195,6 +209,7 @@ public class FieldEnemy : MonoBehaviour
     {
         transform.position = position;
         nextPathTime = 0;
+        pathGoal = position;
         Health.Reset();
         flashRemaining = 0;
         slowRemaining = 0;

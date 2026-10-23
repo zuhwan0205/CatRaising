@@ -1,4 +1,4 @@
-using UnityEngine;
+﻿using UnityEngine;
 using System.Collections.Generic;
 
 // 생성한 프레임만 소유합니다. 원본 Resources 텍스처는 파괴하지 않습니다.
@@ -40,7 +40,7 @@ public static class CatAnimationFrames
         }
 
         if (id == "cat_kitten_trio") LoadPixelFrames("CatKittenTrioPixel", frames, 1.65f, i => new Vector2(.52f, i < 4 ? .105f : i < 8 ? .12f : .14f));
-        if (id == "cat_celestial") LoadPixelFrames("CatLegendaryBootsPixel", frames, 1.65f, i => new Vector2(.5f, i < 4 ? .02f : i < 8 ? .08f : .16f));
+        if (id == "cat_celestial") LoadPixelFrames("CatLegendaryBootsPixel", frames, 1.65f, i => new Vector2(BootsPivotX(i), i < 4 ? .02f : i < 8 ? .08f : .16f));
         if (id == "cat_moon") LoadPixelFrames("CatStarMagePixel", frames, 1.45f, i => new Vector2(.55f, i >= 4 && i < 8 ? .04f : .02f));
         if (id == "cat_lion") LoadPixelFrames("CatDragonPixel", frames, 1.55f, i => new Vector2(.5f, .08f));
         if (id == "cat_ninja") LoadPixelFrames("CatSiameseArcherPixel", frames, 1.45f, i => new Vector2(.5f, .08f));
@@ -50,6 +50,22 @@ public static class CatAnimationFrames
         cache[id] = frames;
         return frames;
     }
+    // 원본 시트의 머리/몸통이 프레임마다 옆으로 밀려 있어 셀 중앙 대신 몸 중심을 맞춥니다.
+    // 칼·꼬리까지 포함한 외곽 중심은 포즈에 따라 바뀌므로 사용하지 않습니다.
+    private static float BootsPivotX(int frame)
+    {
+        switch (frame)
+        {
+            case 1: return .426f;
+            case 2: return .346f;
+            case 3: return .419f;
+            case 5: return .442f;
+            case 6: return .361f;
+            case 7: return .402f;
+            default: return .5f;
+        }
+    }
+
     public static Sprite[] GetFallback()
     {
         const string key = "__fallback";

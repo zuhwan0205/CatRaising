@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using UnityEngine;
 
@@ -141,7 +141,7 @@ public partial class CatFieldController
             cat.transform.position = FindRaidPosition(new Vector3((raidFighters.Count - (team.Count - 1) * .5f) * 2, 0, -4));
             if (raidParty != null) cat.transform.position = raidParty.transform.position;
             var catArt = Billboard("Cat Artwork", cat.transform);
-            catArt.localScale = Vector3.one * 1.56f;
+            catArt.localScale = Vector3.one * 1.716f;
             var fallback = new GameObject("Fallback").transform;
             fallback.SetParent(catArt, false);
             Paint("Body", fallback, Vector2.zero, Vector2.one, Color.yellow, 0);
@@ -182,9 +182,9 @@ public partial class CatFieldController
         follow.Target = raidFighters[0].transform;
         if (dungeonStage > 0)
         {
-            var focus = new GameObject("Dungeon Camera Focus").transform;
-            focus.SetParent(raidRoot.transform, false);
-            follow.Target = focus;
+            var members = new Transform[raidFighters.Count];
+            for (int i = 0; i < members.Length; i++) members[i] = raidFighters[i].transform;
+            follow.FollowGroup(members);
         }
         follow.Snap();
         RaidSeconds = 60;
@@ -261,6 +261,7 @@ public partial class CatFieldController
 
     public void EndRaid()
     {
+        if (fieldCamera != null) fieldCamera.GetComponent<CatCameraFollow>()?.ClearGroup();
         SetDungeonMapColors(false);
         raidNavigation = null;
         raidAdds.Clear();
