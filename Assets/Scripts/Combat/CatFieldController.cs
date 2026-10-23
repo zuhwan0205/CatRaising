@@ -59,7 +59,6 @@ public partial class CatFieldController : MonoBehaviour
             Ground("Boundary X", field.transform, new Vector3(sign * FieldMapSize.HalfSize, .01f, 0), new Vector2(.1f, FieldMapSize.HalfSize * 2), new Color(.42f, .54f, .34f), -9998);
             Ground("Boundary Z", field.transform, new Vector3(0, .01f, sign * FieldMapSize.HalfSize), new Vector2(FieldMapSize.HalfSize * 2, .1f), new Color(.42f, .54f, .34f), -9998);
         }
-        CaptureMapColors();
         var cat = new GameObject("Player Cat");
         cat.transform.SetParent(field.transform, false);
         var catArt = Billboard("Cat Artwork", cat.transform);
@@ -173,7 +172,7 @@ public partial class CatFieldController : MonoBehaviour
     }
     public void SetStick(Vector2 value)
     {
-        if (RaidRunning && activeDungeonStage == 0)
+        if (RaidRunning)
         {
             if (raidParty != null)
             {

@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using UnityEngine;
 
@@ -14,66 +14,16 @@ public partial class CatFieldController
     private Transform previousCameraTarget;
     private RaidPartyFormation raidParty;
     private FieldNavigation raidNavigation;
-    private readonly Dictionary<SpriteRenderer, Color> mapColors = new Dictionary<SpriteRenderer, Color>();
-    private Color normalMapBackground;
-    private readonly Dictionary<UnityEngine.Tilemaps.Tilemap, Color> tilemapColors = new Dictionary<UnityEngine.Tilemaps.Tilemap, Color>();
-
-    private void CaptureMapColors()
-    {
-        mapColors.Clear();
-        tilemapColors.Clear();
-        foreach (var tilemap in field.GetComponentsInChildren<UnityEngine.Tilemaps.Tilemap>(true))
-            tilemapColors.Add(tilemap, tilemap.color);
-        // 캐릭터와 몬스터 생성 전 지형과 장식만 기록합니다.
-        foreach (var sprite in field.GetComponentsInChildren<SpriteRenderer>(true))
-            mapColors.Add(sprite, sprite.color);
-        normalMapBackground = fieldCamera.backgroundColor;
-    }
-
-    private void SetDungeonMapColors(bool autumn, int clearedStage = 0)
-    {
-        // 저장된 보스 스테이지 클리어 진행으로 결정해 재입장 시 색이 누적되지 않게 합니다.
-        float brightness = 1f - Mathf.Clamp(clearedStage / 5, 0, 3) * .12f;
-        var tint = new Color(brightness, .72f * brightness, .40f * brightness, 1f);
-        foreach (var entry in mapColors)
-            if (entry.Key != null) entry.Key.color = autumn ? entry.Value * tint : entry.Value;
-        foreach (var entry in tilemapColors)
-            if (entry.Key != null) entry.Key.color = autumn ? entry.Value * tint : entry.Value;
-        if (fieldCamera != null)
-            fieldCamera.backgroundColor = autumn ? new Color(.34f * brightness, .25f * brightness, .15f * brightness) : normalMapBackground;
-    }
+    private readonly List<FieldCombatController> livingRaidFighters = new List<FieldCombatController>(4);
     private FieldNavigation EncounterNavigation => raidNavigation ?? Combat.Navigation;
 
     public void BeginRaid(int index, IList<OwnedCharacter> team, BackendUserData data, CatGameCatalog catalog)
     {
         // 기존 편성 검증을 사용하되 전투 계산은 필드 컨트롤러가 담당합니다.
-        _ = new RaidBattle(index, data.progress.accountLevel, team, data, catalog);
-        BeginEncounter(index, team, data, catalog, new double[] { 1000, 3000, 7500 }[index], 1, true);
-    }
-
-    public void BeginDungeon(int stage, IList<OwnedCharacter> team, BackendUserData data, CatGameCatalog catalog)
-    {
-        if (stage < 1 || stage > 15 || stage > data.progress.dungeonClearedStage + 1 || team == null || team.Count != 2)
-            throw new ArgumentException("던전 입장 조건을 확인해주세요.");
-        var ids = new HashSet<string>();
-        foreach (var cat in team)
-            if (cat == null || !data.characters.Contains(cat) || !ids.Add(cat.characterId) || catalog.FindCharacter(cat.characterId) == null)
-                throw new ArgumentException("서로 다른 보유 고양이 2마리를 선택해주세요.");
-        BeginEncounter(0, team, data, catalog, 1, 1, false, stage);
-    }
-
-    private int encounterWaves;
-    private int encounterKind;
-    private double encounterHealth;
-
-    private void BeginEncounter(int index, IList<OwnedCharacter> team, BackendUserData data, CatGameCatalog catalog, double health, int waves, bool largeBoss, int dungeonStage = 0)
-    {
+        RaidBattle.ValidateTeam(index, data.progress.accountLevel, team, data, catalog);
+        double health = index == 0 ? 1000 : index == 1 ? 3000 : 7500;
         EndRaid();
-        SetDungeonMapColors(dungeonStage > 0, data.progress.dungeonClearedStage);
-        if (dungeonStage == 0) raidNavigation = Combat.Navigation?.CreateRaidNavigation();
-        encounterWaves = waves;
-        encounterKind = index;
-        encounterHealth = health;
+        raidNavigation = Combat.Navigation?.CreateRaidNavigation();
         foreach (Transform child in field.transform)
         {
             if (child.gameObject.activeSelf && (child.GetComponent<FieldEnemy>() != null || child.GetComponent<CatMovementController>() != null))
@@ -88,46 +38,30 @@ public partial class CatFieldController
         bossObject.transform.SetParent(raidRoot.transform, false);
         bossObject.transform.position = FindRaidPosition(new Vector3(0, 0, 3));
         var billboard = Billboard("Boss Artwork", bossObject.transform);
-        billboard.localScale = Vector3.one * (largeBoss ? 2 : 1.2f);
+        billboard.localScale = Vector3.one * 2;
         var art = Paint("Boss", billboard, Vector2.zero, Vector2.one, Color.white, 0);
         var bar = BillboardHealth(billboard);
         RaidBoss = bossObject.AddComponent<FieldEnemy>();
         RaidBoss.Initialize(art, bar, 350);
         RaidBoss.ConfigureRaidBoss(index, health);
-        if (dungeonStage == 0)
-        {
-            RaidBoss.SetRaidArtwork(index);
-            RaidBoss.StrengthenRaidBoss();
-        }
-        var targets = new[] { RaidBoss };
-        var targetTransforms = new[] { bossObject.transform };
-        if (dungeonStage > 0)
-        {
-            SetupDungeonWaves(dungeonStage);
-            targets = dungeonEnemies.ToArray();
-            targetTransforms = dungeonEnemies.ConvertAll(enemy => enemy.transform).ToArray();
-        }
-        else
-        {
-            SetupRaidSkills(index);
-            var all = new List<FieldEnemy> { RaidBoss };
-            all.AddRange(raidAdds);
-            targets = all.ToArray();
-            targetTransforms = all.ConvertAll(enemy => enemy.transform).ToArray();
-        }
-        if (dungeonStage == 0)
-        {
-            var center = new GameObject("Raid Party Center");
-            center.transform.SetParent(raidRoot.transform, false);
-            center.transform.position = FindRaidPosition(new Vector3(0, 0, -4));
-            var partyMovement = center.AddComponent<CatMovementController>();
-            partyMovement.Navigation = EncounterNavigation;
-            partyMovement.SetAutomatic(false);
-            raidParty = center.AddComponent<RaidPartyFormation>();
-            raidParty.Field = this;
-            raidParty.Movement = partyMovement;
-            raidParty.Navigation = EncounterNavigation;
-        }
+        RaidBoss.SetRaidArtwork(index);
+        RaidBoss.StrengthenRaidBoss();
+        SetupRaidSkills(index);
+        var targets = new FieldEnemy[raidAdds.Count + 1];
+        var targetTransforms = new Transform[targets.Length];
+        targets[0] = RaidBoss;
+        raidAdds.CopyTo(targets, 1);
+        for (int i = 0; i < targets.Length; i++) targetTransforms[i] = targets[i].transform;
+        var center = new GameObject("Raid Party Center");
+        center.transform.SetParent(raidRoot.transform, false);
+        center.transform.position = FindRaidPosition(new Vector3(0, 0, -4));
+        var partyMovement = center.AddComponent<CatMovementController>();
+        partyMovement.Navigation = EncounterNavigation;
+        partyMovement.SetAutomatic(false);
+        raidParty = center.AddComponent<RaidPartyFormation>();
+        raidParty.Field = this;
+        raidParty.Movement = partyMovement;
+        raidParty.Navigation = EncounterNavigation;
         foreach (var owned in team)
         {
             var actorData = new BackendUserData
@@ -138,8 +72,7 @@ public partial class CatFieldController
             };
             var cat = new GameObject("Raid Cat " + owned.characterId);
             cat.transform.SetParent(raidRoot.transform, false);
-            cat.transform.position = FindRaidPosition(new Vector3((raidFighters.Count - (team.Count - 1) * .5f) * 2, 0, -4));
-            if (raidParty != null) cat.transform.position = raidParty.transform.position;
+            cat.transform.position = raidParty.transform.position;
             var catArt = Billboard("Cat Artwork", cat.transform);
             catArt.localScale = Vector3.one * 1.716f;
             var fallback = new GameObject("Fallback").transform;
@@ -156,13 +89,10 @@ public partial class CatFieldController
             mover.Navigation = EncounterNavigation;
             mover.Targets = targetTransforms;
             mover.Combat = fighter;
-            mover.SetAutomatic(dungeonStage > 0);
-            mover.ManualInputEnabled = dungeonStage == 0;
-            if (raidParty != null)
-            {
-                mover.enabled = false;
-                raidParty.Members.Add(cat.transform);
-            }
+            mover.SetAutomatic(false);
+            mover.ManualInputEnabled = true;
+            mover.enabled = false;
+            raidParty.Members.Add(cat.transform);
             fighter.HealthChanged += (current, maximum) =>
             {
                 HealthBarTween.Set(hp, (float)(current / maximum));
@@ -180,12 +110,6 @@ public partial class CatFieldController
         var follow = fieldCamera.GetComponent<CatCameraFollow>();
         previousCameraTarget = follow.Target;
         follow.Target = raidFighters[0].transform;
-        if (dungeonStage > 0)
-        {
-            var members = new Transform[raidFighters.Count];
-            for (int i = 0; i < members.Length; i++) members[i] = raidFighters[i].transform;
-            follow.FollowGroup(members);
-        }
         follow.Snap();
         RaidSeconds = 60;
         RaidRunning = true;
@@ -218,19 +142,15 @@ public partial class CatFieldController
     private void LateUpdate()
     {
         if (!RaidRunning || paused || !focused) return;
-        if (activeDungeonStage > 0) { TickDungeonWaves(); return; }
         RaidSeconds = Mathf.Max(0, RaidSeconds - Time.deltaTime);
         RaidBoss.StepVisual(Time.deltaTime);
-        var living = raidFighters.FindAll(x => x != null && x.gameObject.activeSelf);
-        if (!RaidBoss.Alive && encounterWaves > 1 && RaidSeconds > 0 && living.Count > 0)
-        {
-            encounterWaves--;
-            RaidBoss.ConfigureRaidBoss(encounterKind, encounterHealth);
-            RaidBoss.Respawn(FindRaidPosition(new Vector3(0, 0, 3)));
-        }
+        var living = livingRaidFighters;
+        living.Clear();
+        foreach (var fighter in raidFighters)
+            if (fighter != null && fighter.gameObject.activeSelf) living.Add(fighter);
         if (!RaidBoss.Alive || RaidSeconds <= 0 || living.Count == 0)
         {
-            bool won = !RaidBoss.Alive && encounterWaves == 1 && RaidSeconds > 0;
+            bool won = !RaidBoss.Alive && RaidSeconds > 0;
             RaidRunning = false;
             if (skillMarker != null) skillMarker.gameObject.SetActive(false);
             foreach (var fighter in raidFighters)
@@ -242,8 +162,7 @@ public partial class CatFieldController
             return;
         }
         TickRaidSkills(living);
-        var cameraTarget = living.Find(fighter => fighter.gameObject.activeSelf);
-        if (cameraTarget != null) fieldCamera.GetComponent<CatCameraFollow>().Target = cameraTarget.transform;
+        fieldCamera.GetComponent<CatCameraFollow>().Target = living[0].transform;
         if (skillWindup > 0 || RaidBoss.IsPlayingRaidAttack) return;
         var nearest = living[0].transform;
         foreach (var fighter in living)
@@ -261,19 +180,16 @@ public partial class CatFieldController
 
     public void EndRaid()
     {
-        if (fieldCamera != null) fieldCamera.GetComponent<CatCameraFollow>()?.ClearGroup();
-        SetDungeonMapColors(false);
         raidNavigation = null;
         raidAdds.Clear();
         skillMarker = null;
-        activeDungeonStage = 0;
-        dungeonEnemies.Clear();
         RaidRunning = false;
         raidParty = null;
         if (raidRoot != null) { raidRoot.SetActive(false); Destroy(raidRoot); }
         raidRoot = null;
         RaidBoss = null;
         raidFighters.Clear();
+        livingRaidFighters.Clear();
         foreach (var obj in hiddenFieldObjects) if (obj != null) obj.SetActive(true);
         hiddenFieldObjects.Clear();
         if (previousCameraTarget != null)
