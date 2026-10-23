@@ -2,7 +2,7 @@ using System;
 using System.Collections.Generic;
 
 // 레이드 입장 조건만 담당합니다. 실제 전투는 CatFieldController에서 진행합니다.
-public sealed class RaidBattle
+public static class RaidBattle
 {
     public static readonly int[] RequiredLevels = { 5, 10, 20 };
     public static readonly string[] Names = { "거대 먼지 뭉치", "도둑 생쥐 대장", "거대 털실 슬라임" };
@@ -17,7 +17,7 @@ public sealed class RaidBattle
             (IgnoreLevelRequirementForTesting || accountLevel >= RequiredLevels[index]);
     }
 
-    public RaidBattle(int index, int accountLevel, IList<OwnedCharacter> team, BackendUserData data, CatGameCatalog catalog)
+    public static void ValidateTeam(int index, int accountLevel, IList<OwnedCharacter> team, BackendUserData data, CatGameCatalog catalog)
     {
         if (!CanEnter(index, accountLevel) || team == null || team.Count != 4)
             throw new ArgumentException("레이드 입장 조건을 확인해주세요.");

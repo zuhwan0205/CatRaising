@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
@@ -214,12 +214,6 @@ public partial class CatGameSceneUI
     {
         if (!raidActive || RaidField == null || !RaidField.RaidRunning || raidHealth == null) return;
         var boss = RaidField.RaidBoss;
-        if (dungeonMode)
-        {
-            raidHealth.text = $"{EncounterTitle} · {RaidField.RaidSeconds:0.0}초\n웨이브 {RaidField.DungeonWave}/3 · 남은 적 {RaidField.DungeonEnemiesRemaining}" +
-                (RaidField.DungeonWaveCountdown > 0 ? $" · 다음 웨이브 {RaidField.DungeonWaveCountdown:0.0}초" : "");
-            return;
-        }
         raidHealth.text = $"{EncounterTitle} · 남은 시간 {RaidField.RaidSeconds:0.0}초\nHP {boss.Health.Current:0}/{boss.Health.Maximum:0}\n{RaidField.RaidSkillMessage}";
     }
 

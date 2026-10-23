@@ -119,7 +119,8 @@ public partial class CatFieldController
             if (!scheduled) { skillWindup = .05f; return; }
             skillFlash = RaidBossVisual.AttackDuration;
             RaidSkillMessage = new[] { "먼지 충격파!", "생쥐 대장 회전 타격!", "털실 폭발!" }[skillKind];
-            foreach (var pixel in skillPixels) pixel.color = new[] { new Color(.75f, .6f, 1), new Color(1, .75f, .2f), new Color(.3f, 1, .8f) }[skillKind];
+            Color flashColor = skillKind == 0 ? new Color(.75f, .6f, 1) : skillKind == 1 ? new Color(1, .75f, .2f) : new Color(.3f, 1, .8f);
+            foreach (var pixel in skillPixels) pixel.color = flashColor;
         }
         if (skillFlash > 0)
         {

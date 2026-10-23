@@ -108,18 +108,6 @@ public partial class CatGameSceneUI
         foreach (var graphic in face.GetComponentsInChildren<Graphic>()) graphic.raycastTarget = false;
     }
 
-    private void ProfileIconArc(RectTransform parent, float start, float end, Color color)
-    {
-        Vector2 center = new Vector2(.5f, .5f);
-        for (int i = 0; i < 8; i++)
-        {
-            float a = Mathf.Lerp(start, end, i / 8f) * Mathf.Deg2Rad;
-            float b = Mathf.Lerp(start, end, (i + 1) / 8f) * Mathf.Deg2Rad;
-            ProfileIconLine(parent, center + new Vector2(Mathf.Cos(a), Mathf.Sin(a)) * .42f,
-                center + new Vector2(Mathf.Cos(b), Mathf.Sin(b)) * .42f, color);
-        }
-    }
-
     private void ProfileIconStroke(Transform parent, Vector2 min, Vector2 max, Color color)
     {
         Panel(parent, "Icon Stroke", min, max, color).GetComponent<Image>().raycastTarget = false;

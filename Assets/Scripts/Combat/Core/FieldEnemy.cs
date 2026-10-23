@@ -1,4 +1,4 @@
-﻿using UnityEngine;
+using UnityEngine;
 
 public class FieldEnemy : MonoBehaviour
 {
@@ -9,6 +9,7 @@ public class FieldEnemy : MonoBehaviour
     public bool Alive => gameObject.activeSelf && !Health.Dead;
     public float RespawnRemaining;
     private SpriteRenderer artwork;
+    private FieldBillboard billboard;
     private Transform healthBar;
     private Color color;
     private float flashRemaining;
@@ -37,27 +38,14 @@ public class FieldEnemy : MonoBehaviour
             foreach (var sprite in set) if (sprite != null) Destroy(sprite);
         sharedFrames.Clear();
     }
-    private static int dungeonPathFrame = -1;
-    private static int dungeonPathsThisFrame;
     private float nextPathTime;
     private Vector3 pathGoal;
-    public Vector3 NextWaypoint(FieldNavigation navigation, Vector3 target, bool staggered = false)
+    public Vector3 NextWaypoint(FieldNavigation navigation, Vector3 target)
     {
         if (navigation == null) return target;
         bool reached = (pathGoal - transform.position).sqrMagnitude < .16f;
-        if (Time.time >= nextPathTime || (!staggered && reached))
+        if (Time.time >= nextPathTime || reached)
         {
-            if (staggered)
-            {
-                if (dungeonPathFrame != Time.frameCount)
-                {
-                    dungeonPathFrame = Time.frameCount;
-                    dungeonPathsThisFrame = 0;
-                }
-                // 소환 직후에도 비싼 경로 탐색은 한 프레임에 최대 두 마리만 수행합니다.
-                if (dungeonPathsThisFrame >= 2) return pathGoal;
-                dungeonPathsThisFrame++;
-            }
             pathGoal = navigation.Waypoint(transform.position, target);
             nextPathTime = Time.time + .25f + UnityEngine.Random.Range(0f, .1f);
         }
@@ -116,7 +104,6 @@ public class FieldEnemy : MonoBehaviour
         artwork.transform.localScale = Vector3.one;
         color = Color.white;
         artwork.color = color;
-        var billboard = artwork.GetComponentInParent<FieldBillboard>();
         if (billboard != null)
             billboard.CenterHeight = 0;
         previousPosition = transform.position;
@@ -166,6 +153,7 @@ public class FieldEnemy : MonoBehaviour
     public void Initialize(SpriteRenderer art, Transform bar, double hp)
     {
         artwork = art;
+        billboard = art.GetComponentInParent<FieldBillboard>();
         color = art.color;
         healthBar = bar;
         Health = new CombatHealth(hp);
@@ -177,7 +165,6 @@ public class FieldEnemy : MonoBehaviour
         animationTime += delta;
         Vector3 moved = transform.position - previousPosition;
         previousPosition = transform.position;
-        var billboard = artwork.GetComponentInParent<FieldBillboard>();
         if (billboard != null && billboard.ViewCamera != null)
         {
             float horizontal = Vector3.Dot(moved, billboard.ViewCamera.transform.right);

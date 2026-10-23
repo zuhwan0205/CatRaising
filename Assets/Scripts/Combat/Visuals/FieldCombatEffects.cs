@@ -1,4 +1,4 @@
-using UnityEngine;
+﻿using UnityEngine;
 using UnityEngine.Rendering;
 
 // 재사용하는 할퀴기 3줄과 피격 색상. 피해 판정에는 관여하지 않습니다.
@@ -101,34 +101,11 @@ public class FieldCombatEffects : MonoBehaviour
         }
         for (int i = 0; i < lines.Length; i++)
         {
-            var line = lines[i];
-            line.transform.localPosition = magic ? Vector3.zero : new Vector3((i - 1) * .23f, 0, 0);
-            line.transform.localRotation = Quaternion.Euler(0, 0, magic ? i * 60 + progress * 90 : -35);
-            line.transform.localScale = magic ? new Vector3(.10f, .9f, 1) : new Vector3(.07f, .85f, 1);
-            line.color = magic ? new Color(.72f, .4f, 1, slashTime / Duration) : new Color(1, .97f, .65f, slashTime / Duration);
-            if (ice)
-                line.color = new Color(.45f, .88f, 1, slashTime / Duration);
-            if (fire)
-            {
-                line.transform.localPosition = new Vector3((i - 1) * .18f, progress * .3f, 0);
-                line.transform.localRotation = Quaternion.Euler(0, 0, (i - 1) * 20);
-                line.transform.localScale = new Vector3(.18f, .35f + (i % 2) * .2f, 1);
-                line.color = new Color(1, .3f + i * .2f, .05f, slashTime / Duration);
-            }
-            if (arrowAttack)
-            {
-                line.transform.localPosition = i == 0 ? Vector3.zero : new Vector3(.22f, i == 1 ? .05f : -.05f, 0);
-                line.transform.localRotation = Quaternion.Euler(0, 0, i == 0 ? 0 : i == 1 ? -35 : 35);
-                line.transform.localScale = i == 0 ? new Vector3(.55f, .045f, 1) : new Vector3(.18f, .045f, 1);
-                line.color = i == 0 ? new Color(.65f, .42f, .2f) : new Color(.85f, .93f, 1);
-            }
-            if (hammer)
-            {
-                line.transform.localPosition = new Vector3((i - 1) * (.2f + progress * .3f), -.2f + progress * .15f, 0);
-                line.transform.localRotation = Quaternion.Euler(0, 0, (i - 1) * 45);
-                line.transform.localScale = new Vector3(.16f, .55f, 1);
-                line.color = new Color(1, .72f, .2f, slashTime / Duration);
-            }
+            var part = CatAttackVisualStyle.Sample(i, progress, ice, magic, fire, arrowAttack, hammer);
+            lines[i].transform.localPosition = part.Position;
+            lines[i].transform.localRotation = part.Rotation;
+            lines[i].transform.localScale = part.Scale;
+            lines[i].color = part.Color;
         }
     }
     private void OnDisable()
