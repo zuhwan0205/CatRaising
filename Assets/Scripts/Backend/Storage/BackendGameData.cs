@@ -23,6 +23,22 @@ public class BackendGameData
     private bool requiresReload;
     public CombatRewardJournal RewardJournal { get; private set; }
 
+    public void ClearLoggedOutSession()
+    {
+        if (busy) throw new InvalidOperationException("저장 작업이 아직 진행 중입니다.");
+#if BACKND_SDK_INSTALLED
+        client?.Dispose();
+        client = null;
+        ownerInDate = null;
+        saveId = null;
+        revision = 0;
+#endif
+        userData = null;
+        RewardJournal = null;
+        requiresReload = false;
+        LastError = "";
+    }
+
     // 개발자가 한 번 실행하는 스키마 설정. 기존 테이블은 수정/삭제하지 않습니다.
     public static async Task CreateTableAsync(string databaseUuid)
     {

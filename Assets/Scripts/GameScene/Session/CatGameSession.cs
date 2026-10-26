@@ -49,6 +49,7 @@ public class CatGameSession
     }
     private bool rewardLimitReached;
     private bool savingCombatRewards;
+    public bool GameplayBlocked => HasPendingReward || rewardLimitReached || (IsSaving && !savingCombatRewards);
     private long experienceRevision, savedExperienceRevision;
     private long goldRevision, savedGoldRevision, queuedGold;
 

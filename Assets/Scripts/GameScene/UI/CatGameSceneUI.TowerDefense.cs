@@ -15,12 +15,9 @@ public partial class CatGameSceneUI
 
     public void BeginDungeonDefense(int stage, IList<OwnedCharacter> team)
     {
-        if (stage < 1 || stage > 15 || stage > data.progress.dungeonClearedStage + 1 || team == null || team.Count != 3)
-            throw new ArgumentException("서로 다른 고양이 3종을 선택해주세요.");
-        var ids = new HashSet<string>();
-        foreach (var cat in team)
-            if (cat == null || !data.characters.Contains(cat) || !ids.Add(cat.characterId) || catalog.FindCharacter(cat.characterId) == null)
-                throw new ArgumentException("보유 고양이 3종을 선택해주세요.");
+        CatGameRuntime.ValidateDungeon(stage, team, data, catalog);
+        dungeonMode = true;
+        selectedDungeon = stage;
         ClearPage();
         raidActive = true;
         CloseDefenseScreen();

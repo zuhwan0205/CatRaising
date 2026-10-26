@@ -6,7 +6,20 @@ using UnityEngine.UI;
 
 public partial class CatGameSceneUI
 {
-    public event Action<bool> RaidActiveChanged;
+    public event Action EncounterExitRequested;
+    private bool standaloneEncounter;
+    private RectTransform sceneTransition;
+
+    public void SetSceneTransition(bool active)
+    {
+        if (sceneTransition != null) RemoveUI(sceneTransition.gameObject);
+        sceneTransition = null;
+        if (!active) return;
+        sceneTransition = Panel(safeArea.parent, "Scene Transition", Vector2.zero, Vector2.one, new Color(.12f, .16f, .13f, .94f));
+        Label(sceneTransition, "잠시만 기다려주세요…", 28, new Vector2(.05f, .4f), new Vector2(.95f, .6f)).color = cream;
+        sceneTransition.SetAsLastSibling();
+        if (joystick != null) joystick.ResetInput();
+    }
     private RectTransform adventureMenu;
     private readonly List<OwnedCharacter> raidTeam = new List<OwnedCharacter>();
 
@@ -133,59 +146,116 @@ public partial class CatGameSceneUI
     private void RaidFormation()
     {
         ClearPage();
+        var background = Panel(page, "Formation Background", Vector2.zero, Vector2.one, new Color(.12f, .18f, .17f, .97f));
+        RoundCollectionPanel(background);
         Button(page, "목록", new Vector2(0, .92f), new Vector2(.23f, 1), () => Show("레이드"));
-        Label(page, EncounterTitle, 28, new Vector2(.25f, .92f), Vector2.one);
+        Label(page, EncounterTitle, 28, new Vector2(.25f, .92f), Vector2.one).color = cream;
         var boss = Panel(page, "Raid Boss Preview", new Vector2(.06f, .75f), new Vector2(.94f, .90f), new Color(.20f, .25f, .23f));
         BossImage(boss, selectedRaid);
-        Label(boss, "보스 방향 ↑\n앞줄이 보스를 향합니다", 20, new Vector2(.02f, .05f), new Vector2(.53f, .95f)).color = Color.white;
+        var bossPortrait = boss.Find("Boss Portrait Frame") as RectTransform;
+        if (bossPortrait != null)
+        {
+            bossPortrait.anchorMin = new Vector2(.34f, .08f);
+            bossPortrait.anchorMax = new Vector2(.66f, .92f);
+        }
+        FormationRow(true);
+        FormationRow(false);
         for (int i = 0; i < raidSlots.Length; i++)
         {
             int slot = i;
             int row = i / 2;
-            float top = .69f - row * .29f;
+            float top = .68f - row * .29f;
             float left = .12f + (i % 2) * .42f;
             var owned = raidSlots[i];
             if (owned != null && !data.characters.Contains(owned)) raidSlots[i] = owned = null;
             var definition = owned == null ? null : catalog.FindCharacter(owned.characterId);
-            var card = Panel(page, "Raid Slot " + i, new Vector2(left, top - .23f), new Vector2(left + .34f, top),
-                owned == null ? cream : CharacterRarityColor(definition == null ? ItemRarity.Common : definition.rarity));
+            var roleColor = row == 0 ? new Color(.94f, .64f, .32f) : new Color(.40f, .71f, .92f);
+            var card = CollectionFrame(page, "Raid Slot " + i,
+                owned == null ? roleColor : CharacterRarityColor(definition == null ? ItemRarity.Common : definition.rarity));
+            card.anchorMin = new Vector2(left, top - .205f);
+            card.anchorMax = new Vector2(left + .34f, top);
             var button = card.gameObject.AddComponent<Button>();
             button.targetGraphic = card.GetComponent<Image>();
             button.onClick.AddListener(() =>
             {
-                if (!saving) OpenTeamCatPicker(raidSlots, slot, slot < 2 ? "앞줄" : "뒷줄", RaidFormation);
+                if (!saving) OpenTeamCatPicker(raidSlots, slot, slot < 2 ? "전위" : "후위", RaidFormation, compact: true);
             });
             if (owned != null)
             {
-                CharacterPortrait(Rect(card, "Portrait", new Vector2(0, .22f), Vector2.one), definition);
-                Label(card, $"Lv.{owned.level} · 교체", 18, Vector2.zero, new Vector2(1, .22f));
+                CharacterPortrait(Rect(card, "Portrait", new Vector2(.08f, .25f), new Vector2(.92f, .95f)), definition);
+                CollectionBadge(card, $"Lv.{owned.level}", new Vector2(.05f, .04f), new Vector2(.95f, .25f), roleColor);
             }
-            else Label(card, "+\n고양이 선택", 23, Vector2.zero, Vector2.one);
+            else
+            {
+                Label(card, "+", 46, Vector2.zero, Vector2.one).color = roleColor;
+            }
         }
-        Label(page, "앞줄 · 2마리", 22, new Vector2(0, .69f), new Vector2(1, .74f));
-        Label(page, "뒷줄 · 2마리", 22, new Vector2(0, .40f), new Vector2(1, .45f));
         var enter = Button(page, "레이드 입장", new Vector2(.18f, .02f), new Vector2(.82f, .11f), () =>
         {
             raidTeam.Clear();
-            raidTeam.AddRange(raidSlots); // 앞줄 0,1 / 뒷줄 2,3 순서를 그대로 전달합니다.
+            raidTeam.AddRange(raidSlots); // 전위 0,1 / 후위 2,3 순서를 그대로 전달합니다.
             StartRaid();
         });
         var selectedIds = new HashSet<string>();
         foreach (var cat in raidSlots) if (cat != null) selectedIds.Add(cat.characterId);
         enter.interactable = selectedIds.Count == 4 && RaidBattle.CanEnter(selectedRaid, data.progress.accountLevel);
     }
+
+    private void FormationRow(bool front)
+    {
+        float offset = front ? 0 : -.29f;
+        Color color = front ? new Color(.94f, .64f, .32f) : new Color(.40f, .71f, .92f);
+        var group = Panel(page, front ? "Vanguard" : "Rearguard", new Vector2(.045f, .46f + offset), new Vector2(.955f, .745f + offset), Color.Lerp(new Color(.10f, .13f, .17f), color, .20f));
+        RoundCollectionPanel(group);
+        var heading = Panel(page, "Formation Role", new Vector2(.07f, .685f + offset), new Vector2(.93f, .735f + offset), Color.Lerp(Color.black, color, .34f));
+        RoundCollectionPanel(heading);
+        var icon = Rect(heading, "Role Icon", new Vector2(.02f, .08f), new Vector2(.14f, .92f));
+        var fit = icon.gameObject.AddComponent<AspectRatioFitter>();
+        fit.aspectMode = AspectRatioFitter.AspectMode.FitInParent;
+        fit.aspectRatio = 1;
+        if (front)
+        {
+            var points = new[] { new Vector2(.2f, .83f), new Vector2(.8f, .83f), new Vector2(.75f, .35f), new Vector2(.5f, .12f), new Vector2(.25f, .35f) };
+            for (int i = 0; i < points.Length; i++) ProfileIconLine(icon, points[i], points[(i + 1) % points.Length], color);
+            ProfileIconLine(icon, new Vector2(.5f, .35f), new Vector2(.5f, .72f), color);
+        }
+        else
+        {
+            Vector2 previous = new Vector2(.30f, .15f);
+            for (int i = 1; i <= 8; i++)
+            {
+                float t = i / 8f;
+                var next = new Vector2(.30f + Mathf.Sin(t * Mathf.PI) * .32f, .15f + t * .70f);
+                ProfileIconLine(icon, previous, next, color);
+                previous = next;
+            }
+            ProfileIconLine(icon, new Vector2(.30f, .15f), new Vector2(.30f, .85f), color);
+            ProfileIconLine(icon, new Vector2(.15f, .5f), new Vector2(.9f, .5f), color);
+            ProfileIconLine(icon, new Vector2(.73f, .65f), new Vector2(.9f, .5f), color);
+            ProfileIconLine(icon, new Vector2(.73f, .35f), new Vector2(.9f, .5f), color);
+        }
+        Label(heading, front ? "전위" : "후위", 24, new Vector2(.16f, 0), new Vector2(.97f, 1)).color = Color.white;
+        foreach (var graphic in group.GetComponentsInChildren<Graphic>()) graphic.raycastTarget = false;
+        foreach (var graphic in heading.GetComponentsInChildren<Graphic>()) graphic.raycastTarget = false;
+    }
     public event Action<int, IList<OwnedCharacter>> RaidRequested;
     public CatFieldController RaidField { get; set; }
 
     private void StartRaid()
     {
+        if (saving) return;
         try
         {
             if (dungeonMode) { DungeonRequested?.Invoke(selectedDungeon, new List<OwnedCharacter>(raidTeam)); return; }
             else RaidRequested?.Invoke(selectedRaid, new List<OwnedCharacter>(raidTeam));
-            if (RaidField == null || !RaidField.RaidRunning) return;
         }
         catch (ArgumentException error) { ShowStatus(error.Message); return; }
+    }
+
+    public void ShowRaidBattle(int index)
+    {
+        selectedRaid = index;
+        dungeonMode = false;
         raidActive = true;
         ClearPage();
         var image = Rect(page, "Raid Field View", Vector2.zero, Vector2.one).gameObject.AddComponent<RawImage>();
@@ -221,18 +291,60 @@ public partial class CatGameSceneUI
     {
         CloseDefenseScreen();
         ClearPage();
-        Label(page, won ? $"{EncounterTab} 승리!" : dungeonMode ? "던전 실패 · 기지가 무너졌어요" : $"{EncounterTab} 실패 · 시간 초과 또는 전멸", 32, new Vector2(0, .55f), new Vector2(1, .80f));
+        UpgradeBackground();
+        status.text = "";
+        var backdrop = Panel(page, "Result Backdrop", Vector2.zero, Vector2.one,
+            won ? new Color(.16f, .26f, .20f, .88f) : new Color(.21f, .23f, .32f, .88f));
+        RoundCollectionPanel(backdrop);
+        var trim = Panel(backdrop, "Result Gold Frame", new Vector2(.045f, .17f), new Vector2(.955f, .78f),
+            won ? new Color(.83f, .64f, .33f) : new Color(.58f, .61f, .70f));
+        RoundCollectionPanel(trim);
+        var shadow = trim.gameObject.AddComponent<Shadow>();
+        shadow.effectColor = new Color(.06f, .08f, .06f, .5f);
+        shadow.effectDistance = new Vector2(0, -8);
+        var body = Panel(trim, "Result Paw Paper", new Vector2(.018f, .014f), new Vector2(.982f, .986f), cream);
+        DecorateCatPopup(body);
+        var ribbon = Panel(body, "Result Ribbon", new Vector2(.06f, .77f), new Vector2(.94f, .93f),
+            won ? new Color(.25f, .41f, .30f) : new Color(.39f, .42f, .53f));
+        RoundCollectionPanel(ribbon);
+        Label(ribbon, won ? $"{EncounterTab} 클리어!" : "다음 도전을 기다릴게요", 32, Vector2.zero, Vector2.one).color = new Color(1, .94f, .76f);
+        Label(body, won ? "멋진 승리예요, 집사님!" : dungeonMode ? "기지가 무너졌어요. 다시 준비해볼까요?" : "시간 초과 또는 전멸 · 고양이들을 정비해보세요",
+            22, new Vector2(.08f, .62f), new Vector2(.92f, .76f));
+        var rewardCard = Panel(body, "Clear Reward Card", new Vector2(.13f, .19f), new Vector2(.87f, .58f), new Color(.93f, .85f, .69f));
+        RoundCollectionPanel(rewardCard);
+        Label(rewardCard, "클리어 보상", 22, new Vector2(.05f, .74f), new Vector2(.95f, .96f)).color = new Color(.43f, .32f, .20f);
+        var gem = Rect(rewardCard, "Reward Crystal", new Vector2(.5f, .52f), new Vector2(.5f, .52f));
+        gem.sizeDelta = new Vector2(48, 48);
+        gem.localRotation = Quaternion.Euler(0, 0, 45);
+        var gemEdge = Panel(gem, "Crystal Edge", Vector2.zero, Vector2.one,
+            won && rewarded ? new Color(.18f, .43f, .58f) : new Color(.49f, .49f, .48f));
+        Panel(gemEdge, "Crystal Face", new Vector2(.12f, .12f), new Vector2(.88f, .88f),
+            won && rewarded ? new Color(.48f, .88f, 1f) : new Color(.73f, .74f, .72f));
+        Panel(gemEdge, "Crystal Shine", new Vector2(.20f, .53f), new Vector2(.42f, .78f), new Color(1, 1, 1, .8f));
         string reward = !won ? "클리어 보상 없음" : !rewarded ? "보상을 지급하지 못했습니다. 저장 상태와 재화 한도를 확인해주세요." :
-            $"클리어 보상 · 다이아 +{CatGameSession.EncounterClearGems}" + (pendingSave ? "\n저장 대기 중 · 상점에서 저장을 재시도해주세요." : "");
-        Label(page, reward, 24, new Vector2(0, .4f), new Vector2(1, .55f));
-        Button(page, $"{EncounterTab} 목록으로", new Vector2(.15f, .2f), new Vector2(.85f, .32f), ExitRaid);
+            $"다이아 +{CatGameSession.EncounterClearGems}";
+        Label(rewardCard, reward, rewarded ? 30 : 21, new Vector2(.05f, .03f), new Vector2(.95f, .32f));
+        Label(body, pendingSave ? "저장 대기 중 · 메인 상점에서 저장을 재시도해주세요." : won && rewarded ? "보상을 받았어요!" : "더 강해져서 다시 만나요!",
+            19, new Vector2(.08f, .03f), new Vector2(.92f, .17f));
+        Label(backdrop, won ? "VICTORY" : "TRY AGAIN", 40, new Vector2(.08f, .82f), new Vector2(.92f, .95f)).color = new Color(1, .89f, .61f);
+        var back = Button(backdrop, standaloneEncounter ? "메인 전투로" : $"{EncounterTab} 목록으로", new Vector2(.20f, .045f), new Vector2(.80f, .13f), ExitRaid);
+        CozyButtonStyle.Apply(back, CozyButtonStyle.Green);
     }
 
     private void ExitRaid()
     {
+        if (saving) return;
+        if (standaloneEncounter) { EncounterExitRequested?.Invoke(); return; }
         CloseDefenseScreen();
         raidActive = false;
-        RaidActiveChanged?.Invoke(false);
         Show(EncounterTab);
+    }
+
+    public void ShowEncounterError(string message)
+    {
+        CloseDefenseScreen();
+        ClearPage();
+        Label(page, message, 26, new Vector2(.05f, .4f), new Vector2(.95f, .8f));
+        Button(page, "메인으로 돌아가기", new Vector2(.15f, .2f), new Vector2(.85f, .32f), ExitRaid);
     }
 }

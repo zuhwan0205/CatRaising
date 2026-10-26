@@ -33,8 +33,7 @@ public class BackendManager : MonoBehaviour
         {
             if (!initialized)
             {
-                var initialization = Backend.Initialize();
-                initialized = initialization.IsSuccess();
+                initialized = Backend.IsInitialized || Backend.Initialize().IsSuccess();
                 if (!initialized)
                 {
                     loginUI.ShowInitialization(false);
@@ -42,6 +41,11 @@ public class BackendManager : MonoBehaviour
                 }
             }
 
+            if (BackendLogin.ManualLoginRequired)
+            {
+                loginUI.ShowLoginOptions("로그아웃되었습니다. 사용할 계정으로 로그인해주세요.", false);
+                return;
+            }
             var result = await BackendLogin.Instance.LoginWithSavedTokenAsync(destroyCancellationToken);
             if (this == null) return;
             if (!result.IsSuccess())
@@ -189,6 +193,8 @@ public class BackendManager : MonoBehaviour
         }
         if (this == null)
             return;
+        CatGameRuntime.Initialize(BackendGameData.userData, null, false);
+        BackendLogin.ManualLoginRequired = false;
         loginReady = true;
         loginUI.ShowCompleted();
         // Inspector에서 로그인 완료 후 씬 전환 등의 동작을 연결합니다.

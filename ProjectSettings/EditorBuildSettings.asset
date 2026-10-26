@@ -11,5 +11,11 @@ EditorBuildSettings:
   - enabled: 1
     path: Assets/Scenes/GameScene.unity
     guid: 7c9eb19bd8a44377a49348cfe6e83228
+  - enabled: 1
+    path: Assets/Scenes/DungeonScene.unity
+    guid: 2b5c45f5cd20483a85428094795fd6a8
+  - enabled: 1
+    path: Assets/Scenes/RaidScene.unity
+    guid: af94d8f8b0bb4573a9df49bdcb7b9227
   m_configObjects:
     com.unity.input.settings.actions: {fileID: -944628639613478452, guid: 2bcd2660ca9b64942af0de543d8d7100, type: 3}

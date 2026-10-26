@@ -1,4 +1,4 @@
-﻿using UnityEngine;
+using UnityEngine;
 
 // 씬 진입점: 데이터 기능과 UI를 생성하고 이벤트만 연결합니다.
 public class CatGameScene : MonoBehaviour
@@ -8,7 +8,7 @@ public class CatGameScene : MonoBehaviour
     [SerializeField] private Font uiFont;
     [SerializeField] private bool previewSampleContent = true;
 
-    private bool ownCatalog;
+    private CatGameRuntime runtime;
     [SerializeField] private GameObject sceneMap;
     [SerializeField] private Camera editorMapCamera;
 
@@ -28,81 +28,69 @@ public class CatGameScene : MonoBehaviour
     private CatGameSession session;
     private CatFieldController field;
     private bool watchingAd;
-    private bool inRaid;
-    private bool encounterResultHandled = true;
+    private bool transitioning;
+
     private bool sessionBlocked;
 
     private void SetSessionBlocked(bool blocked)
     {
         sessionBlocked = blocked;
-        if (field != null) field.SetGameplayBlocked(blocked || inRaid || watchingAd);
+        if (field != null) field.SetGameplayBlocked(blocked || transitioning || watchingAd);
     }
 
-    private void SetRaidActive(bool active)
-    {
-        if (!active && field != null) field.EndRaid();
-        inRaid = active;
-        if (field != null) field.SetGameplayBlocked(active || sessionBlocked || watchingAd);
-    }
-    private void BeginFieldRaid(int index, System.Collections.Generic.IList<OwnedCharacter> team)
-    {
-        if (session.IsSaving || session.HasPendingReward)
-            throw new System.ArgumentException("진행 저장을 먼저 완료해주세요. 상점에서 저장을 재시도할 수 있습니다.");
-        dungeonStage = 0;
-        SetRaidActive(true);
-        try { field.BeginRaid(index, team, activeData, catalog); encounterResultHandled = false; }
-        catch { SetRaidActive(false); throw; }
-    }
     private BackendUserData activeData;
-    private int dungeonStage;
-    private void BeginFieldDungeon(int stage, System.Collections.Generic.IList<OwnedCharacter> team)
+
+    private async void BeginFieldRaid(int index, System.Collections.Generic.IList<OwnedCharacter> team)
     {
-        if (session.IsSaving || session.HasPendingReward)
-            throw new System.ArgumentException("진행 저장을 먼저 완료해주세요. 상점에서 저장을 재시도할 수 있습니다.");
-        SetRaidActive(true);
-        try
+        await EnterEncounter(false, index, team);
+    }
+
+    private async void BeginFieldDungeon(int stage, System.Collections.Generic.IList<OwnedCharacter> team)
+    {
+        await EnterEncounter(true, stage, team);
+    }
+
+    private async System.Threading.Tasks.Task EnterEncounter(bool dungeon, int index, System.Collections.Generic.IList<OwnedCharacter> team)
+    {
+        if (transitioning || watchingAd) return;
+        transitioning = true;
+        SetSessionBlocked(sessionBlocked);
+        view.SetBusy(true);
+        view.SetSceneTransition(true);
+        view.ShowStatus("전투 입장 준비 중…");
+        try { await runtime.EnterEncounterAsync(dungeon, index, team); }
+        catch (System.Exception error) { if (view != null) view.ShowStatus(error.Message); }
+        finally
         {
-            view.BeginDungeonDefense(stage, team);
-            dungeonStage = stage;
-            encounterResultHandled = false;
+            if (this != null)
+            {
+                transitioning = false;
+                SetSessionBlocked(session.GameplayBlocked);
+                if (view != null)
+                {
+                    view.SetSceneTransition(false);
+                    view.SetBusy(session.IsSaving);
+                }
+            }
         }
-        catch { SetRaidActive(false); throw; }
     }
-
-    private async void OnEncounterFinished(bool won)
-    {
-        if (!inRaid || encounterResultHandled) return;
-        encounterResultHandled = true;
-        bool rewarded = won && await session.CompleteEncounterAsync(dungeonStage);
-        if (view == null) return;
-        view.ShowRaidResult(won, rewarded, session.HasPendingReward);
-        view.RefreshWallet();
-        view.PendingAdSave = session.HasPendingReward;
-        if (session.HasPendingReward) view.ShowStatus("진행 저장 실패 · 상점의 보상 저장 재시도를 눌러주세요.");
-    }
-
     private void Start()
     {
         bool preview = BackendGameData.userData == null;
-        var data = preview ? BackendUserData.CreateNew() : BackendGameData.userData;
+        var data = preview ? (CatGameRuntime.Current?.Data ?? BackendUserData.CreateNew()) : BackendGameData.userData;
         adWallet = data.wallet;
         activeData = data;
         // 씬 단독 미리보기에서만 테스트 보유 목록을 구성합니다.
-        if (preview && previewSampleContent)
+        if (preview && previewSampleContent && CatGameRuntime.Current == null)
         {
             data.characters.Add(new OwnedCharacter { characterId = "cat_spinner" });
             data.relics.Add(new OwnedRelic { relicId = "relic_claw" });
             data.relics.Add(new OwnedRelic { relicId = "relic_bell" });
         }
 
-        if (catalog == null)
-            catalog = Resources.Load<CatGameCatalog>("DefaultCatCatalog");
-        if (catalog == null)
-        {
-            catalog = ScriptableObject.CreateInstance<CatGameCatalog>();
-            ownCatalog = true;
-        }
-        session = new CatGameSession(data, preview, () => BackendGameData.Instance.GameDataUpdateAsync(), catalog, BackendGameData.Instance.RewardJournal);
+        runtime = CatGameRuntime.Initialize(data, catalog, preview);
+        catalog = runtime.Catalog;
+        session = runtime.Session;
         if (editorMapCamera != null) editorMapCamera.gameObject.SetActive(false);
         view = GetComponent<CatGameSceneUI>();
         if (view == null) view = gameObject.AddComponent<CatGameSceneUI>();
@@ -114,7 +102,9 @@ public class CatGameScene : MonoBehaviour
         view.AdventureVisibilityChanged += field.SetVisible;
         view.Build(data, catalog, uiFont, preview, field.Output);
         view.ProfileSaveRequested = session.UpdateProfileAsync;
-        session.NicknameUpdateRequested = BackendLogin.Instance.UpdateNicknameAsync;
+        view.LogoutRequested = Logout;
+        view.SettingsSaveRequested = SaveFromSettings;
+
         view.ProfileSaveError = () => session.LastProfileError;
         view.CharacterSelected += SelectCharacter;
         view.SkillRequested += LearnSkill;
@@ -130,16 +120,17 @@ public class CatGameScene : MonoBehaviour
         session.BusyChanged += view.SetBusy;
         session.StatusChanged += view.ShowStatus;
         session.GameplayBlockedChanged += SetSessionBlocked;
-        view.RaidActiveChanged += SetRaidActive;
+
         view.RaidRequested += BeginFieldRaid;
-        view.RaidField = field;
-        field.RaidFinished += OnEncounterFinished;
+
         view.DungeonRequested += BeginFieldDungeon;
-        view.DungeonDefenseFinished += OnEncounterFinished;
+
         field.Combat.GoldEarned += AwardGold;
         field.Combat.MessageChanged += view.ShowCombatMessage;
         field.Combat.RelicMessageChanged += view.ShowRelicMessage;
         field.Combat.HealthChanged += view.ShowPlayerHealth;
+        view.PendingAdSave = session.HasPendingReward;
+        SetSessionBlocked(session.GameplayBlocked);
         StartCoroutine(SaveCombatRewardsPeriodically());
     }
 
@@ -174,7 +165,7 @@ public class CatGameScene : MonoBehaviour
             }
             if (++ticks < 5) continue;
             ticks = 0;
-            if (pendingSave == null && !inRaid) pendingSave = session.SaveCombatRewardsAsync();
+            if (pendingSave == null && !transitioning) pendingSave = session.SaveCombatRewardsAsync();
         }
     }
 
@@ -182,6 +173,35 @@ public class CatGameScene : MonoBehaviour
     {
         try { session?.CheckpointRewards(); }
         catch (System.Exception exception) { Debug.LogException(exception); }
+    }
+
+    private async System.Threading.Tasks.Task<bool> SaveFromSettings()
+    {
+        if (transitioning || watchingAd || session.IsSaving) return false;
+        bool saved = await session.SaveAsync();
+        if (view != null)
+        {
+            view.PendingAdSave = session.HasPendingReward;
+            view.RefreshWallet();
+        }
+        return saved;
+    }
+
+    private async System.Threading.Tasks.Task Logout()
+    {
+        if (transitioning || watchingAd || session.IsSaving)
+            throw new System.InvalidOperationException("진행 중인 작업을 마친 뒤 다시 시도해주세요.");
+        transitioning = true;
+        SetSessionBlocked(sessionBlocked);
+        try { await runtime.LogoutAsync(); }
+        finally
+        {
+            if (this != null)
+            {
+                transitioning = false;
+                SetSessionBlocked(session.GameplayBlocked);
+            }
+        }
     }
 
     private void OnApplicationPause(bool paused)
@@ -198,6 +218,7 @@ public class CatGameScene : MonoBehaviour
 
     private async void SaveBeforeLeaving()
     {
+        CatLocalSettings.Flush();
         CheckpointCombatRewards();
         if (session == null) return;
         try { await session.SaveCombatRewardsAsync(); }
@@ -332,9 +353,17 @@ public class CatGameScene : MonoBehaviour
     private void OnDestroy()
     {
         // 전송 중인 저장은 완료까지 처리하고 UI 이벤트만 해제합니다.
-
-
-        if (view != null)
+        // Unity의 컴포넌트 파괴 순서와 관계없이 영속 세션에서 구독을 제거합니다.
+        if (session != null)
+        {
+            session.GameplayBlockedChanged -= SetSessionBlocked;
+            if (!ReferenceEquals(view, null))
+            {
+                session.BusyChanged -= view.SetBusy;
+                session.StatusChanged -= view.ShowStatus;
+            }
+        }
+        if (!ReferenceEquals(view, null))
         {
             view.CharacterSelected -= SelectCharacter;
             view.SkillRequested -= LearnSkill;
@@ -347,19 +376,10 @@ public class CatGameScene : MonoBehaviour
             view.CharacterDrawRequested -= DrawCharacter;
             view.BatchDrawRequested -= DrawContent;
             view.CrystalAdRequested -= WatchCrystalAd;
-            view.RaidActiveChanged -= SetRaidActive;
+
             view.RaidRequested -= BeginFieldRaid;
             view.DungeonRequested -= BeginFieldDungeon;
-            view.DungeonDefenseFinished -= OnEncounterFinished;
-            if (field != null) field.RaidFinished -= OnEncounterFinished;
-            if (session != null)
-            {
-                session.BusyChanged -= view.SetBusy;
-                session.StatusChanged -= view.ShowStatus;
-                if (field != null)
-                    session.GameplayBlockedChanged -= SetSessionBlocked;
 
-            }
         }
         if (view != null && field != null)
         {
@@ -371,7 +391,6 @@ public class CatGameScene : MonoBehaviour
             field.Combat.RelicMessageChanged -= view.ShowRelicMessage;
             field.Combat.HealthChanged -= view.ShowPlayerHealth;
         }
-        if (ownCatalog && catalog != null)
-            Destroy(catalog);
+
     }
 }

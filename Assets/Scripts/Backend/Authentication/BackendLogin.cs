@@ -4,6 +4,21 @@ using BackEnd;
 
 public class BackendLogin
 {
+    private const string ManualLoginKey = "CatRaising.ManualLoginRequired";
+    public static bool ManualLoginRequired
+    {
+        get => PlayerPrefs.GetInt(ManualLoginKey, 0) != 0;
+        set { PlayerPrefs.SetInt(ManualLoginKey, value ? 1 : 0); PlayerPrefs.Save(); }
+    }
+
+    public async System.Threading.Tasks.Task<bool> LogoutAsync()
+    {
+        var completion = new System.Threading.Tasks.TaskCompletionSource<BackendReturnObject>(System.Threading.Tasks.TaskCreationOptions.RunContinuationsAsynchronously);
+        Backend.BMember.Logout(result => completion.TrySetResult(result));
+        var response = await completion.Task;
+        return response.IsSuccess();
+    }
+
     public async System.Threading.Tasks.Task<BackendReturnObject> LoginWithSavedTokenAsync(System.Threading.CancellationToken cancellationToken)
     {
         var completion = new System.Threading.Tasks.TaskCompletionSource<BackendReturnObject>(System.Threading.Tasks.TaskCreationOptions.RunContinuationsAsynchronously);
