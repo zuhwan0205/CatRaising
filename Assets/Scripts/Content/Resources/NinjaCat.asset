@@ -38,7 +38,7 @@ MonoBehaviour:
       attackSpeed: 2
       maxHealth: 100
     statsPerLevel:
-      attack: 1.0
+      attack: 0.8
       defense: 0
       attackSpeed: 0
       maxHealth: 5

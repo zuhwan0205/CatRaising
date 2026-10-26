@@ -59,6 +59,8 @@ public partial class FieldCombatController : MonoBehaviour
     }
     // 종류는 1분마다, 개체 수는 그 절반인 30초마다 증가합니다.
     private const float MonsterKindIntervalSeconds = 60f;
+    private const float MonsterGrowthDurationSeconds = 300f;
+    public float MonsterGrowthMultiplier => 1f + Mathf.Clamp01(SurvivalSeconds / MonsterGrowthDurationSeconds);
     public const int InitialMonsterCount = 20;
     public const int MaximumMonsterCount = 200;
     public float SpawnDistance => Mathf.Min(25f, 7f + SurvivalSeconds / 60f * 2f);
@@ -115,7 +117,7 @@ public partial class FieldCombatController : MonoBehaviour
                     if (i < InitialMonsterCount)
                     {
                         enemy.ConfigureMonster(0);
-                        enemy.Respawn(SpawnPosition());
+                        RespawnFieldEnemy(enemy);
                     }
                     else
                         enemy.gameObject.SetActive(false);
@@ -139,7 +141,7 @@ public partial class FieldCombatController : MonoBehaviour
                     continue;
                 // 새 종류 해금 시 해당 종류를 먼저 추가하고 이후에는 네 종류를 순환합니다.
                 enemy.ConfigureMonster(FieldEnemyPool.KindForSlot(i));
-                enemy.Respawn(SpawnPosition());
+                RespawnFieldEnemy(enemy);
             }
         contactCooldown = Mathf.Max(0, contactCooldown - delta);
         cooldown = Mathf.Max(0, cooldown - delta);
@@ -158,9 +160,10 @@ public partial class FieldCombatController : MonoBehaviour
                 if (RaidMode) continue;
                 enemy.RespawnRemaining -= delta;
                 if (enemy.RespawnRemaining <= 0)
-                    enemy.Respawn(SpawnPosition());
+                    RespawnFieldEnemy(enemy);
                 continue;
             }
+            if (!RaidMode) enemy.ApplySurvivalGrowth(MonsterGrowthMultiplier);
             Vector3 toward = player.position - enemy.transform.position;
             toward.y = 0;
             float distance = toward.magnitude;
@@ -341,6 +344,12 @@ public partial class FieldCombatController : MonoBehaviour
             valid = attack > 0 && speed > 0 && !double.IsNaN(attack) && !double.IsInfinity(attack) && !double.IsNaN(speed) && !double.IsInfinity(speed);
         }
         MessageChanged?.Invoke(valid ? "자동 공격 중" : "공격 설정이 없습니다. 캐릭터의 Attack Id를 확인해주세요.");
+    }
+
+    private void RespawnFieldEnemy(FieldEnemy enemy)
+    {
+        enemy.ApplySurvivalGrowth(MonsterGrowthMultiplier);
+        enemy.Respawn(SpawnPosition());
     }
 
     private Vector3 SpawnPosition()

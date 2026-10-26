@@ -19,6 +19,8 @@ public static class CatArtworkImport
         if (EditorApplication.isPlayingOrWillChangePlaymode) return;
         ImportTexture("Assets/Scripts/Content/Resources/CatStarterIsometric.png");
         ImportTexture("Assets/Scripts/Content/Resources/CatCombatFrames.png");
+        foreach (string name in new[] { "CatStarterActionPixel", "CatSpinnerActionPixel", "CatDancerActionPixel", "CatGuardianActionPixel" })
+            ImportTexture("Assets/Scripts/Content/Resources/" + name + ".png", true);
         foreach (string name in RaidBattle.ArtworkNames)
         {
             ImportTexture("Assets/Scripts/Resources/RaidArt/" + name + ".png", true);

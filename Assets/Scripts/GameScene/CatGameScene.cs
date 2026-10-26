@@ -29,6 +29,7 @@ public class CatGameScene : MonoBehaviour
     private CatFieldController field;
     private bool watchingAd;
     private bool inRaid;
+    private bool encounterResultHandled = true;
     private bool sessionBlocked;
 
     private void SetSessionBlocked(bool blocked)
@@ -45,9 +46,11 @@ public class CatGameScene : MonoBehaviour
     }
     private void BeginFieldRaid(int index, System.Collections.Generic.IList<OwnedCharacter> team)
     {
+        if (session.IsSaving || session.HasPendingReward)
+            throw new System.ArgumentException("진행 저장을 먼저 완료해주세요. 상점에서 저장을 재시도할 수 있습니다.");
         dungeonStage = 0;
         SetRaidActive(true);
-        try { field.BeginRaid(index, team, activeData, catalog); }
+        try { field.BeginRaid(index, team, activeData, catalog); encounterResultHandled = false; }
         catch { SetRaidActive(false); throw; }
     }
     private BackendUserData activeData;
@@ -61,15 +64,19 @@ public class CatGameScene : MonoBehaviour
         {
             view.BeginDungeonDefense(stage, team);
             dungeonStage = stage;
+            encounterResultHandled = false;
         }
         catch { SetRaidActive(false); throw; }
     }
 
     private async void OnEncounterFinished(bool won)
     {
-        if (won && dungeonStage > 0) await session.CompleteDungeonAsync(dungeonStage);
+        if (!inRaid || encounterResultHandled) return;
+        encounterResultHandled = true;
+        bool rewarded = won && await session.CompleteEncounterAsync(dungeonStage);
         if (view == null) return;
-        view.ShowRaidResult(won);
+        view.ShowRaidResult(won, rewarded, session.HasPendingReward);
+        view.RefreshWallet();
         view.PendingAdSave = session.HasPendingReward;
         if (session.HasPendingReward) view.ShowStatus("진행 저장 실패 · 상점의 보상 저장 재시도를 눌러주세요.");
     }
@@ -167,7 +174,7 @@ public class CatGameScene : MonoBehaviour
             }
             if (++ticks < 5) continue;
             ticks = 0;
-            if (pendingSave == null) pendingSave = session.SaveCombatRewardsAsync();
+            if (pendingSave == null && !inRaid) pendingSave = session.SaveCombatRewardsAsync();
         }
     }
 
@@ -259,7 +266,10 @@ public class CatGameScene : MonoBehaviour
     }
     private async void SelectCharacter(OwnedCharacter character)
     {
-        await session.SelectCharacterAsync(character);
+        bool changed = character != null && activeData.loadout.characterId != character.characterId;
+        bool saved = await session.SelectCharacterAsync(character);
+        if (saved && changed && view != null)
+            view.ReturnToMainBattle();
     }
     private async void BuyCharacter(string id)
     {

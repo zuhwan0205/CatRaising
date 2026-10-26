@@ -24,22 +24,51 @@ public class BackendManager : MonoBehaviour
         InitializeBackend();
     }
 
-    public void InitializeBackend()
+    public async void InitializeBackend()
     {
+        if (submitting || loginReady) return;
+        submitting = true;
+        loginUI.ShowAutomaticLogin();
         try
         {
-            var result = Backend.Initialize();
-            initialized = result.IsSuccess();
-            loginUI.ShowInitialization(initialized);
             if (!initialized)
-                Debug.LogError("뒤끝 초기화 실패 : " + result);
+            {
+                var initialization = Backend.Initialize();
+                initialized = initialization.IsSuccess();
+                if (!initialized)
+                {
+                    loginUI.ShowInitialization(false);
+                    return;
+                }
+            }
+
+            var result = await BackendLogin.Instance.LoginWithSavedTokenAsync(destroyCancellationToken);
+            if (this == null) return;
+            if (!result.IsSuccess())
+            {
+                string status = result.GetStatusCode();
+                bool needsLogin = status == "400" || status == "401" || status == "403" || status == "410";
+                loginUI.ShowLoginOptions(status == "400" ? "" : needsLogin
+                    ? "자동 로그인할 수 없습니다. 다시 로그인해주세요."
+                    : "자동 로그인에 실패했습니다. 네트워크를 확인한 후 재시도하거나 직접 로그인해주세요.", !needsLogin);
+                return;
+            }
+
+            await CompleteLoginAsync();
+            if (this != null && !loginReady)
+                loginUI.ShowLoginOptions(BackendGameData.Instance.LastError, true);
         }
-        catch (Exception exception)
+        catch (OperationCanceledException) when (this == null) { }
+        catch (Exception)
         {
-            initialized = false;
-            Debug.LogException(exception);
-            loginUI.ShowInitialization(false);
+            // 인증 응답이나 예외에 포함될 수 있는 토큰은 로그에 남기지 않습니다.
+            if (this != null)
+            {
+                if (initialized) loginUI.ShowLoginOptions("자동 로그인 처리에 실패했습니다. 잠시 후 재시도해주세요.", true);
+                else loginUI.ShowInitialization(false);
+            }
         }
+        finally { submitting = false; }
     }
 
 #if UNITY_EDITOR

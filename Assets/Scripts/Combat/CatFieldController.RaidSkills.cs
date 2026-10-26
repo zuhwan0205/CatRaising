@@ -52,7 +52,7 @@ public partial class CatFieldController
             var art = Paint("Monster", billboard, Vector2.zero, Vector2.one, Color.white, 0);
             var enemy = obj.AddComponent<FieldEnemy>();
             enemy.Initialize(art, BillboardHealth(billboard), 10);
-            enemy.ConfigureRaidBoss(kind, 20 + kind * 10);
+            enemy.ConfigureRaidBoss(kind, 40 + kind * 30);
             obj.SetActive(false);
             raidAdds.Add(enemy);
         }
@@ -64,7 +64,7 @@ public partial class CatFieldController
         summonCooldown -= delta;
         if (summonCooldown <= 0)
         {
-            summonCooldown = 9;
+            summonCooldown = 8;
             int spawned = 0;
             foreach (var enemy in raidAdds)
             {
@@ -112,7 +112,7 @@ public partial class CatFieldController
                     if (fighter == null || !fighter.gameObject.activeSelf) continue;
                     Vector3 offset = fighter.transform.position - skillCenter;
                     offset.y = 0;
-                    if (offset.sqrMagnitude <= skillRadius * skillRadius) fighter.ReceiveRaidSkill(24 + skillKind * 12);
+                    if (offset.sqrMagnitude <= skillRadius * skillRadius) fighter.ReceiveRaidSkill(36 + skillKind * 20);
                 }
                 foreach (var fill in skillFill) fill.color = new Color(1, .5f, .1f, .55f);
             });
@@ -132,7 +132,7 @@ public partial class CatFieldController
         }
         skillCooldown -= delta;
         if (skillCooldown > 0) return;
-        skillCooldown = 6;
+        skillCooldown = 5.5f;
         skillWindup = 1.5f;
         skillRadius = skillKind == 0 ? 3.5f : skillKind == 1 ? 2.8f : 3;
         skillCenter = skillKind == 2 ? living[0].transform.position : RaidBoss.transform.position;

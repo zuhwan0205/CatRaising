@@ -21,7 +21,7 @@ public partial class CatFieldController
     {
         // 기존 편성 검증을 사용하되 전투 계산은 필드 컨트롤러가 담당합니다.
         RaidBattle.ValidateTeam(index, data.progress.accountLevel, team, data, catalog);
-        double health = index == 0 ? 1000 : index == 1 ? 3000 : 7500;
+        double health = index == 0 ? 2500 : index == 1 ? 9000 : 24000;
         EndRaid();
         raidNavigation = Combat.Navigation?.CreateRaidNavigation();
         foreach (Transform child in field.transform)

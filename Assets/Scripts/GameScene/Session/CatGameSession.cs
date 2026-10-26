@@ -4,12 +4,18 @@ using System.Threading.Tasks;
 // UI/SDK에 독립적인 비동기 저장 기능입니다. 전송 중 씬이 닫혀도 완료 결과를 처리합니다.
 public class CatGameSession
 {
-    public async Task CompleteDungeonAsync(int stage)
+    public const long EncounterClearGems = 10;
+
+    // stage 0은 레이드입니다. 재도전 승리에도 같은 보상을 지급합니다.
+    public async Task<bool> CompleteEncounterAsync(int stage)
     {
-        if (MutationBlocked || stage < 1 || stage > 15 || stage != data.progress.dungeonClearedStage + 1) return;
-        data.progress.dungeonClearedStage = stage;
+        if (MutationBlocked || stage < 0 || stage > 15 || stage > data.progress.dungeonClearedStage + 1 ||
+            data.wallet.gems > long.MaxValue - EncounterClearGems) return false;
+        if (stage > 0) data.progress.dungeonClearedStage = Math.Max(data.progress.dungeonClearedStage, stage);
+        data.wallet.gems += EncounterClearGems;
         HasPendingReward = true;
         await SaveAsync();
+        return true;
     }
     public async Task GrantCrystalAdRewardAsync()
     {
@@ -340,13 +346,13 @@ public class CatGameSession
         await SaveAsync(() => { data.wallet.gold = previousGold; setLevel(level); });
     }
 
-    public async Task SelectCharacterAsync(OwnedCharacter character)
+    public async Task<bool> SelectCharacterAsync(OwnedCharacter character)
     {
         if (MutationBlocked || character == null || !data.characters.Contains(character))
-            return;
+            return false;
         string previous = data.loadout.characterId;
         data.loadout.characterId = character.characterId;
-        await SaveAsync(() => data.loadout.characterId = previous);
+        return await SaveAsync(() => data.loadout.characterId = previous);
     }
 
     public async Task ToggleRelicAsync(OwnedRelic relic)

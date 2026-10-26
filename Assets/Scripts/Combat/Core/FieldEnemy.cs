@@ -14,6 +14,10 @@ public class FieldEnemy : MonoBehaviour
     private Color color;
     private float flashRemaining;
     private float slowRemaining;
+    private double baseMonsterHealth;
+    private double baseMonsterDamage;
+    public double StatusDamageMultiplier => raidArtwork != null ? .4 : 1;
+    private float survivalGrowth = 1f;
     public int Kind
     {
         get; private set;
@@ -78,14 +82,16 @@ public class FieldEnemy : MonoBehaviour
 
         frames = new Sprite[8];
         Kind = kind;
-        double[] health = { 4, 6, 24, 14 };
+        double[] health = { 6, 10, 36, 24 };
         float[] speed = { 1.05f, 2.7f, 1.2f, .9f };
-        double[] contact = { 2, 3, 4, 5 };
+        double[] contact = { 3, 5, 7, 9 };
         long[] gold = { 10, 15, 25, 40 };
         GoldReward = gold[kind];
-        Health = new CombatHealth(health[kind]);
+        baseMonsterHealth = health[kind];
+        survivalGrowth = 1f;
+        Health = new CombatHealth(baseMonsterHealth);
         MoveSpeed = speed[kind];
-        ContactDamage = contact[kind];
+        ContactDamage = baseMonsterDamage = contact[kind];
         Defense = kind == 3 ? 2 : 0;
         healthBar.localScale = Vector3.one;
         string[] names = { "DustBunnyMonster", "CheeseMouseMonster", "YarnSlimeMonster", "TinCanCrabMonster" };
@@ -109,18 +115,29 @@ public class FieldEnemy : MonoBehaviour
         previousPosition = transform.position;
     }
     public float MovementMultiplier => slowRemaining > 0 ? .6f : 1f;
+
+    // 메인 필드 전용. 현재 체력 비율을 유지해 성장 시 완전히 회복되지 않게 합니다.
+    public void ApplySurvivalGrowth(float multiplier)
+    {
+        multiplier = Mathf.Clamp(multiplier, 1f, 2f);
+        if (baseMonsterHealth <= 0 || survivalGrowth == multiplier) return;
+        survivalGrowth = multiplier;
+        ContactDamage = baseMonsterDamage * (1 + (multiplier - 1) * .5);
+        Health.SetMaximumPreservingRatio(baseMonsterHealth * multiplier);
+        artwork.transform.localScale = Vector3.one * multiplier;
+    }
     public void ConfigureRaidBoss(int kind, double health)
     {
         ConfigureMonster(kind);
         Health = new CombatHealth(health);
         GoldReward = 0;
-        ContactDamage = 5 + kind * 3;
+        ContactDamage = 8 + kind * 5;
         MoveSpeed = 1.2f;
     }
 
     public void StrengthenRaidBoss()
     {
-        ContactDamage = 15 + Kind * 9;
+        ContactDamage = 22 + Kind * 14;
         Defense = 2 + Kind;
         MoveSpeed = 1.65f;
     }

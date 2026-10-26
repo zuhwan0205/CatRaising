@@ -4,7 +4,7 @@
 public static class CatAttackVisualStyle
 {
     public struct Part { public Vector3 Position, Scale; public Quaternion Rotation; public Color Color; }
-    public static Part Sample(int i, float progress, bool ice, bool magic, bool fire, bool arrowAttack, bool hammer)
+    public static Part Sample(int i, float progress, bool ice, bool magic, bool fire, bool arrowAttack, bool hammer, string characterId = null)
     {
             var line = new Part();
             line.Position = magic ? Vector3.zero : new Vector3((i - 1) * .23f, 0, 0);
@@ -34,6 +34,21 @@ public static class CatAttackVisualStyle
                 line.Scale = new Vector3(.16f, .55f, 1);
                 line.Color = new Color(1, .72f, .2f, 1 - progress);
             }
+        if (characterId == "cat_spinner" || characterId == "cat_dancer")
+        {
+            float angle = (progress * 300 + i * 120) * Mathf.Deg2Rad;
+            line.Position = new Vector3(Mathf.Cos(angle), Mathf.Sin(angle), 0) * .35f;
+            line.Rotation = Quaternion.Euler(0, 0, angle * Mathf.Rad2Deg);
+            line.Scale = new Vector3(.06f, .55f, 1);
+            line.Color = characterId == "cat_spinner" ? new Color(.25f,1,.86f,1-progress) : new Color(1,.48f,.65f,1-progress);
+        }
+        else if (characterId == "cat_guardian")
+        {
+            line.Position = new Vector3((i-1)*progress*.32f,0,0);
+            line.Rotation = Quaternion.Euler(0,0,(i-1)*45);
+            line.Scale = new Vector3(.10f,.50f,1);
+            line.Color = new Color(1,.80f,.35f,1-progress);
+        }
         return line;
     }
 }
