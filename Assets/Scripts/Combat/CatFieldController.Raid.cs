@@ -10,12 +10,10 @@ public partial class CatFieldController
     public bool RaidRunning { get; private set; }
     private GameObject raidRoot;
     private readonly List<FieldCombatController> raidFighters = new List<FieldCombatController>();
-    private readonly List<GameObject> hiddenFieldObjects = new List<GameObject>();
-    private Transform previousCameraTarget;
     private RaidPartyFormation raidParty;
     private FieldNavigation raidNavigation;
     private readonly List<FieldCombatController> livingRaidFighters = new List<FieldCombatController>(4);
-    private FieldNavigation EncounterNavigation => raidNavigation ?? Combat.Navigation;
+    private FieldNavigation EncounterNavigation => raidNavigation ?? fieldNavigation;
 
     public void BeginRaid(int index, IList<OwnedCharacter> team, BackendUserData data, CatGameCatalog catalog)
     {
@@ -23,15 +21,7 @@ public partial class CatFieldController
         RaidBattle.ValidateTeam(index, data.progress.accountLevel, team, data, catalog);
         double health = index == 0 ? 2500 : index == 1 ? 9000 : 24000;
         EndRaid();
-        raidNavigation = Combat.Navigation?.CreateRaidNavigation();
-        foreach (Transform child in field.transform)
-        {
-            if (child.gameObject.activeSelf && (child.GetComponent<FieldEnemy>() != null || child.GetComponent<CatMovementController>() != null))
-            {
-                hiddenFieldObjects.Add(child.gameObject);
-                child.gameObject.SetActive(false);
-            }
-        }
+        raidNavigation = fieldNavigation?.CreateRaidNavigation();
         raidRoot = new GameObject("Raid Field Actors");
         raidRoot.transform.SetParent(field.transform, false);
         var bossObject = new GameObject("Raid Boss");
@@ -108,7 +98,6 @@ public partial class CatFieldController
             raidFighters.Add(fighter);
         }
         var follow = fieldCamera.GetComponent<CatCameraFollow>();
-        previousCameraTarget = follow.Target;
         follow.Target = raidFighters[0].transform;
         follow.Snap();
         RaidSeconds = 60;
@@ -190,14 +179,5 @@ public partial class CatFieldController
         RaidBoss = null;
         raidFighters.Clear();
         livingRaidFighters.Clear();
-        foreach (var obj in hiddenFieldObjects) if (obj != null) obj.SetActive(true);
-        hiddenFieldObjects.Clear();
-        if (previousCameraTarget != null)
-        {
-            var follow = fieldCamera.GetComponent<CatCameraFollow>();
-            follow.Target = previousCameraTarget;
-            follow.Snap();
-            previousCameraTarget = null;
-        }
     }
 }

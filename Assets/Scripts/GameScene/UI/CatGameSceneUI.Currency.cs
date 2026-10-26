@@ -38,7 +38,13 @@ public partial class CatGameSceneUI
         {
             if (child.GetComponent<Text>() != null) child.gameObject.SetActive(false);
             if (child.name == "Diamond Row" || child.name == "Gold Row")
+            {
                 child.GetComponent<Image>().color = new Color(.10f, .17f, .17f, .40f);
+                var row = (RectTransform)child;
+                row.anchorMin = new Vector2(.46f, row.anchorMin.y);
+                row.anchorMax = new Vector2(.83f, row.anchorMax.y);
+                row.offsetMin = row.offsetMax = Vector2.zero;
+            }
         }
         var frame = header.Find("Profile Frame");
         if (frame != null)
@@ -51,6 +57,7 @@ public partial class CatGameSceneUI
             button.onClick.AddListener(ShowProfilePopup);
         }
         headerVersion = 5;
+        ConfigureSettingsButton(header);
     }
     private void BuildCurrencyHeader()
     {

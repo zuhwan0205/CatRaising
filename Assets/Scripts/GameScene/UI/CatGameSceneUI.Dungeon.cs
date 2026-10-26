@@ -191,10 +191,10 @@ public partial class CatGameSceneUI
         OpenTeamCatPicker(dungeonSlots, slot, "던전", DungeonPreparation);
     }
 
-    private void OpenTeamCatPicker(OwnedCharacter[] slots, int slot, string title, Action refresh)
+    private void OpenTeamCatPicker(OwnedCharacter[] slots, int slot, string title, Action refresh, bool compact = false)
     {
         var overlay = Panel(page, "Owned Cat Picker", Vector2.zero, Vector2.one, cream);
-        Label(overlay, $"{title} · 보유 고양이 선택", 28, new Vector2(0, .88f), Vector2.one);
+        Label(overlay, compact ? title : $"{title} · 보유 고양이 선택", 28, new Vector2(0, .88f), Vector2.one);
         Button(overlay, "슬롯 비우기", new Vector2(.02f, .02f), new Vector2(.45f, .10f), () => { slots[slot] = null; refresh(); });
         Button(overlay, "닫기", new Vector2(.70f, .02f), new Vector2(.98f, .10f), () => RemoveUI(overlay.gameObject));
         var viewport = Panel(overlay, "Picker Viewport", new Vector2(.02f, .13f), new Vector2(.98f, .86f), cream);
@@ -231,7 +231,7 @@ public partial class CatGameSceneUI
             {
                 slots[slot] = cat;
                 refresh();
-            }, otherSlot ? "다른 슬롯 편성 중" : slots[slot]?.characterId == cat.characterId ? "현재 편성" : null,
+            }, otherSlot ? (compact ? "편성 중" : "다른 슬롯 편성 중") : slots[slot]?.characterId == cat.characterId ? (compact ? "선택됨" : "현재 편성") : null,
                 interactable: !otherSlot, showEquipped: false);
         }
     }

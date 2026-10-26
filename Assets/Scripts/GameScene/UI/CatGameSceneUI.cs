@@ -52,8 +52,9 @@ public partial class CatGameSceneUI : MonoBehaviour
     private readonly Color accent = new Color(0.40f, 0.29f, 0.85f);
     private readonly Color cream = new Color(0.98f, 0.96f, 0.92f);
 
-    public void Build(BackendUserData playerData, CatGameCatalog definitions, Font font, bool isPreview, RenderTexture fieldOutput)
+    public void Build(BackendUserData playerData, CatGameCatalog definitions, Font font, bool isPreview, RenderTexture fieldOutput, bool encounterOnly = false)
     {
+        standaloneEncounter = encounterOnly;
         data = playerData;
         fieldTexture = fieldOutput;
         catalog = definitions;
@@ -91,6 +92,14 @@ public partial class CatGameSceneUI : MonoBehaviour
         Panel(canvas.transform, "Background", Vector2.zero, Vector2.one, cream);
         safeArea = Rect(canvas.transform, "Safe Area", Vector2.zero, Vector2.one);
         ApplySafeArea();
+        if (encounterOnly)
+        {
+            page = Rect(safeArea, "Encounter Page", Vector2.zero, Vector2.one);
+            status = Label(safeArea, "", 18, new Vector2(.05f, .10f), new Vector2(.95f, .15f));
+            status.raycastTarget = false;
+            tabs = Array.Empty<Button>();
+            return;
+        }
         UpgradeBackground();
         BuildCurrencyHeader();
         page = Rect(safeArea, "Page", new Vector2(.04f, .16f), new Vector2(.96f, .9015f));

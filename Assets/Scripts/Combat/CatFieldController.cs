@@ -23,10 +23,11 @@ public partial class CatFieldController : MonoBehaviour
     private bool focused = true;
     private bool gameplayBlocked;
     private bool playerDead;
+    private FieldNavigation fieldNavigation;
     private Transform playerHealthFill;
     public FieldExperienceCrystals ExperienceCrystals { get; private set; }
 
-    public void Build(BackendUserData data, CatGameCatalog catalog, GameObject sceneMap = null)
+    public void Build(BackendUserData data, CatGameCatalog catalog, GameObject sceneMap = null, bool raidOnly = false)
     {
         field = new GameObject("2.5D Cat Field");
         field.transform.SetParent(transform, false);
@@ -53,16 +54,24 @@ public partial class CatFieldController : MonoBehaviour
         Ground("Grass", field.transform, Vector3.zero, new Vector2(120, 120), new Color(.76f, .84f, .62f), -10000);
         var scenery = field.AddComponent<FieldScenery>();
         scenery.Build(square, fieldCamera, sceneMap);
+        fieldNavigation = scenery.Navigation;
         // 바닥에 놓인 경계선으로 이동 가능한 영역을 표시합니다.
         for (int sign = -1; sign <= 1; sign += 2)
         {
             Ground("Boundary X", field.transform, new Vector3(sign * FieldMapSize.HalfSize, .01f, 0), new Vector2(.1f, FieldMapSize.HalfSize * 2), new Color(.42f, .54f, .34f), -9998);
             Ground("Boundary Z", field.transform, new Vector3(0, .01f, sign * FieldMapSize.HalfSize), new Vector2(FieldMapSize.HalfSize * 2, .1f), new Color(.42f, .54f, .34f), -9998);
         }
+        if (raidOnly)
+        {
+            // 레이드에서는 메인 고양이/몬스터 풀/경험치/메인 전투를 만들지 않습니다.
+            cameraObject.AddComponent<CatCameraFollow>();
+            SetVisible(true);
+            return;
+        }
         var cat = new GameObject("Player Cat");
         cat.transform.SetParent(field.transform, false);
         var catArt = Billboard("Cat Artwork", cat.transform);
-        catArt.localScale = Vector3.one * 1.5444f;
+        catArt.localScale = Vector3.one * 1.38996f;
         var fallbackArt = new GameObject("Legacy Cat Artwork").transform;
         fallbackArt.SetParent(catArt, false);
         Paint("Body", fallbackArt, Vector2.zero, new Vector2(.8f, .7f), new Color(1, .85f, .58f), 0);
@@ -157,8 +166,8 @@ public partial class CatFieldController : MonoBehaviour
     public void SetGameplayBlocked(bool blocked)
     {
         gameplayBlocked = blocked;
-        movement.enabled = !blocked && !playerDead;
-        Combat.Blocked = blocked;
+        if (movement != null) movement.enabled = !blocked && !playerDead;
+        if (Combat != null) Combat.Blocked = blocked;
     }
     private void OnPlayerHealthChanged(double hp, double maximum)
     {
