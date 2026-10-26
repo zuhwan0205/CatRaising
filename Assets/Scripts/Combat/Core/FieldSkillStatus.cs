@@ -51,7 +51,7 @@ public sealed class FieldSkillStatus : MonoBehaviour
         if (status.tick <= .0001f)
         {
             status.tick += 1;
-            source.DealSkillDamage(enemy, enemy.Health.Maximum * .005 * status.stacks, true);
+            source.DealSkillDamage(enemy, enemy.Health.Maximum * .005 * status.stacks * enemy.StatusDamageMultiplier, true);
         }
         if (status.remaining <= 0) status.Clear();
     }

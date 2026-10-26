@@ -10,7 +10,12 @@ public static class CatProgression
         cost = stars >= 0 && stars < StarCosts.Length ? StarCosts[stars] : 0;
         return cost > 0;
     }
-    public static long RequiredExperience(int level) => 20L + 10L * (Math.Max(1, level) - 1);
+    public static long RequiredExperience(int level)
+    {
+        long growth = Math.Max(1, Math.Min(MaxLevel, level)) - 1L;
+        // 초반에도 여러 결정을 모아야 하며, 이후 요구량은 레벨의 제곱에 비례해 증가합니다.
+        return 60L + 30L * growth + 6L * growth * growth;
+    }
     public static double StarMultiplier(int stars) => 1 + Math.Max(0, Math.Min(5, stars)) * .2;
     public static int DropExperience(int kind) => MonsterExperience[Math.Max(0, Math.Min(3, kind))];
     public static void AddExperience(OwnedCharacter cat, long amount)

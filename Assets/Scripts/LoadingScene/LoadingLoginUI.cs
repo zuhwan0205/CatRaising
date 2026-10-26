@@ -168,6 +168,7 @@ public class LoadingLoginUI : MonoBehaviour
     }
     public void ShowInitialization(bool success)
     {
+        busy = false;
         retry.gameObject.SetActive(!success);
         if (success)
             ShowChoice();
@@ -178,6 +179,28 @@ public class LoadingLoginUI : MonoBehaviour
             heading.text = "서버 연결 실패";
             ShowMessage("네트워크를 확인한 후 다시 시도해주세요.");
         }
+    }
+
+    public void ShowAutomaticLogin()
+    {
+        busy = true;
+        choice.SetActive(false);
+        form.SetActive(false);
+        retry.gameObject.SetActive(false);
+        heading.text = "자동 로그인 중입니다…";
+        ShowMessage("이전에 로그인한 계정을 확인합니다.");
+    }
+
+    public void ShowLoginOptions(string text, bool allowRetry)
+    {
+        busy = false;
+        choiceGroup.interactable = formGroup.interactable = true;
+        ShowChoice();
+        retry.gameObject.SetActive(allowRetry);
+        // 기존 연결 재시도 버튼을 로그인 선택 버튼 아래로 배치합니다.
+        if (allowRetry)
+            ((RectTransform)retry.transform).anchoredPosition = new Vector2(0, -230);
+        ShowMessage(text);
     }
 
     private void ShowChoice()
@@ -194,6 +217,7 @@ public class LoadingLoginUI : MonoBehaviour
 
     private void SelectMode(bool createAccount)
     {
+        retry.gameObject.SetActive(false);
         signUp = createAccount;
         choice.SetActive(false);
         form.SetActive(true);

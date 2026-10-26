@@ -62,6 +62,7 @@ public class FieldCombatEffects : MonoBehaviour
     public void Hurt()
     {
         hurtTime = .2f;
+        characterVisual?.Hurt();
     }
     private void Update()
     {
@@ -101,7 +102,7 @@ public class FieldCombatEffects : MonoBehaviour
         }
         for (int i = 0; i < lines.Length; i++)
         {
-            var part = CatAttackVisualStyle.Sample(i, progress, ice, magic, fire, arrowAttack, hammer);
+            var part = CatAttackVisualStyle.Sample(i, progress, ice, magic, fire, arrowAttack, hammer, characterVisual != null ? characterVisual.CharacterId : null);
             lines[i].transform.localPosition = part.Position;
             lines[i].transform.localRotation = part.Rotation;
             lines[i].transform.localScale = part.Scale;

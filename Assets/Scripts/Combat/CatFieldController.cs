@@ -62,7 +62,7 @@ public partial class CatFieldController : MonoBehaviour
         var cat = new GameObject("Player Cat");
         cat.transform.SetParent(field.transform, false);
         var catArt = Billboard("Cat Artwork", cat.transform);
-        catArt.localScale = Vector3.one * 1.716f;
+        catArt.localScale = Vector3.one * 1.5444f;
         var fallbackArt = new GameObject("Legacy Cat Artwork").transform;
         fallbackArt.SetParent(catArt, false);
         Paint("Body", fallbackArt, Vector2.zero, new Vector2(.8f, .7f), new Color(1, .85f, .58f), 0);
@@ -71,7 +71,7 @@ public partial class CatFieldController : MonoBehaviour
         Paint("Left Eye", fallbackArt, new Vector2(-.18f, .08f), new Vector2(.07f, .12f), Color.black, 1);
         Paint("Right Eye", fallbackArt, new Vector2(.18f, .08f), new Vector2(.07f, .12f), Color.black, 1);
         var catVisual = catArt.gameObject.AddComponent<CatCharacterVisual>();
-        catVisual.Build(cat.transform, fieldCamera, data, square, fallbackArt);
+        catVisual.Build(cat.transform, fieldCamera, data, square, fallbackArt, matchStarterSize: true);
         Paint("Cat HP Background", catArt, new Vector2(0, 1.35f), new Vector2(1, .09f), new Color(.2f, .2f, .2f), 3);
         playerHealthFill = new GameObject("Cat HP Fill Origin").transform;
         playerHealthFill.SetParent(catArt, false);

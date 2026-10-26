@@ -5,7 +5,7 @@ public sealed class CombatHealth
 {
     public double Maximum
     {
-        get;
+        get; private set;
     }
     public double Current
     {
@@ -35,5 +35,14 @@ public sealed class CombatHealth
     public void Reset()
     {
         Current = Maximum;
+    }
+
+    public void SetMaximumPreservingRatio(double maximum)
+    {
+        if (double.IsNaN(maximum) || double.IsInfinity(maximum) || maximum <= 0)
+            throw new ArgumentOutOfRangeException(nameof(maximum));
+        double ratio = Current / Maximum;
+        Maximum = maximum;
+        Current = Math.Min(maximum, maximum * ratio);
     }
 }

@@ -17,6 +17,8 @@ public sealed class CatCharacterVisual : MonoBehaviour
     private Vector3 previous;
     private float phase, motion;
     private string selectedId;
+    public string CharacterId => selectedId;
+    public bool HasHurtAnimation => activePixelFrames != null && activePixelFrames.Length >= 16 && activePixelFrames[12] != null;
     private Sprite[] combatFrames = new Sprite[4];
     public bool UsesHammer => selectedId == "cat_tiger";
     public bool UsesIce => selectedId == "cat_shadow";
@@ -25,18 +27,24 @@ public sealed class CatCharacterVisual : MonoBehaviour
     public bool UsesMagic => selectedId == "cat_moon";
     private Sprite[] activePixelFrames;
     private bool usePixelCat;
+    private bool matchStarterSize;
+    private float artworkScale = 1f;
     private FieldBillboard billboard;
     private float originalCenterHeight;
     private float idleTime;
     private float attackRemaining, facingRemaining;
+    private float hurtRemaining;
+    private const float HurtDuration = .28f;
     private bool facingBack;
     private Vector2 attackDirection;
     private int pendingFacing;
     private float pendingFacingTime;
-    private float AttackDuration => UsesHammer ? .52f : .32f;
+    private float AttackDuration => UsesHammer ? .52f : selectedId == "cat_guardian" ? .48f :
+        selectedId == "cat_spinner" || selectedId == "cat_dancer" ? .44f : .32f;
 
-    public void Build(Transform player, Camera camera, BackendUserData playerData, Sprite square, Transform fallbackArt)
+    public void Build(Transform player, Camera camera, BackendUserData playerData, Sprite square, Transform fallbackArt, bool matchStarterSize = false)
     {
+        this.matchStarterSize = matchStarterSize;
         feet = player;
         view = camera;
         data = playerData;
@@ -87,6 +95,7 @@ public sealed class CatCharacterVisual : MonoBehaviour
         selectedId = data.loadout.characterId;
         activePixelFrames = CatAnimationFrames.Get(selectedId);
         usePixelCat = activePixelFrames != null && activePixelFrames[0] != null;
+        artworkScale = matchStarterSize && usePixelCat ? MainBattleScale(selectedId) : 1f;
         if (!usePixelCat && combatFrames[0] == null && generatedSprite == null) LoadFallback();
         // 픽셀 시트는 발바닥 pivot이므로 중앙 pivot용 높이 보정을 적용하지 않습니다.
         if (billboard != null)
@@ -98,7 +107,7 @@ public sealed class CatCharacterVisual : MonoBehaviour
         fallback.SetActive(!detailed);
         phase = motion = idleTime = 0;
         previous = feet.position;
-        attackRemaining = facingRemaining = 0;
+        attackRemaining = facingRemaining = hurtRemaining = 0;
         pendingFacing = 0;
         pendingFacingTime = 0;
     }
@@ -110,6 +119,12 @@ public sealed class CatCharacterVisual : MonoBehaviour
         Face(target - source, false);
         attackRemaining = AttackDuration;
         facingRemaining = Mathf.Max(.45f, AttackDuration + .1f);
+    }
+
+    public void Hurt()
+    {
+        if (selectedId != data.loadout.characterId) ApplySelection();
+        hurtRemaining = HurtDuration;
     }
 
     private void Face(Vector3 direction, bool moving)
@@ -155,6 +170,7 @@ public sealed class CatCharacterVisual : MonoBehaviour
         float dt = Mathf.Min(Time.deltaTime, .1f);
         idleTime += dt;
         attackRemaining = Mathf.Max(0, attackRemaining - dt);
+        hurtRemaining = Mathf.Max(0, hurtRemaining - dt);
         facingRemaining = Mathf.Max(0, facingRemaining - dt);
         motion = Mathf.MoveTowards(motion, walking ? 1 : 0, dt * 10);
         if (walking)
@@ -176,10 +192,15 @@ public sealed class CatCharacterVisual : MonoBehaviour
         {
             int frame = attackRemaining > 0 ? 8 + Mathf.Min(3, Mathf.FloorToInt(progress * 4)) :
                 walking ? 4 + Mathf.FloorToInt(phase / 1.5f) % 4 : Mathf.FloorToInt(idleTime * 4) % 4;
+            if (hurtRemaining > 0 && HasHurtAnimation)
+            {
+                frame = 12 + Mathf.Min(3, Mathf.FloorToInt((1 - hurtRemaining / HurtDuration) * 4));
+                lunge = 0;
+            }
             catSprite.sprite = activePixelFrames[frame];
             animated.localPosition = new Vector3(attackDirection.x * lunge, attackDirection.y * lunge, 0);
             animated.localRotation = Quaternion.identity;
-            animated.localScale = Vector3.one;
+            animated.localScale = Vector3.one * artworkScale;
             shadow.localScale = new Vector3(.75f, .45f, 1);
             return;
         }
@@ -194,6 +215,28 @@ public sealed class CatCharacterVisual : MonoBehaviour
     {
         combatFrames = CatAnimationFrames.GetFallback();
         generatedSprite = combatFrames[4];
+    }
+
+    private static float MainBattleScale(string id)
+    {
+        // 대기 첫 프레임의 실제 불투명 높이 / PPU 기준입니다.
+        // 셀의 투명 여백은 제외하고, 공격 중에는 같은 배율을 유지합니다.
+        const float starterHeight = 262f / (1254f / 4f) * 1.65f;
+        float height;
+        switch (id)
+        {
+            case "cat_knight": height = 336f / 362f * 1.45f; break;
+            case "cat_kitten_trio": height = 228f / 362f * 1.65f; break;
+            case "cat_celestial": height = 294f / 362f * 1.65f; break;
+            case "cat_moon": height = 325f / 362f * 1.45f; break;
+            case "cat_lion": height = 317f / 362f * 1.55f; break;
+            case "cat_ninja": height = 321f / 362f * 1.45f; break;
+            case "cat_shadow": height = 334f / 362f * 1.45f; break;
+            case "cat_tiger": height = 296f / 362f * 1.65f; break;
+            // 방금 제작한 네 고양이의 크기는 유지합니다.
+            default: return 1f;
+        }
+        return starterHeight / height;
     }
 
     private void OnDestroy()

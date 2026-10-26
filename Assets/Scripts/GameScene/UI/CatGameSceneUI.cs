@@ -142,6 +142,12 @@ public partial class CatGameSceneUI : MonoBehaviour
         lastScreen = size;
     }
 
+    public void ReturnToMainBattle()
+    {
+        CloseDetailPopup();
+        Show("모험");
+    }
+
     private void Show(string tab)
     {
         if (raidActive) { ShowStatus("전투를 종료한 뒤 이동해주세요."); return; }

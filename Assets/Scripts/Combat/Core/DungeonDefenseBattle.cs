@@ -23,10 +23,12 @@ public sealed class DungeonDefenseBattle : MonoBehaviour
     private int rangeSlot = -1;
     public int Selected { get; set; }
     public int WaveNumber => wave;
+    public int BaseHealth => Mathf.Max(0, lives);
+    public bool IsFinished => finished;
     public int Coins { get; private set; } = 120;
     public bool CanStartWave => !running && !finished && wave < DungeonStageRules.WaveCount;
-    public static int Cost(ItemRarity rarity) => rarity == ItemRarity.Legendary ? 100 : rarity == ItemRarity.Unique ? 70 : rarity == ItemRarity.Epic ? 45 : 30;
-    private int stage, wave, spawned, total, lives = 20;
+    public static int Cost(ItemRarity rarity) => rarity == ItemRarity.Legendary ? 110 : rarity == ItemRarity.Unique ? 80 : rarity == ItemRarity.Epic ? 55 : 35;
+    private int stage, wave, spawned, total, lives = DungeonStageRules.BaseLives;
     private float spawnTime;
     private bool running, finished;
     private RectTransform map;
@@ -163,7 +165,7 @@ public sealed class DungeonDefenseBattle : MonoBehaviour
                 enemy.hp=DungeonStageRules.Health(stage,wave,spawned); enemy.segment=0; enemy.distance=0; enemy.alive=true;
                 enemy.art.texture=textures[enemy.kind]; SizeEnemy(enemy);
                 enemy.rect.anchoredPosition=Point(0); enemy.rect.gameObject.SetActive(true);
-                spawned++; spawnTime=.8f;
+                spawned++; spawnTime=DungeonStageRules.SpawnInterval(stage,wave);
             }
         }
         int living=0;
@@ -212,7 +214,7 @@ public sealed class DungeonDefenseBattle : MonoBehaviour
         {
             running=false;
             if(wave>=DungeonStageRules.WaveCount) { Finish(true); return; }
-            Coins+=35; hint("웨이브 클리어! 추가 배치 후 다음 웨이브를 시작하세요"); Refresh();
+            Coins+=DungeonStageRules.WaveClearCoins; hint("웨이브 클리어! 추가 배치 후 다음 웨이브를 시작하세요"); Refresh();
             WaveCleared?.Invoke(wave);
         }
     }
@@ -258,7 +260,7 @@ public sealed class DungeonDefenseBattle : MonoBehaviour
                 if(shot.target.alive)
                 {
                     shot.target.hp-=shot.damage;
-                    if(shot.target.hp<=0) { Remove(shot.target); Coins+=shot.target.boss?25:8; Refresh(); }
+                    if(shot.target.hp<=0) { Remove(shot.target); Coins+=shot.target.boss?20:4; Refresh(); }
                 }
                 continue;
             }
@@ -278,7 +280,7 @@ public sealed class DungeonDefenseBattle : MonoBehaviour
         shot.root.localScale=Vector3.one*(projectile?unit:unit*(.65f+progress*.6f));
         for(int i=0;i<3;i++)
         {
-            var part=CatAttackVisualStyle.Sample(i,progress,ice,magic,fire,arrow,hammer);
+            var part=CatAttackVisualStyle.Sample(i,progress,ice,magic,fire,arrow,hammer,shot.id);
             shot.parts[i].rectTransform.localPosition=part.Position;
             shot.parts[i].rectTransform.localRotation=part.Rotation;
             shot.parts[i].rectTransform.localScale=part.Scale;
@@ -324,6 +326,6 @@ public sealed class DungeonDefenseBattle : MonoBehaviour
     }
 
     private void Remove(Enemy enemy) { enemy.alive=false; enemy.rect.gameObject.SetActive(false); }
-    private void Refresh() => hud?.Invoke($"1-{stage}  ·  기지 {Mathf.Max(0,lives)}/20  ·  소환 {Coins}  ·  웨이브 {wave}/{DungeonStageRules.WaveCount}");
+    private void Refresh() => hud?.Invoke($"1-{stage}  ·  기지 {Mathf.Max(0,lives)}/{DungeonStageRules.BaseLives}  ·  소환 {Coins}  ·  웨이브 {wave}/{DungeonStageRules.WaveCount}");
     private void Finish(bool won) { finished=true; running=false; Refresh(); ended?.Invoke(won); }
 }

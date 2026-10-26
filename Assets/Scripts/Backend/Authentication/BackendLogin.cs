@@ -4,6 +4,16 @@ using BackEnd;
 
 public class BackendLogin
 {
+    public async System.Threading.Tasks.Task<BackendReturnObject> LoginWithSavedTokenAsync(System.Threading.CancellationToken cancellationToken)
+    {
+        var completion = new System.Threading.Tasks.TaskCompletionSource<BackendReturnObject>(System.Threading.Tasks.TaskCreationOptions.RunContinuationsAsynchronously);
+        using var registration = cancellationToken.Register(() => completion.TrySetCanceled());
+        cancellationToken.ThrowIfCancellationRequested();
+        // 인증 정보의 저장과 갱신은 SDK가 담당합니다. 비밀번호나 토큰을 별도로 저장하지 않습니다.
+        Backend.BMember.LoginWithTheBackendToken(result => completion.TrySetResult(result));
+        return await completion.Task;
+    }
+
     private static BackendLogin _instance = null;
 
     public static BackendLogin Instance
