@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using UnityEngine;
 
@@ -28,6 +28,20 @@ public partial class FieldCombatController : MonoBehaviour
     private double defense;
     public bool Blocked;
     public bool RaidMode;
+    public IList<FieldCombatController> RaidAllies { get; set; }
+    private double AllyAttackMultiplier
+    {
+        get
+        {
+            if (!RaidMode || RaidAllies == null) return 1;
+            foreach (var ally in RaidAllies)
+                if (ally != null && ally != this && ally.isActiveAndEnabled && !ally.Blocked &&
+                    ally.data.loadout.characterId == "cat_dancer" && (ally.PlayerHealth == null || !ally.PlayerHealth.Dead) &&
+                    (ally.transform.position - transform.position).sqrMagnitude <= CharacterCombatRules.AuraRadius * CharacterCombatRules.AuraRadius)
+                    return CharacterCombatRules.AuraMultiplier;
+            return 1;
+        }
+    }
     public FieldEnemyPool Pool { get; set; }
     public FieldNavigation Navigation
     {
@@ -98,6 +112,7 @@ public partial class FieldCombatController : MonoBehaviour
             LockedTarget = null;
         float delta = Mathf.Min(Time.deltaTime, .1f);
         ResolveStats();
+        enemyCellsFrame = -1;
         TickCombatSkills(delta);
         relicEffects.Tick(delta);
         killsThisFrame = 0;
@@ -163,17 +178,19 @@ public partial class FieldCombatController : MonoBehaviour
                     RespawnFieldEnemy(enemy);
                 continue;
             }
-            if (!RaidMode) enemy.ApplySurvivalGrowth(MonsterGrowthMultiplier);
+
             Vector3 toward = player.position - enemy.transform.position;
             toward.y = 0;
             float distance = toward.magnitude;
-            if (!RaidMode && distance > .9f)
+            float movementDelta = RaidMode ? delta : enemy.SimulationDelta(delta, distance > Mathf.Max(14f, Range + 3f));
+            if (!RaidMode && movementDelta > 0) enemy.ApplySurvivalGrowth(MonsterGrowthMultiplier);
+            if (!RaidMode && distance > .9f && movementDelta > 0)
             {
                 Vector3 start = enemy.transform.position;
                 Vector3 goal = enemy.NextWaypoint(Navigation, player.position);
                 Vector3 direction = goal - start;
                 direction.y = 0;
-                Vector3 step = direction.normalized * Mathf.Min(enemy.MoveSpeed * enemy.MovementMultiplier * delta, Mathf.Min(direction.magnitude, distance - .9f));
+                Vector3 step = direction.normalized * Mathf.Min(enemy.MoveSpeed * enemy.MovementMultiplier * movementDelta, Mathf.Min(direction.magnitude, distance - .9f));
                 enemy.transform.position = Navigation == null ? start + step : Navigation.Move(start, step);
             }
             if (!RaidMode) enemy.StepVisual(delta);
@@ -191,6 +208,7 @@ public partial class FieldCombatController : MonoBehaviour
                 closest = enemy;
             }
         }
+        enemyCellsFrame = -1; // 이동/재소환 이후 위치로 공격용 구역을 갱신합니다.
         if (touching && contactCooldown <= 0)
         {
             if (RaidMode && contactAttacker != null && contactAttacker.HasRaidAnimation)
@@ -248,24 +266,27 @@ public partial class FieldCombatController : MonoBehaviour
         TriggerRelics(EffectTrigger.OnAttack, value => attackBonus += value);
         if (UsesSkillArrows)
         {
-            LaunchSkillArrows(closest, attack + attackBonus);
+            LaunchSkillArrows(closest, (attack + attackBonus) * AllyAttackMultiplier);
             return;
         }
-        attackBehavior.SelectTargets(player.position, closest, enemies, Range, attackTargets);
+        NearbyEnemies(player.position, Range + 2f, basicCandidates);
+        attackBehavior.SelectTargets(player.position, closest, basicCandidates, Range, attackTargets);
         ExpandMaceTargets(closest);
         if (Navigation != null)
             attackTargets.RemoveAll(target => !Navigation.Clear(player.position, target.transform.position));
         if (attackBehavior is TrioAttack trio)
             trio.LimitTargets(attackTargets);
         double minDamage = double.PositiveInfinity, maxDamage = 0, maxBonus = 0;
+        if (attackBehavior is BreathAreaAttack && attackTargets.Count > 0)
+            AttackPerformed?.Invoke(player.position, closest.transform.position);
         foreach (var target in attackTargets)
         {
             if (!target.Alive) continue;
-            AttackPerformed?.Invoke(player.position, target.transform.position);
+            if (!(attackBehavior is BreathAreaAttack)) AttackPerformed?.Invoke(player.position, target.transform.position);
             double hitBonus = 0;
             TriggerRelics(EffectTrigger.OnHit, value => hitBonus += value);
             double bonus = attackBonus + hitBonus;
-            double damage = attack + bonus;
+            double damage = (attack + bonus) * AllyAttackMultiplier;
             maxBonus = Math.Max(maxBonus, bonus);
             DealSkillDamage(target, damage, false, true);
             minDamage = Math.Min(minDamage, target.LastHitDamage);

@@ -1,4 +1,4 @@
-using UnityEngine;
+﻿using UnityEngine;
 
 public class FieldEnemy : MonoBehaviour
 {
@@ -14,6 +14,9 @@ public class FieldEnemy : MonoBehaviour
     private Color color;
     private float flashRemaining;
     private float slowRemaining;
+    private float armorBreakRemaining;
+    public double EffectiveDefense => Defense * (armorBreakRemaining > 0 ? CharacterCombatRules.ArmorMultiplier : 1f);
+    public void ApplyArmorBreak() { if (Alive) armorBreakRemaining = CharacterCombatRules.ArmorBreakDuration; }
     private double baseMonsterHealth;
     private double baseMonsterDamage;
     public double StatusDamageMultiplier => raidArtwork != null ? .4 : 1;
@@ -42,15 +45,24 @@ public class FieldEnemy : MonoBehaviour
             foreach (var sprite in set) if (sprite != null) Destroy(sprite);
         sharedFrames.Clear();
     }
+    private float simulationElapsed, nextSimulationTime;
+    public float SimulationDelta(float delta, bool distant)
+    {
+        simulationElapsed += delta;
+        if (distant && Time.time < nextSimulationTime) return 0;
+        float elapsed = simulationElapsed;
+        simulationElapsed = 0;
+        nextSimulationTime = Time.time + .10f + UnityEngine.Random.Range(0f, .035f);
+        return elapsed;
+    }
     private float nextPathTime;
     private Vector3 pathGoal;
     public Vector3 NextWaypoint(FieldNavigation navigation, Vector3 target)
     {
         if (navigation == null) return target;
-        bool reached = (pathGoal - transform.position).sqrMagnitude < .16f;
-        if (Time.time >= nextPathTime || reached)
+        if (Time.time >= nextPathTime && navigation.TryEnemyWaypoint(transform.position, target, out var next))
         {
-            pathGoal = navigation.Waypoint(transform.position, target);
+            pathGoal = next;
             nextPathTime = Time.time + .25f + UnityEngine.Random.Range(0f, .1f);
         }
         return pathGoal;
@@ -114,7 +126,7 @@ public class FieldEnemy : MonoBehaviour
             billboard.CenterHeight = 0;
         previousPosition = transform.position;
     }
-    public float MovementMultiplier => slowRemaining > 0 ? .6f : 1f;
+    public float MovementMultiplier => slowRemaining > 0 ? CharacterCombatRules.SlowMultiplier : 1f;
 
     // 메인 필드 전용. 현재 체력 비율을 유지해 성장 시 완전히 회복되지 않게 합니다.
     public void ApplySurvivalGrowth(float multiplier)
@@ -164,7 +176,7 @@ public class FieldEnemy : MonoBehaviour
     public void ApplyIceSlow()
     {
         if (Alive)
-            slowRemaining = 2f;
+            slowRemaining = CharacterCombatRules.SlowDuration;
     }
 
     public void Initialize(SpriteRenderer art, Transform bar, double hp)
@@ -179,7 +191,13 @@ public class FieldEnemy : MonoBehaviour
     {
         flashRemaining = Mathf.Max(0, flashRemaining - delta);
         slowRemaining = Mathf.Max(0, slowRemaining - delta);
+        armorBreakRemaining = Mathf.Max(0, armorBreakRemaining - delta);
         animationTime += delta;
+        if (raidArtwork == null && !artwork.isVisible)
+        {
+            previousPosition = transform.position;
+            return;
+        }
         Vector3 moved = transform.position - previousPosition;
         previousPosition = transform.position;
         if (billboard != null && billboard.ViewCamera != null)
@@ -192,14 +210,14 @@ public class FieldEnemy : MonoBehaviour
             artwork.sprite = raidArtwork;
         else if (frames[0] != null)
             artwork.sprite = frames[flashRemaining > 0 ? 4 + Mathf.Min(3, (int)((.15f - flashRemaining) / .15f * 4)) : (int)(animationTime * 6) % 4];
-        artwork.color = flashRemaining > 0 ? (raidArtwork != null ? new Color(1, .55f, .55f) : Color.white) : slowRemaining > 0 ? Color.Lerp(color, new Color(.35f, .8f, 1), .65f) : color;
+        artwork.color = flashRemaining > 0 ? (raidArtwork != null ? new Color(1, .55f, .55f) : Color.white) : slowRemaining > 0 ? Color.Lerp(color, new Color(.35f, .8f, 1), .65f) : armorBreakRemaining > 0 ? Color.Lerp(color, new Color(.85f, .55f, 1), .45f) : color;
         if (raidVisual != null) raidVisual.Step(delta, moved);
     }
     public bool Hit(double damage, bool ignoreDefense = false)
     {
         if (!Alive)
             return false;
-        LastHitDamage = ignoreDefense ? System.Math.Max(0, damage) : System.Math.Max(1, damage - Defense);
+        LastHitDamage = ignoreDefense ? System.Math.Max(0, damage) : CharacterCombatRules.DamageAfterDefense(damage, Defense, armorBreakRemaining > 0);
         bool killed = Health.Damage(LastHitDamage);
         HealthBarTween.Set(healthBar, (float)(Health.Current / Health.Maximum));
         flashRemaining = .15f;
@@ -213,10 +231,13 @@ public class FieldEnemy : MonoBehaviour
     {
         transform.position = position;
         nextPathTime = 0;
+        simulationElapsed = 0;
+        nextSimulationTime = 0;
         pathGoal = position;
         Health.Reset();
         flashRemaining = 0;
         slowRemaining = 0;
+        armorBreakRemaining = 0;
         animationTime = 0;
         previousPosition = position;
         artwork.color = color;

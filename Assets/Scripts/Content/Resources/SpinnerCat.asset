@@ -25,9 +25,9 @@ MonoBehaviour:
       maxLevel: 100
       baseGoldCost: 20
       goldCostPerLevel: 10
-    description: "주변 모든 적을 한 번에 공격합니다."
+    description: "좁은 주변 반경 1.4 안의 적들을 회전 공격합니다."
     icon: {fileID: 0}
-    attackRange: 2.2
+    attackRange: 1.4
     id: cat_spinner
     displayName: "회전 고양이"
     rarity: 0

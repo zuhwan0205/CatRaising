@@ -25,20 +25,20 @@ MonoBehaviour:
       maxLevel: 100
       baseGoldCost: 80
       goldCostPerLevel: 40
-    description: "공격 방향으로 길이 5, 전체 폭 2의 불을 뿜어 적들을 공격합니다."
+    description: "전방 부채꼴 범위로 불을 뿜어 불길에 닿는 모든 적에게 피해를 줍니다."
     icon: {fileID: 0}
-    attackRange: 5
+    attackRange: 4
     id: cat_lion
     displayName: "용 고양이"
     rarity: 2
-    attackId: forward_area
+    attackId: breath_area
     baseStats:
       attack: 3
-      defense: 4
+      defense: 3
       attackSpeed: 2
-      maxHealth: 230
+      maxHealth: 200
     statsPerLevel:
       attack: 1.5
-      defense: 0.3
+      defense: 0.25
       attackSpeed: 0
-      maxHealth: 13
+      maxHealth: 10

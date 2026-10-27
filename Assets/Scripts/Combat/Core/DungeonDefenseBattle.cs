@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
@@ -9,7 +9,7 @@ public sealed class DungeonDefenseBattle : MonoBehaviour
     private sealed class Enemy
     {
         public RectTransform rect; public RawImage art; public int segment, kind;
-        public float distance; public double hp; public bool alive, boss;
+        public float distance, slowRemaining, armorBreakRemaining; public double hp; public bool alive, boss;
     }
     private sealed class Tower
     {
@@ -162,6 +162,7 @@ public sealed class DungeonDefenseBattle : MonoBehaviour
             {
                 var enemy=enemies[spawned]; enemy.kind=DungeonStageRules.Kind(stage,wave,spawned);
                 enemy.boss=DungeonStageRules.IsBoss(stage,wave,spawned);
+                enemy.slowRemaining=enemy.armorBreakRemaining=0;
                 enemy.hp=DungeonStageRules.Health(stage,wave,spawned); enemy.segment=0; enemy.distance=0; enemy.alive=true;
                 enemy.art.texture=textures[enemy.kind]; SizeEnemy(enemy);
                 enemy.rect.anchoredPosition=Point(0); enemy.rect.gameObject.SetActive(true);
@@ -174,6 +175,10 @@ public sealed class DungeonDefenseBattle : MonoBehaviour
             if(!enemy.alive) continue;
             living++;
             float speed=(enemy.kind==1?62:enemy.kind==3?34:45)*Mathf.Max(.6f,map.rect.width/700f);
+            enemy.slowRemaining=Mathf.Max(0,enemy.slowRemaining-dt);
+            enemy.armorBreakRemaining=Mathf.Max(0,enemy.armorBreakRemaining-dt);
+            if(enemy.slowRemaining>0) speed*=CharacterCombatRules.SlowMultiplier;
+            enemy.art.color=enemy.slowRemaining>0 ? new Color(.55f,.85f,1) : enemy.armorBreakRemaining>0 ? new Color(.85f,.65f,1) : Color.white;
             enemy.distance+=speed*dt;
             while(enemy.segment<route.Length-1)
             {
@@ -202,13 +207,13 @@ public sealed class DungeonDefenseBattle : MonoBehaviour
             Vector2 position=Vector2.Scale(slots[i].anchorMin,map.rect.size);
             Enemy target=null; float nearest=range*range;
             foreach(var enemy in enemies)
-                if(enemy.alive && (enemy.rect.anchoredPosition-position).sqrMagnitude<nearest)
-                { target=enemy; nearest=(enemy.rect.anchoredPosition-position).sqrMagnitude; }
+                if(enemy.alive && (TilePoint(enemy.rect.anchoredPosition)-TilePoint(position)).sqrMagnitude<nearest)
+                { target=enemy; nearest=(TilePoint(enemy.rect.anchoredPosition)-TilePoint(position)).sqrMagnitude; }
             if(target==null) continue;
-            CombatStats(tower.choice, out double damage, out float speed);
+            CombatStats(tower.choice, out double damage, out float speed, tower);
             tower.cooldown=1/speed; tower.attackTime=.3f;
             tower.image.rectTransform.localScale=new Vector3(target.rect.anchoredPosition.x<position.x?-1:1,1,1);
-            LaunchShot(position, target, team[tower.choice].characterId, damage);
+            LaunchShot(position, target, tower.choice, damage);
         }
         if(running && spawned==total && living==0)
         {
@@ -222,10 +227,10 @@ public sealed class DungeonDefenseBattle : MonoBehaviour
     {
         public RectTransform root; public Image[] parts;
         public Vector2 source; public Enemy target; public string id;
-        public float age; public double damage; public bool active;
+        public float age, range; public int choice; public double damage; public bool active, resolved;
     }
     private readonly List<Shot> shots = new List<Shot>();
-    private void LaunchShot(Vector2 source, Enemy target, string id, double damage)
+    private void LaunchShot(Vector2 source, Enemy target, int choice, double damage)
     {
         Shot shot=null;
         foreach(var candidate in shots) if(!candidate.active) { shot=candidate; break; }
@@ -244,7 +249,9 @@ public sealed class DungeonDefenseBattle : MonoBehaviour
             }
             shots.Add(shot);
         }
-        shot.source=source; shot.target=target; shot.id=id; shot.damage=damage; shot.age=0; shot.active=true;
+        shot.source=source; shot.target=target; shot.choice=choice; shot.id=team[choice].characterId; shot.range=Range(choice); shot.damage=damage; shot.age=0; shot.active=true;
+        shot.resolved=!IsProjectile(shot.id);
+        if(shot.resolved) ResolveHit(shot);
         shot.root.gameObject.SetActive(true);
         RenderShot(shot,0);
     }
@@ -254,14 +261,10 @@ public sealed class DungeonDefenseBattle : MonoBehaviour
         {
             if(!shot.active) continue;
             shot.age+=dt;
-            if(!shot.target.alive || shot.age>=.25f)
+            if((!shot.resolved && !shot.target.alive) || shot.age>=.25f)
             {
                 shot.active=false; shot.root.gameObject.SetActive(false);
-                if(shot.target.alive)
-                {
-                    shot.target.hp-=shot.damage;
-                    if(shot.target.hp<=0) { Remove(shot.target); Coins+=shot.target.boss?20:4; Refresh(); }
-                }
+                if(!shot.resolved && shot.target.alive) ResolveHit(shot);
                 continue;
             }
             RenderShot(shot,shot.age/.25f);
@@ -271,13 +274,31 @@ public sealed class DungeonDefenseBattle : MonoBehaviour
     {
         bool arrow=shot.id=="cat_ninja", ice=shot.id=="cat_shadow", magic=shot.id=="cat_moon" || ice;
         bool fire=shot.id=="cat_lion", hammer=shot.id=="cat_tiger";
-        bool projectile=arrow || magic || fire;
+        bool projectile=IsProjectile(shot.id);
         Vector2 target=shot.target.rect.anchoredPosition + Vector2.up * (shot.target.rect.rect.height * .18f);
         Vector2 direction=target-shot.source;
         shot.root.anchoredPosition=projectile ? Vector2.Lerp(shot.source,target,progress) : target;
         shot.root.localRotation=arrow ? Quaternion.Euler(0,0,Mathf.Atan2(direction.y,direction.x)*Mathf.Rad2Deg) : Quaternion.identity;
         float unit=map.rect.width/DefenseTileBoard.Width;
         shot.root.localScale=Vector3.one*(projectile?unit:unit*(.65f+progress*.6f));
+        if(fire)
+        {
+            shot.root.anchoredPosition=shot.source;
+            shot.root.localRotation=Quaternion.identity;
+            shot.root.localScale=Vector3.one;
+            Vector2 aim=(TilePoint(target)-TilePoint(shot.source)).normalized;
+            for(int i=0;i<3;i++)
+            {
+                var ray=(Vector2)(Quaternion.Euler(0,0,(i-1)*22)*aim)*shot.range;
+                var screen=Vector2.Scale(ray,new Vector2(map.rect.width/DefenseTileBoard.Width,map.rect.height/DefenseTileBoard.Height));
+                var rect=shot.parts[i].rectTransform;
+                rect.localPosition=screen*.5f;
+                rect.localRotation=Quaternion.Euler(0,0,Mathf.Atan2(screen.y,screen.x)*Mathf.Rad2Deg);
+                rect.localScale=new Vector3(screen.magnitude,unit*(.14f+progress*.14f),1);
+                shot.parts[i].color=new Color(1,.35f+i*.18f,.08f,(1-progress)*.8f);
+            }
+            return;
+        }
         for(int i=0;i<3;i++)
         {
             var part=CatAttackVisualStyle.Sample(i,progress,ice,magic,fire,arrow,hammer,shot.id);
@@ -288,7 +309,40 @@ public sealed class DungeonDefenseBattle : MonoBehaviour
         }
     }
 
-    private float Range(int choice) => (145+Mathf.Clamp(definitions[choice].attackRange,1,7)*13)*map.rect.width/700;
+    private static bool IsProjectile(string id) => id == "cat_ninja" || id == "cat_shadow" || id == "cat_moon";
+    private Vector2 TilePoint(Vector2 point) => new Vector2(point.x / Mathf.Max(1, map.rect.width) * DefenseTileBoard.Width,
+        point.y / Mathf.Max(1, map.rect.height) * DefenseTileBoard.Height);
+    private Vector2 TowerPoint(Tower tower) => Vector2.Scale(slots[tower.slot].anchorMin, new Vector2(DefenseTileBoard.Width, DefenseTileBoard.Height));
+    private float Range(int choice) => definitions[choice].attackRange * CatSkillTree.Range(team[choice]);
+
+    private double AuraMultiplier(Tower recipient)
+    {
+        if(recipient==null) return 1;
+        foreach(var ally in towers)
+            if(ally!=null && ally!=recipient && team[ally.choice].characterId=="cat_dancer" &&
+                (TowerPoint(ally)-TowerPoint(recipient)).sqrMagnitude<=CharacterCombatRules.AuraRadius*CharacterCombatRules.AuraRadius)
+                return CharacterCombatRules.AuraMultiplier;
+        return 1;
+    }
+    private void ResolveHit(Shot shot)
+    {
+        string attackId=definitions[shot.choice].attackId;
+        if(attackId=="claw_melee") { HitEnemy(shot.target,shot); return; }
+        Vector2 origin=TilePoint(shot.source), target=TilePoint(shot.target.rect.anchoredPosition);
+        foreach(var enemy in enemies)
+            if(enemy.alive && CharacterCombatRules.Hits(attackId,origin,target,TilePoint(enemy.rect.anchoredPosition),shot.range))
+                HitEnemy(enemy,shot);
+    }
+    private void HitEnemy(Enemy enemy, Shot shot)
+    {
+        if(!enemy.alive) return;
+        double defense=(enemy.kind==3?2:0)+(enemy.boss?2:0);
+        enemy.hp-=CharacterCombatRules.DamageAfterDefense(shot.damage,defense,enemy.armorBreakRemaining>0);
+        if(enemy.hp<=0) { Remove(enemy); Coins+=enemy.boss?20:4; Refresh(); return; }
+        if(shot.id=="cat_shadow") enemy.slowRemaining=CharacterCombatRules.SlowDuration;
+        if(shot.id=="cat_moon") enemy.armorBreakRemaining=CharacterCombatRules.ArmorBreakDuration;
+    }
+
     private void ShowRange(int slot, bool toggle = true)
     {
         if(rangeCircle==null)
@@ -302,16 +356,16 @@ public sealed class DungeonDefenseBattle : MonoBehaviour
         if(toggle && rangeSlot==slot && rangeCircle.gameObject.activeSelf) { rangeCircle.gameObject.SetActive(false); rangeSlot=-1; return; }
         rangeSlot=slot; rangeCircle.gameObject.SetActive(true);
         rangeCircle.anchoredPosition=Vector2.Scale(slots[slot].anchorMin,map.rect.size);
-        rangeCircle.sizeDelta=Vector2.one*Range(towers[slot].choice)*2;
+        rangeCircle.sizeDelta=new Vector2(map.rect.width/DefenseTileBoard.Width,map.rect.height/DefenseTileBoard.Height)*Range(towers[slot].choice)*2;
     }
     // 실제 공격과 정보 팝업이 동일한 계산을 사용합니다.
-    private void CombatStats(int choice, out double attack, out float speed)
+    private void CombatStats(int choice, out double attack, out float speed, Tower tower = null)
     {
         var def = definitions[choice];
         var cat = team[choice];
         int growth = Mathf.Max(0, cat.level - 1);
-        attack = Math.Max(1, (def.baseStats.attack + def.statsPerLevel.attack * growth)
-            * CatProgression.StarMultiplier(cat.ascension) * CatSkillTree.Attack(cat));
+        attack = (def.baseStats.attack + def.statsPerLevel.attack * growth)
+            * CatProgression.StarMultiplier(cat.ascension) * CatSkillTree.Attack(cat) * AuraMultiplier(tower);
         speed = Mathf.Max(.2f, (float)((def.baseStats.attackSpeed + def.statsPerLevel.attackSpeed * growth)
             * CatSkillTree.Speed(cat)));
     }
@@ -321,8 +375,8 @@ public sealed class DungeonDefenseBattle : MonoBehaviour
         int choice = towers[slot].choice;
         var def = definitions[choice];
         var cat = team[choice];
-        CombatStats(choice, out double attack, out float speed);
-        return $"{def.displayName}\nLv.{cat.level} · {cat.ascension}성\n\n공격력  {attack:0.##}\n공격 속도  초당 {speed:0.##}회\n사거리  {Range(choice)/(map.rect.width/DefenseTileBoard.Width):0.##} 타일";
+        CombatStats(choice, out double attack, out float speed, towers[slot]);
+        return $"{def.displayName}\nLv.{cat.level} · {cat.ascension}성\n\n공격력  {attack:0.##}\n공격 속도  초당 {speed:0.##}회\n사거리  {Range(choice):0.##} 타일\n{def.description}";
     }
 
     private void Remove(Enemy enemy) { enemy.alive=false; enemy.rect.gameObject.SetActive(false); }

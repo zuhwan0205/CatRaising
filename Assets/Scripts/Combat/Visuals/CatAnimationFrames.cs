@@ -1,10 +1,34 @@
-using UnityEngine;
+﻿using UnityEngine;
 using System.Collections.Generic;
 
 // 생성한 프레임만 소유합니다. 원본 Resources 텍스처는 파괴하지 않습니다.
 public static class CatAnimationFrames
 {
     private static readonly Dictionary<string, Sprite[]> cache = new Dictionary<string, Sprite[]>();
+    public static System.Collections.IEnumerator Prepare(string id)
+    {
+        if (id == null || cache.ContainsKey(id)) yield break;
+        string resource;
+        switch (id)
+        {
+            case "cat_starter": resource = "CatStarterActionPixel"; break;
+            case "cat_spinner": resource = "CatSpinnerActionPixel"; break;
+            case "cat_dancer": resource = "CatDancerActionPixel"; break;
+            case "cat_guardian": resource = "CatGuardianActionPixel"; break;
+            case "cat_knight": resource = "CatMackerelBipedPixel"; break;
+            case "cat_kitten_trio": resource = "CatKittenTrioPixel"; break;
+            case "cat_celestial": resource = "CatLegendaryBootsPixel"; break;
+            case "cat_moon": resource = "CatStarMagePixel"; break;
+            case "cat_lion": resource = "CatDragonPixel"; break;
+            case "cat_ninja": resource = "CatSiameseArcherPixel"; break;
+            case "cat_shadow": resource = "CatSnowflakePixel"; break;
+            case "cat_tiger": resource = "CatHammerKnightPixel"; break;
+            default: yield break;
+        }
+        yield return Resources.LoadAsync<Texture2D>(resource);
+        Get(id);
+    }
+
     public static Sprite[] Get(string id)
     {
         id = id ?? "";

@@ -1,4 +1,4 @@
-using DG.Tweening;
+﻿using DG.Tweening;
 using UnityEngine;
 using UnityEngine.EventSystems;
 using UnityEngine.UI;
@@ -6,6 +6,7 @@ using UnityEngine.UI;
 public partial class CatGameSceneUI
 {
     private RectTransform detailOverlay;
+    private RectTransform cachedDetailOverlay, cachedDetailContent, cachedDetailFrame;
     private string detailTab;
     private OwnedRelic popupRelic;
     private CanvasGroup listInput;
@@ -13,7 +14,11 @@ public partial class CatGameSceneUI
     private RectTransform OpenDetailPopup(string tab)
     {
         bool opening = detailOverlay == null;
-        if (detailOverlay != null) RemoveUI(detailOverlay.gameObject);
+        if (cachedDetailContent != null)
+            foreach (Transform child in cachedDetailContent) RemoveUI(child.gameObject);
+        if (cachedDetailOverlay != null)
+            foreach (Transform child in cachedDetailOverlay)
+                if (child != cachedDetailFrame) RemoveUI(child.gameObject);
         detailTab = tab;
         if (EventSystem.current != null) EventSystem.current.SetSelectedGameObject(null);
         listInput = page.GetComponent<CanvasGroup>();
@@ -21,11 +26,22 @@ public partial class CatGameSceneUI
         listInput.interactable = false;
         listInput.blocksRaycasts = false;
         foreach (var tabButton in tabs) tabButton.interactable = false;
-        detailOverlay = Panel(safeArea, "Detail Popup Overlay", Vector2.zero, Vector2.one, new Color(.05f, .08f, .05f, .72f));
+        if (cachedDetailOverlay == null)
+        {
+            cachedDetailOverlay = Panel(safeArea, "Detail Popup Overlay", Vector2.zero, Vector2.one, new Color(.05f, .08f, .05f, .72f));
+            var paper = PopupContent(cachedDetailOverlay, "Popup Wood Frame", "Popup Content",
+                new Vector2(.035f, .15f), new Vector2(.965f, .90f), new Color(.44f, .28f, .12f), CloseDetailPopup, out cachedDetailFrame);
+            DecorateCatPopup(paper);
+            cachedDetailContent = Rect(paper, "Detail Contents", Vector2.zero, Vector2.one);
+        }
+        detailOverlay = cachedDetailOverlay;
+        detailOverlay.gameObject.SetActive(true);
         detailOverlay.SetAsLastSibling();
-        var content = PopupContent(detailOverlay, "Popup Wood Frame", "Popup Content",
-            new Vector2(.035f, .15f), new Vector2(.965f, .90f), new Color(.44f, .28f, .12f), CloseDetailPopup, out var frame);
-        DecorateCatPopup(content);
+        var content = cachedDetailContent;
+        var frame = cachedDetailFrame;
+        frame.anchorMin = new Vector2(.035f, .15f);
+        frame.anchorMax = new Vector2(.965f, .90f);
+        frame.localScale = Vector3.one;
         if (opening)
         {
             frame.localScale = Vector3.one * .9f;
@@ -74,7 +90,7 @@ public partial class CatGameSceneUI
         if (saving || detailOverlay == null) return;
         var scroll = page.GetComponentInChildren<ScrollRect>();
         float position = scroll != null ? scroll.verticalNormalizedPosition : 1;
-        RemoveUI(detailOverlay.gameObject);
+        detailOverlay.gameObject.SetActive(false);
         detailOverlay = null;
         popupRelic = null;
         listInput.interactable = true;

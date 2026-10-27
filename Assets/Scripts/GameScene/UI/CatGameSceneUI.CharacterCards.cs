@@ -1,4 +1,4 @@
-using UnityEngine;
+﻿using UnityEngine;
 using UnityEngine.UI;
 
 public partial class CatGameSceneUI
@@ -20,7 +20,7 @@ public partial class CatGameSceneUI
         }
     }
 
-    private void CharacterCard(Transform grid, OwnedCharacter owned, CharacterDefinition definition,
+    private RectTransform CharacterCard(Transform grid, OwnedCharacter owned, CharacterDefinition definition,
         UnityEngine.Events.UnityAction onSelected = null, string badge = null, bool interactable = true, bool showEquipped = true)
     {
         Color rarity = CharacterRarityColor(definition == null ? ItemRarity.Common : definition.rarity);
@@ -39,11 +39,18 @@ public partial class CatGameSceneUI
         if (!string.IsNullOrEmpty(badge))
             CollectionBadge(card, badge, new Vector2(.08f, .79f), new Vector2(.92f, .94f),
                 interactable ? new Color(.28f, .64f, .42f) : new Color(.44f, .41f, .48f));
-        else if (showEquipped && data.loadout.characterId == owned.characterId)
+        else if (showEquipped)
+        {
+            int before = card.childCount;
             CollectionBadge(card, "선택", new Vector2(.65f, .81f), new Vector2(.92f, .94f), new Color(.28f, .64f, .42f));
+            var marker = card.GetChild(before);
+            marker.name = "Equipped Marker";
+            marker.gameObject.SetActive(data.loadout.characterId == owned.characterId);
+        }
         var footer = Panel(card, "Growth", new Vector2(.055f, .06f), new Vector2(.945f, .30f), new Color(.06f, .05f, .10f, .92f));
         Label(footer, $"Lv.{owned.level}", 18, new Vector2(.04f, .05f), new Vector2(.49f, .95f)).color = Color.white;
         Label(footer, $"{owned.ascension}성", 17, new Vector2(.50f, .05f), new Vector2(.98f, .95f)).color = new Color(1, .82f, .36f);
+        return card;
     }
     private void CharacterShopCard(Transform grid, CharacterDefinition definition, string purchase, string odds)
     {

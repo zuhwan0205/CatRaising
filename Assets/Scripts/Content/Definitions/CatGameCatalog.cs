@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using UnityEngine;
 
@@ -153,7 +153,7 @@ public class CatGameCatalog : ScriptableObject
         {
             id = StarterCharacterId, displayName = "기본 고양이",
             rarity = ItemRarity.Common, attackId = "claw_melee",
-            attackRange = 1,
+            attackRange = 1.2f,
             baseStats = new StatValues { attack = 1, attackSpeed = 1, maxHealth = 100 },
             statsPerLevel = new StatValues { attack = 1, maxHealth = 5 }
         }

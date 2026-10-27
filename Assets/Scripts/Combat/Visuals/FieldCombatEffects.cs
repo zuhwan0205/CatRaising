@@ -6,6 +6,7 @@ using UnityEngine.Rendering;
 public class FieldCombatEffects : MonoBehaviour
 {
     private Camera view;
+    private FieldCombatController combat;
     private Transform slash;
     private SortingGroup group;
     private SpriteRenderer[] lines;
@@ -25,6 +26,7 @@ public class FieldCombatEffects : MonoBehaviour
     public void Initialize(Camera camera, Sprite sprite, Transform artwork)
     {
         view = camera;
+        combat = GetComponent<FieldCombatController>();
         catArt = artwork;
         characterVisual = artwork.GetComponentInParent<CatCharacterVisual>();
         catSprites = artwork.GetComponentsInChildren<SpriteRenderer>(true);
@@ -99,6 +101,26 @@ public class FieldCombatEffects : MonoBehaviour
             float angle = Mathf.Atan2(Vector3.Dot(direction, view.transform.up), Vector3.Dot(direction, view.transform.right)) * Mathf.Rad2Deg;
             slash.rotation = view.transform.rotation * Quaternion.Euler(0, 0, angle);
             slash.localScale = Vector3.one;
+        }
+        if (fire)
+        {
+            slash.position = arrowOrigin + view.transform.up * .55f;
+            slash.rotation = view.transform.rotation;
+            slash.localScale = Vector3.one;
+            Vector3 aim = target - arrowOrigin;
+            aim.y = 0;
+            if (aim.sqrMagnitude < .001f) aim = Vector3.forward;
+            float range = combat != null ? combat.Range : 4f;
+            for (int i = 0; i < lines.Length; i++)
+            {
+                Vector3 ray = Quaternion.Euler(0, (i - 1) * 22, 0) * aim.normalized * range;
+                Vector2 screen = new Vector2(Vector3.Dot(ray, view.transform.right), Vector3.Dot(ray, view.transform.up));
+                lines[i].transform.localPosition = screen * .5f;
+                lines[i].transform.localRotation = Quaternion.Euler(0, 0, Mathf.Atan2(screen.y, screen.x) * Mathf.Rad2Deg);
+                lines[i].transform.localScale = new Vector3(screen.magnitude, .18f + progress * .18f, 1);
+                lines[i].color = new Color(1, .35f + i * .18f, .08f, (1 - progress) * .8f);
+            }
+            return;
         }
         for (int i = 0; i < lines.Length; i++)
         {

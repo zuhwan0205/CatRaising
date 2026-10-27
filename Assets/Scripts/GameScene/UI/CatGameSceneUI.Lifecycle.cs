@@ -1,4 +1,4 @@
-using UnityEngine;
+﻿using UnityEngine;
 using UnityEngine.EventSystems;
 
 public partial class CatGameSceneUI
@@ -34,7 +34,7 @@ public partial class CatGameSceneUI
         lastDrawLabel = null;
         foreach (Transform child in page)
         {
-            if (child.gameObject == adventureRoot) child.gameObject.SetActive(false);
+            if (child.gameObject == adventureRoot || child == characterListRoot) child.gameObject.SetActive(false);
             else RemoveUI(child.gameObject);
         }
     }

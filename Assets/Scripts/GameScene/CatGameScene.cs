@@ -1,4 +1,4 @@
-using UnityEngine;
+﻿using UnityEngine;
 
 // 씬 진입점: 데이터 기능과 UI를 생성하고 이벤트만 연결합니다.
 public class CatGameScene : MonoBehaviour
@@ -132,6 +132,19 @@ public class CatGameScene : MonoBehaviour
         view.PendingAdSave = session.HasPendingReward;
         SetSessionBlocked(session.GameplayBlocked);
         StartCoroutine(SaveCombatRewardsPeriodically());
+        StartCoroutine(PrepareOwnedCharacterFrames());
+    }
+
+    private System.Collections.IEnumerator PrepareOwnedCharacterFrames()
+    {
+        // 한 프레임에 한 캐릭터씩 준비하며 이미 읽은 프레임은 공유 캐시를 사용합니다.
+        yield return null;
+        for (int i = 0; i < activeData.characters.Count; i++)
+        {
+            var owned = activeData.characters[i];
+            if (owned != null) yield return CatAnimationFrames.Prepare(owned.characterId);
+            yield return null;
+        }
     }
 
     private bool CollectExperience(long amount)
