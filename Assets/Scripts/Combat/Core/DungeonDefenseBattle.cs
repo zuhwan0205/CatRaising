@@ -225,7 +225,8 @@ public sealed class DungeonDefenseBattle : MonoBehaviour
     }
     private sealed class Shot
     {
-        public RectTransform root; public Image[] parts;
+        public RectTransform root; public Image[] parts; public Image spellImage; public Sprite[] spellFrames;
+        public Vector2 impactPosition;
         public Vector2 source; public Enemy target; public string id;
         public float age, range; public int choice; public double damage; public bool active, resolved;
     }
@@ -247,9 +248,18 @@ public sealed class DungeonDefenseBattle : MonoBehaviour
                 shot.parts[i]=part.GetComponent<Image>(); shot.parts[i].raycastTarget=false;
                 shot.parts[i].rectTransform.sizeDelta=Vector2.one;
             }
+            var spellObject=new GameObject("Spell Sprite",typeof(RectTransform),typeof(CanvasRenderer),typeof(Image));
+            spellObject.transform.SetParent(root,false);
+            shot.spellImage=spellObject.GetComponent<Image>();
+            shot.spellImage.raycastTarget=false;
+            shot.spellImage.preserveAspect=true;
             shots.Add(shot);
         }
         shot.source=source; shot.target=target; shot.choice=choice; shot.id=team[choice].characterId; shot.range=Range(choice); shot.damage=damage; shot.age=0; shot.active=true;
+        shot.spellFrames=CatSpellSprites.Get(shot.id);
+        shot.spellImage.gameObject.SetActive(shot.spellFrames!=null);
+        foreach(var part in shot.parts) part.gameObject.SetActive(shot.spellFrames==null);
+        shot.impactPosition=target.rect.anchoredPosition + Vector2.up * (target.rect.rect.height * .18f);
         shot.resolved=!IsProjectile(shot.id);
         if(shot.resolved) ResolveHit(shot);
         shot.root.gameObject.SetActive(true);
@@ -261,17 +271,54 @@ public sealed class DungeonDefenseBattle : MonoBehaviour
         {
             if(!shot.active) continue;
             shot.age+=dt;
-            if((!shot.resolved && !shot.target.alive) || shot.age>=.25f)
+            if(!shot.resolved)
             {
-                shot.active=false; shot.root.gameObject.SetActive(false);
-                if(!shot.resolved && shot.target.alive) ResolveHit(shot);
-                continue;
+                if(!shot.target.alive) { StopShot(shot); continue; }
+                shot.impactPosition=shot.target.rect.anchoredPosition + Vector2.up * (shot.target.rect.rect.height*.18f);
+                if(shot.age>=CatSpellSprites.FlightSeconds)
+                {
+                    ResolveHit(shot);
+                    shot.resolved=true;
+                }
             }
-            RenderShot(shot,shot.age/.25f);
+            float duration=shot.spellFrames==null ? CatSpellSprites.FlightSeconds :
+                shot.id=="cat_lion" ? CatSpellSprites.BreathSeconds : CatSpellSprites.FlightSeconds+CatSpellSprites.ImpactSeconds;
+            if(shot.age>=duration) { StopShot(shot); continue; }
+            RenderShot(shot,Mathf.Clamp01(shot.age/CatSpellSprites.FlightSeconds));
         }
+    }
+    private static void StopShot(Shot shot) { shot.active=false; shot.root.gameObject.SetActive(false); }
+
+    private void RenderSpellShot(Shot shot)
+    {
+        bool fire=shot.id=="cat_lion";
+        bool impact=!fire && shot.age>=CatSpellSprites.FlightSeconds;
+        var sprite=CatSpellSprites.Frame(shot.spellFrames,fire,shot.age,impact);
+        shot.spellImage.sprite=sprite;
+        Vector2 direction=shot.impactPosition-shot.source;
+        float width=map.rect.width/DefenseTileBoard.Width*(impact?CharacterCombatRules.SplashRadius*2:1.2f);
+        if(fire)
+        {
+            Vector2 ray=(TilePoint(shot.impactPosition)-TilePoint(shot.source)).normalized*shot.range;
+            direction=Vector2.Scale(ray,new Vector2(map.rect.width/DefenseTileBoard.Width,map.rect.height/DefenseTileBoard.Height));
+            width=direction.magnitude;
+        }
+        shot.root.localScale=Vector3.one;
+        shot.root.anchoredPosition=fire ? shot.source : impact ? shot.impactPosition :
+            Vector2.Lerp(shot.source,shot.impactPosition,Mathf.Clamp01(shot.age/CatSpellSprites.FlightSeconds));
+        shot.root.localRotation=Quaternion.Euler(0,0,impact?0:Mathf.Atan2(direction.y,direction.x)*Mathf.Rad2Deg);
+        var rect=shot.spellImage.rectTransform;
+        rect.anchorMin=rect.anchorMax=Vector2.one*.5f;
+        rect.pivot=new Vector2(sprite.pivot.x/sprite.rect.width,sprite.pivot.y/sprite.rect.height);
+        rect.anchoredPosition=Vector2.zero;
+        rect.sizeDelta=new Vector2(width,width*sprite.rect.height/sprite.rect.width);
+        float fade=fire ? Mathf.Clamp01((CatSpellSprites.BreathSeconds-shot.age)/.1f) :
+            impact ? Mathf.Clamp01(1-(shot.age-CatSpellSprites.FlightSeconds)/CatSpellSprites.ImpactSeconds) : 1;
+        shot.spellImage.color=new Color(1,1,1,fade);
     }
     private void RenderShot(Shot shot,float progress)
     {
+        if(shot.spellFrames!=null) { RenderSpellShot(shot); return; }
         bool arrow=shot.id=="cat_ninja", ice=shot.id=="cat_shadow", magic=shot.id=="cat_moon" || ice;
         bool fire=shot.id=="cat_lion", hammer=shot.id=="cat_tiger";
         bool projectile=IsProjectile(shot.id);

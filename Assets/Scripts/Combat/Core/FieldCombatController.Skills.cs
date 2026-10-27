@@ -183,6 +183,9 @@ public partial class FieldCombatController
         public double damage;
         public int explosion;
         public LineRenderer visual;
+        public SpriteRenderer spell;
+        public Sprite[] spellFrames;
+        public bool fire;
         public readonly HashSet<FieldEnemy> hit = new HashSet<FieldEnemy>();
         public void Stop() { active = false; if (visual != null) visual.gameObject.SetActive(false); }
     }
@@ -218,6 +221,17 @@ public partial class FieldCombatController
                 arrow = new SkillArrow { visual = SkillLineRenderer("Skill Arrow", new Color(.85f, .95f, 1), .07f) };
                 skillArrows.Add(arrow);
             }
+            arrow.spellFrames = CatSpellSprites.Get(selectedId);
+            arrow.fire = selectedId == "cat_lion";
+            if (arrow.spellFrames != null && arrow.spell == null)
+            {
+                var obj = new GameObject("Skill Spell Sprite");
+                obj.layer = 2;
+                obj.transform.SetParent(arrow.visual.transform, false);
+                arrow.spell = obj.AddComponent<SpriteRenderer>();
+            }
+            arrow.visual.enabled = arrow.spellFrames == null;
+            if (arrow.spell != null) arrow.spell.gameObject.SetActive(arrow.spellFrames != null);
             arrow.active = true;
             arrow.piercing = Skill(CatSkillTree.SteelArrow) > 0;
             arrow.scale = 1 + Skill(CatSkillTree.LargeArrow) * .1f;
@@ -282,7 +296,7 @@ public partial class FieldCombatController
             bool splash = attackBehavior is TargetAreaAttack;
             Vector3 origin = player.position, center = target.transform.position;
             NearbyEnemies(splash ? center : origin, splash ? CharacterCombatRules.SplashRadius : Range, arrowImpactCandidates);
-            AttackPerformed?.Invoke(origin, center);
+            GetComponent<FieldCombatEffects>()?.SpellImpact(origin, center);
             foreach (var nearby in arrowImpactCandidates)
                 if (nearby != null && nearby.Alive && CharacterCombatRules.Hits(splash ? "target_area" : "breath_area",
                     CharacterCombatRules.Flat(origin), CharacterCombatRules.Flat(center), CharacterCombatRules.Flat(nearby.transform.position), Range) &&
@@ -296,6 +310,21 @@ public partial class FieldCombatController
 
     private void DrawArrow(SkillArrow arrow)
     {
+        if (arrow.spellFrames != null && arrow.spell != null)
+        {
+            var effects = GetComponent<FieldCombatEffects>();
+            var camera = effects != null ? effects.EffectCamera : null;
+            if (camera != null)
+            {
+                float angle = Mathf.Atan2(Vector3.Dot(arrow.direction, camera.transform.up), Vector3.Dot(arrow.direction, camera.transform.right)) * Mathf.Rad2Deg;
+                arrow.spell.sprite = CatSpellSprites.Frame(arrow.spellFrames, arrow.fire, Time.time % CatSpellSprites.FlightSeconds, false);
+                arrow.spell.transform.position = arrow.position + camera.transform.up * .55f;
+                arrow.spell.transform.rotation = camera.transform.rotation * Quaternion.Euler(0, 0, angle);
+                arrow.spell.transform.localScale = Vector3.one * arrow.scale * 1.2f;
+                arrow.spell.sortingOrder = 10005 - Mathf.RoundToInt(Vector3.Dot(arrow.position - camera.transform.position, camera.transform.forward) * 100);
+                return;
+            }
+        }
         Vector3 tip = arrow.position + Vector3.up * .45f;
         Vector3 forward = arrow.direction * arrow.scale;
         Vector3 side = new Vector3(forward.z, 0, -forward.x);

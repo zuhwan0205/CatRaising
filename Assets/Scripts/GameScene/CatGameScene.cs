@@ -142,7 +142,11 @@ public class CatGameScene : MonoBehaviour
         for (int i = 0; i < activeData.characters.Count; i++)
         {
             var owned = activeData.characters[i];
-            if (owned != null) yield return CatAnimationFrames.Prepare(owned.characterId);
+            if (owned != null)
+            {
+                yield return CatAnimationFrames.Prepare(owned.characterId);
+                yield return CatSpellSprites.Prepare(owned.characterId);
+            }
             yield return null;
         }
     }

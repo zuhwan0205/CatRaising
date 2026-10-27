@@ -277,12 +277,12 @@ public partial class FieldCombatController : MonoBehaviour
         if (attackBehavior is TrioAttack trio)
             trio.LimitTargets(attackTargets);
         double minDamage = double.PositiveInfinity, maxDamage = 0, maxBonus = 0;
-        if (attackBehavior is BreathAreaAttack && attackTargets.Count > 0)
+        if ((attackBehavior is BreathAreaAttack || attackBehavior is TargetAreaAttack) && attackTargets.Count > 0)
             AttackPerformed?.Invoke(player.position, closest.transform.position);
         foreach (var target in attackTargets)
         {
             if (!target.Alive) continue;
-            if (!(attackBehavior is BreathAreaAttack)) AttackPerformed?.Invoke(player.position, target.transform.position);
+            if (!(attackBehavior is BreathAreaAttack) && !(attackBehavior is TargetAreaAttack)) AttackPerformed?.Invoke(player.position, target.transform.position);
             double hitBonus = 0;
             TriggerRelics(EffectTrigger.OnHit, value => hitBonus += value);
             double bonus = attackBonus + hitBonus;
