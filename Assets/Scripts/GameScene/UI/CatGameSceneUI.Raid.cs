@@ -178,7 +178,7 @@ public partial class CatGameSceneUI
             button.targetGraphic = card.GetComponent<Image>();
             button.onClick.AddListener(() =>
             {
-                if (!saving) OpenTeamCatPicker(raidSlots, slot, slot < 2 ? "전위" : "후위", RaidFormation, compact: true);
+                if (!saving) OpenTeamCatPicker(raidSlots, slot, "", RaidFormation, compact: true);
             });
             if (owned != null)
             {
@@ -234,7 +234,6 @@ public partial class CatGameSceneUI
             ProfileIconLine(icon, new Vector2(.73f, .65f), new Vector2(.9f, .5f), color);
             ProfileIconLine(icon, new Vector2(.73f, .35f), new Vector2(.9f, .5f), color);
         }
-        Label(heading, front ? "전위" : "후위", 24, new Vector2(.16f, 0), new Vector2(.97f, 1)).color = Color.white;
         foreach (var graphic in group.GetComponentsInChildren<Graphic>()) graphic.raycastTarget = false;
         foreach (var graphic in heading.GetComponentsInChildren<Graphic>()) graphic.raycastTarget = false;
     }
@@ -276,7 +275,7 @@ public partial class CatGameSceneUI
             Label(page, "수동 이동 고정 · 4마리 함께 조작\nWASD / 방향키 / 조이스틱 · 공격은 자동", 18,
                 new Vector2(.32f, .13f), new Vector2(.98f, .25f)).color = Color.white;
         }
-        Button(page, $"{EncounterTab} 포기", new Vector2(.3f, .01f), new Vector2(.7f, .09f), ExitRaid);
+        BuildEncounterPauseButton(page);
         ShowStatus(dungeonMode ? "몰려오는 몬스터를 막고 3개 웨이브를 모두 처치하세요." : "직접 이동해 위험 범위를 피하세요. 공격은 자동으로 진행됩니다.");
     }
 

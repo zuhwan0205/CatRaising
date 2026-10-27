@@ -1,4 +1,4 @@
-using UnityEngine;
+﻿using UnityEngine;
 #if ENABLE_INPUT_SYSTEM
 using UnityEngine.InputSystem;
 #endif
@@ -36,6 +36,7 @@ public class CatMovementController : MonoBehaviour
 
     private void Update()
     {
+        if (Time.timeScale == 0) return;
         Vector2 direction = Automatic ? AutoDirection() : ManualDirection();
         Vector2 next = new Vector2(transform.position.x, transform.position.z) + Vector2.ClampMagnitude(direction, 1) * EffectiveSpeed * Mathf.Min(Time.deltaTime, .1f);
         next.x = Mathf.Clamp(next.x, -FieldHalfSize, FieldHalfSize);

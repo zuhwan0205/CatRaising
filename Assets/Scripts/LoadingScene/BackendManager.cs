@@ -31,9 +31,11 @@ public class BackendManager : MonoBehaviour
         loginUI.ShowAutomaticLogin();
         try
         {
-            if (!initialized)
+            if (!initialized || !Backend.IsInitialized)
             {
-                initialized = Backend.IsInitialized || Backend.Initialize().IsSuccess();
+                // 에디터 재실행/로딩씬 재진입 시 남은 상태만으로 초기화를 건너뛰지 않습니다.
+                var initialization = Backend.Initialize();
+                initialized = initialization.IsSuccess() && Backend.IsInitialized;
                 if (!initialized)
                 {
                     loginUI.ShowInitialization(false);
@@ -68,6 +70,7 @@ public class BackendManager : MonoBehaviour
             // 인증 응답이나 예외에 포함될 수 있는 토큰은 로그에 남기지 않습니다.
             if (this != null)
             {
+                initialized = initialized && Backend.IsInitialized;
                 if (initialized) loginUI.ShowLoginOptions("자동 로그인 처리에 실패했습니다. 잠시 후 재시도해주세요.", true);
                 else loginUI.ShowInitialization(false);
             }
@@ -101,8 +104,13 @@ public class BackendManager : MonoBehaviour
 
     public async Task SubmitAsync(bool signUp, string id, string password)
     {
-        if (!initialized || loginReady || submitting)
+        if (loginReady || submitting) return;
+        if (!initialized || !Backend.IsInitialized)
+        {
+            initialized = false;
+            InitializeBackend();
             return;
+        }
         if (string.IsNullOrWhiteSpace(id) || string.IsNullOrWhiteSpace(password))
         {
             loginUI.ShowMessage("아이디와 비밀번호를 입력해주세요.");
@@ -140,8 +148,13 @@ public class BackendManager : MonoBehaviour
 
     public async Task SubmitGoogleAsync()
     {
-        if (!initialized || loginReady || submitting)
+        if (loginReady || submitting) return;
+        if (!initialized || !Backend.IsInitialized)
+        {
+            initialized = false;
+            InitializeBackend();
             return;
+        }
         submitting = true;
         try
         {

@@ -9,6 +9,8 @@ public sealed class CatEncounterScene : MonoBehaviour
     private CatFieldController field;
     private bool finished;
     private bool returning;
+    private bool menuPaused;
+    private float resumeTimeScale;
 
     private void Start()
     {
@@ -64,14 +66,16 @@ public sealed class CatEncounterScene : MonoBehaviour
         viewReady = true;
         view.DungeonDefenseFinished += OnFinished;
         view.EncounterExitRequested += ReturnToMain;
-        runtime.Session.BusyChanged += view.SetBusy;
-        runtime.Session.StatusChanged += view.ShowStatus;
+        view.EncounterPauseChanged += SetMenuPaused;
+        view.BindSessionEvents(runtime.Session);
     }
 
     private async void OnFinished(bool won)
     {
         if (finished || returning) return;
         finished = true;
+        RestorePause();
+        view.CloseEncounterPause();
         try
         {
             bool rewarded = await runtime.FinishEncounterAsync(won);
@@ -99,6 +103,30 @@ public sealed class CatEncounterScene : MonoBehaviour
         finally { if (this != null) returning = false; }
     }
 
+    private void SetMenuPaused(bool value)
+    {
+        if (returning || finished || menuPaused == value) return;
+        if (value)
+        {
+            resumeTimeScale = Time.timeScale;
+            menuPaused = true;
+            Time.timeScale = 0;
+            if (field != null) field.SetStick(Vector2.zero);
+        }
+        else RestorePause();
+    }
+    private void RestorePause()
+    {
+        if (!menuPaused) return;
+        menuPaused = false;
+        Time.timeScale = resumeTimeScale;
+    }
+    private void OnDisable()
+    {
+        RestorePause();
+        if (view != null) view.CloseEncounterPause();
+    }
+
     private void OnDestroy()
     {
         if (field != null)
@@ -109,10 +137,6 @@ public sealed class CatEncounterScene : MonoBehaviour
         if (ReferenceEquals(view, null)) return;
         view.DungeonDefenseFinished -= OnFinished;
         view.EncounterExitRequested -= ReturnToMain;
-        if (runtime != null && runtime.Session != null)
-        {
-            runtime.Session.BusyChanged -= view.SetBusy;
-            runtime.Session.StatusChanged -= view.ShowStatus;
-        }
+        view.EncounterPauseChanged -= SetMenuPaused;
     }
 }

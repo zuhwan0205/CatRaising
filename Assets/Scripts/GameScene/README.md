@@ -1,3 +1,29 @@
+﻿## 공통 상태 알림 (2026-10-28)
+
+버튼 클릭은 기존 UI 이벤트와 `CatGameSession`의 async 요청으로 처리합니다. 저장·뽑기·입장 명령을 이벤트 버스로 발행하지 않습니다.
+
+`CatGameSession.Events`는 로그인 세션별 `SessionEventBus`입니다. static 전역 버스가 아니며 계정 교체·로그아웃·런타임 종료 때 폐기합니다. 메인 스레드에서만 사용합니다.
+
+- `WalletChanged`: 실제 잔액 변경. 저장 실패로 롤백된 지출은 완료로 알리지 않습니다.
+- `SelectedCharacterChanged`: 저장 성공 후 선택 변경.
+- `CharacterProgressChanged`: 경험치·레벨·성급·조각·스킬의 실제 변경. 강화 실패 롤백은 제외합니다.
+- `SessionBusyChanged`, `GameplayBlockChanged`: 기존 저장 잠금과 전투 정지 의미를 그대로 유지합니다. 전투 보상 자동 저장은 UI를 잠그지 않습니다.
+- `SessionMessage`, `SessionSaveFinished`: 안내 및 저장 결과/보상 보류 상태.
+
+UI의 `BindSessionEvents(session)`이 알림을 구독합니다. 비활성화 때 IDisposable 구독을 해제하고 재활성화 때 현재 상태로 동기화합니다. 재화/카드 갱신은 LateUpdate에서 프레임당 한 번으로 모읍니다. 팝업·탭·뽑기 애니메이션·선택 후 화면 이동은 직접 요청 결과를 받아 처리합니다.
+
+새 구독 예시:
+```csharp
+IDisposable subscription = session.Events.Subscribe<WalletChanged>(change =>
+{
+    // change.Gold / change.Gems 표시 갱신. 여기에서 추가 저장 요청을 실행하지 않습니다.
+});
+// OnDisable 등 수명 종료 지점
+subscription.Dispose();
+```
+
+발행 중 구독 변경을 안전하게 처리하며 UI 구독자 예외가 저장 성공을 실패로 바꾸지 않도록 격리합니다. 구독자 예외는 Unity 로그로 기록합니다. `EncounterSceneChecks`는 씬 왕복 후 구독 수와 성공/롤백/보상 보류 알림을 검사합니다.
+
 # Figma 기반 GameScene
 
 ## 현재 씬 구조 (2026-10-26)

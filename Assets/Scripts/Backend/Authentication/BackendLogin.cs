@@ -24,6 +24,8 @@ public class BackendLogin
         var completion = new System.Threading.Tasks.TaskCompletionSource<BackendReturnObject>(System.Threading.Tasks.TaskCreationOptions.RunContinuationsAsynchronously);
         using var registration = cancellationToken.Register(() => completion.TrySetCanceled());
         cancellationToken.ThrowIfCancellationRequested();
+        if (!Backend.IsInitialized)
+            throw new System.InvalidOperationException("뒤끝 초기화가 완료되지 않았습니다. 초기화를 다시 시도해주세요.");
         // 인증 정보의 저장과 갱신은 SDK가 담당합니다. 비밀번호나 토큰을 별도로 저장하지 않습니다.
         Backend.BMember.LoginWithTheBackendToken(result => completion.TrySetResult(result));
         return await completion.Task;

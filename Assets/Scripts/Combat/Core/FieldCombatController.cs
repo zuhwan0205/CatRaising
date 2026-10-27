@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using UnityEngine;
 
@@ -105,7 +105,7 @@ public partial class FieldCombatController : MonoBehaviour
 
     private void Update()
     {
-        if (Blocked || player == null)
+        if (Blocked || player == null || Time.timeScale == 0)
             return;
         // 재등장 처리 전에 기존 대상의 생존 여부를 확인합니다.
         if (LockedTarget != null && !LockedTarget.Alive)

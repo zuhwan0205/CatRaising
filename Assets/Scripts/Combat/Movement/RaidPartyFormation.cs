@@ -1,4 +1,4 @@
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using UnityEngine;
 
 // 네 고양이가 하나의 이동 중심을 공유해 장애물에서 대형이 벌어지지 않게 합니다.
@@ -18,6 +18,7 @@ public sealed class RaidPartyFormation : MonoBehaviour
 
     private void LateUpdate()
     {
+        if (Time.timeScale == 0) return;
         bool running = Field != null && Field.RaidRunning;
         Movement.enabled = running;
         if (!running) { Movement.StickInput = Vector2.zero; return; }

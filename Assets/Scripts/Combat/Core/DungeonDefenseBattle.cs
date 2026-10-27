@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
@@ -152,7 +152,7 @@ public sealed class DungeonDefenseBattle : MonoBehaviour
     }
     private void Update()
     {
-        if(finished || map==null) return;
+        if(finished || map==null || Time.timeScale == 0) return;
         UpdateLayout();
         float dt=Mathf.Min(Time.deltaTime,.05f);
         if(running && spawned<total)

@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using UnityEngine;
 
@@ -131,7 +131,7 @@ public partial class CatFieldController
 
     private void LateUpdate()
     {
-        if (!RaidRunning || paused || !focused) return;
+        if (!RaidRunning || paused || !focused || Time.timeScale == 0) return;
         RaidSeconds = Mathf.Max(0, RaidSeconds - Time.deltaTime);
         RaidBoss.StepVisual(Time.deltaTime);
         var living = livingRaidFighters;

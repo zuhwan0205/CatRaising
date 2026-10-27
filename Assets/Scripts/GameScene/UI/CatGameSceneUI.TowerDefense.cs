@@ -34,7 +34,7 @@ public partial class CatGameSceneUI
         var pads=new List<Vector2>();
         for(int y=0;y<DefenseTileBoard.Height;y++)
             for(int x=0;x<DefenseTileBoard.Width;x++)
-                if(!board.Road.Contains(new Vector2Int(x,y))) pads.Add(DefenseTileBoard.Center(new Vector2Int(x,y)));
+                if(board.CanPlace(new Vector2Int(x,y))) pads.Add(DefenseTileBoard.Center(new Vector2Int(x,y)));
         var engine = root.gameObject.AddComponent<DungeonDefenseBattle>();
         bool choosingPlacement = false;
         var controls = MapDecoration(root, "Defense Controls", Vector2.zero, new Vector2(1,.13f), new Color(.31f,.23f,.17f));
@@ -128,6 +128,7 @@ public partial class CatGameSceneUI
             slotButtons[to].interactable = false;
         };
         var updateBattleHud = BuildDefenseHud(root, engine, stage);
+        BuildEncounterPauseButton(root);
         engine.Initialize(stage, map, route, anchors, team, definitions,
             text => { info.text=text; updateBattleHud(); for(int i=0;i<3;i++) choices[i].interactable=engine.Coins>=DungeonDefenseBattle.Cost(definitions[i].rarity); wave.interactable=engine.CanStartWave; wave.GetComponentInChildren<Text>().text=engine.WaveNumber == 0 ? "전투 시작" : engine.CanStartWave ? "다음 웨이브" : "전투 중"; },
             message => { hint.text=message; instruction.text=message; }, won => { hint.text="결과 저장 중…"; DungeonDefenseFinished?.Invoke(won); });
