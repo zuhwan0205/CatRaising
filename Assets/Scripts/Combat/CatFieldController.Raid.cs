@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using UnityEngine;
 
@@ -73,6 +73,7 @@ public partial class CatFieldController
             var hp = BillboardHealth(catArt);
             var fighter = cat.AddComponent<FieldCombatController>();
             fighter.RaidMode = true;
+            fighter.RaidAllies = raidFighters;
             fighter.Navigation = EncounterNavigation;
             fighter.Initialize(cat.transform, targets, actorData, catalog);
             var mover = cat.AddComponent<CatMovementController>();

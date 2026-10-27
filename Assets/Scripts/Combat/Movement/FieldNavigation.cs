@@ -17,6 +17,20 @@ public sealed class FieldNavigation
     private readonly Vector3[] nodes = new Vector3[Side * Side];
     private readonly List<int>[] links = new List<int>[Side * Side];
     private readonly Dictionary<int, int[]> distances = new Dictionary<int, int[]>();
+    private readonly Queue<int> distanceOrder = new Queue<int>();
+    private readonly Queue<int> searchQueue = new Queue<int>(Side * Side);
+    private int pathFrame = -1, pathsThisFrame;
+
+    // 일반 몬스터의 비싼 우회 탐색을 프레임별로 분산합니다.
+    public bool TryEnemyWaypoint(Vector3 from, Vector3 goal, out Vector3 waypoint)
+    {
+        waypoint = from;
+        if (pathFrame != Time.frameCount) { pathFrame = Time.frameCount; pathsThisFrame = 0; }
+        if (pathsThisFrame >= 8) return false;
+        pathsThisFrame++;
+        waypoint = Waypoint(from, goal);
+        return true;
+    }
 
     public void Add(Vector3 center, float radius, bool blocksRaid = true)
     {
@@ -85,6 +99,9 @@ public sealed class FieldNavigation
     public void Bake()
     {
         distances.Clear();
+        distanceOrder.Clear();
+        searchQueue.Clear();
+        pathFrame = -1;
         for (int z = 0; z < Side; z++)
             for (int x = 0; x < Side; x++)
             {
@@ -117,24 +134,23 @@ public sealed class FieldNavigation
     {
         if (Clear(from, goal))
             return goal;
-        int end = -1;
-        float best = float.MaxValue;
-        for (int i = 0; i < nodes.Length; i++)
-        {
-            float d = (nodes[i] - goal).sqrMagnitude;
-            if (links[i].Count == 0 || d >= best || !Clear(nodes[i], goal))
-                continue;
-            best = d;
-            end = i;
-        }
+        int end = NearestVisibleNode(goal, null);
         if (end < 0)
             return from;
         if (!distances.TryGetValue(end, out var costs))
         {
-            costs = new int[nodes.Length];
+            // 목적지 8개를 유지하고 가장 오래된 배열 하나만 재사용합니다.
+            if (distances.Count >= 8)
+            {
+                int oldest = distanceOrder.Dequeue();
+                costs = distances[oldest];
+                distances.Remove(oldest);
+            }
+            else costs = new int[nodes.Length];
             for (int i = 0; i < costs.Length; i++)
                 costs[i] = -1;
-            var queue = new Queue<int>();
+            var queue = searchQueue;
+            queue.Clear();
             queue.Enqueue(end);
             costs[end] = 0;
             while (queue.Count > 0)
@@ -147,20 +163,10 @@ public sealed class FieldNavigation
                         queue.Enqueue(next);
                     }
             }
-            if (distances.Count >= 8)
-                distances.Clear();
             distances[end] = costs;
+            distanceOrder.Enqueue(end);
         }
-        int anchor = -1;
-        best = float.MaxValue;
-        for (int i = 0; i < nodes.Length; i++)
-        {
-            float d = (nodes[i] - from).sqrMagnitude;
-            if (costs[i] < 0 || d >= best || !Clear(from, nodes[i]))
-                continue;
-            best = d;
-            anchor = i;
-        }
+        int anchor = NearestVisibleNode(from, costs);
         if (anchor < 0)
             return from;
         // 현재 위치에서 볼 수 있는 경로의 가장 먼 지점까지 곧바로 이동합니다.
@@ -179,6 +185,44 @@ public sealed class FieldNavigation
             step = next;
         }
         return nodes[step];
+    }
+
+    private int NearestVisibleNode(Vector3 point, int[] costs)
+    {
+        int cx = Mathf.Clamp(Mathf.RoundToInt(point.x + Half), 0, Side - 1);
+        int cz = Mathf.Clamp(Mathf.RoundToInt(point.z + Half), 0, Side - 1);
+        int bestNode = -1;
+        float best = float.MaxValue;
+        // 가까운 격자부터 찾고, 장애물 때문에 연결할 수 없을 때만 전체를 검사합니다.
+        for (int radius = 0; radius <= 3; radius++)
+        {
+            int minX = Math.Max(0, cx - radius), maxX = Math.Min(Side - 1, cx + radius);
+            int minZ = Math.Max(0, cz - radius), maxZ = Math.Min(Side - 1, cz + radius);
+            for (int z = minZ; z <= maxZ; z++)
+            for (int x = minX; x <= maxX; x++)
+            {
+                if (Math.Max(Math.Abs(x - cx), Math.Abs(z - cz)) != radius) continue;
+                int i = z * Side + x;
+                if (links[i].Count == 0 || (costs != null && costs[i] < 0)) continue;
+                float d = (nodes[i] - point).sqrMagnitude;
+                if (d >= best || !Clear(point, nodes[i])) continue;
+                best = d;
+                bestNode = i;
+            }
+            // 다음 테두리보다 가까우면 전체 탐색과 동일한 최근접 지점입니다.
+            float outside = radius + 1 - Mathf.Max(Mathf.Abs(point.x - nodes[cz * Side + cx].x),
+                Mathf.Abs(point.z - nodes[cz * Side + cx].z));
+            if (bestNode >= 0 && outside > 0 && best <= outside * outside) return bestNode;
+        }
+        for (int i = 0; i < nodes.Length; i++)
+        {
+            if (links[i].Count == 0 || (costs != null && costs[i] < 0)) continue;
+            float d = (nodes[i] - point).sqrMagnitude;
+            if (d >= best || !Clear(point, nodes[i])) continue;
+            best = d;
+            bestNode = i;
+        }
+        return bestNode;
     }
 
     public Vector3 Move(Vector3 from, Vector3 delta)

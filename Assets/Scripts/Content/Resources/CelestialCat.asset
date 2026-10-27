@@ -25,7 +25,7 @@ MonoBehaviour:
       maxLevel: 100
       baseGoldCost: 150
       goldCostPerLevel: 75
-    description: "레이피어로 전방 길이 2, 전체 폭 2 안의 적들을 공격합니다."
+    description: "높은 공격력·공격 속도·체력·방어력으로 전방의 가까운 적들을 베어냅니다."
     icon: {fileID: 0}
     attackRange: 2
     id: cat_celestial
@@ -33,12 +33,12 @@ MonoBehaviour:
     rarity: 3
     attackId: forward_area
     baseStats:
-      attack: 5
-      defense: 5
-      attackSpeed: 2
-      maxHealth: 280
+      attack: 8
+      defense: 6
+      attackSpeed: 2.5
+      maxHealth: 350
     statsPerLevel:
-      attack: 2.0
-      defense: 0.4
+      attack: 2.1
+      defense: 0.45
       attackSpeed: 0
-      maxHealth: 15
+      maxHealth: 18

@@ -275,15 +275,56 @@ public partial class CatGameSceneUI : MonoBehaviour
         return content;
     }
 
+    private RectTransform characterListRoot;
+    private Transform characterListGrid;
+    private Text characterListTitle;
+    private readonly System.Collections.Generic.Dictionary<OwnedCharacter, (RectTransform root, int level, int stars, bool selected)> characterCards =
+        new System.Collections.Generic.Dictionary<OwnedCharacter, (RectTransform, int, int, bool)>();
+
     private void Characters()
     {
-        var grid = Grid("캐릭터  ·  " + data.characters.Count, transparent: true);
+        if (characterListRoot == null)
+        {
+            var originalPage = page;
+            characterListRoot = Rect(page, "Cached Character List", Vector2.zero, Vector2.one);
+            page = characterListRoot;
+            try
+            {
+                characterListGrid = Grid("캐릭터", transparent: true);
+                characterListTitle = characterListRoot.GetComponentInChildren<Text>();
+            }
+            finally { page = originalPage; }
+        }
+        characterListRoot.gameObject.SetActive(true);
+        characterListTitle.text = "캐릭터  ·  " + data.characters.Count;
+        foreach (var removed in characterCards.Keys.Where(cat => !data.characters.Contains(cat)).ToArray())
+        {
+            RemoveUI(characterCards[removed].root.gameObject);
+            characterCards.Remove(removed);
+        }
+        int index = 0;
         foreach (var owned in data.characters.Where(item => item != null).OrderBy(item => catalog.FindCharacter(item.characterId)?.rarity ?? ItemRarity.Common))
         {
-            if (owned == null)
-                continue;
-            var character = owned;
-            CharacterCard(grid, character, catalog.FindCharacter(character.characterId));
+            bool selected = data.loadout.characterId == owned.characterId;
+            if (!characterCards.TryGetValue(owned, out var cached))
+            {
+                var root = CharacterCard(characterListGrid, owned, catalog.FindCharacter(owned.characterId));
+                cached = (root, owned.level, owned.ascension, selected);
+                characterCards[owned] = cached;
+            }
+            if (cached.level != owned.level || cached.stars != owned.ascension)
+            {
+                var labels = cached.root.Find("Growth").GetComponentsInChildren<Text>();
+                labels[0].text = $"Lv.{owned.level}";
+                labels[1].text = $"{owned.ascension}성";
+            }
+            if (cached.selected != selected)
+            {
+                var marker = cached.root.Find("Equipped Marker");
+                if (marker != null) marker.gameObject.SetActive(selected);
+            }
+            cached.root.SetSiblingIndex(index++);
+            characterCards[owned] = (cached.root, owned.level, owned.ascension, selected);
         }
     }
 
@@ -309,7 +350,7 @@ public partial class CatGameSceneUI : MonoBehaviour
             var b = definition.baseStats;
             var g = definition.statsPerLevel;
             int n = Mathf.Max(0, owned.level - 1);
-            details += $"{Rarity(definition.rarity)}  ·  성급 적용 스탯\nHP {(b.maxHealth + g.maxHealth * n) * CatProgression.StarMultiplier(owned.ascension) * CatSkillTree.Health(owned):0.#}    공격력 {(b.attack + g.attack * n) * CatProgression.StarMultiplier(owned.ascension) * CatSkillTree.Attack(owned):0.#}\n방어력 {(b.defense + g.defense * n) * CatProgression.StarMultiplier(owned.ascension) + CatSkillTree.Defense(owned):0.#}    공격 속도 {(b.attackSpeed + g.attackSpeed * n) * CatSkillTree.Speed(owned):0.##}\n공격 방식: {definition.attackId}";
+            details += $"{Rarity(definition.rarity)}  ·  성급 적용 스탯\nHP {(b.maxHealth + g.maxHealth * n) * CatProgression.StarMultiplier(owned.ascension) * CatSkillTree.Health(owned):0.#}    공격력 {(b.attack + g.attack * n) * CatProgression.StarMultiplier(owned.ascension) * CatSkillTree.Attack(owned):0.#}\n방어력 {(b.defense + g.defense * n) * CatProgression.StarMultiplier(owned.ascension) + CatSkillTree.Defense(owned):0.#}    공격 속도 {(b.attackSpeed + g.attackSpeed * n) * CatSkillTree.Speed(owned):0.##}\n{definition.description}";
         }
         else
             details += "캐릭터 공통 설정을 연결해주세요.";

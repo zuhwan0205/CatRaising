@@ -1,9 +1,45 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using UnityEngine;
 
 public partial class FieldCombatController
 {
+    private const float EnemyCellSize = 4f;
+    private readonly System.Collections.Generic.Dictionary<Vector2Int, List<int>> enemyCells = new System.Collections.Generic.Dictionary<Vector2Int, List<int>>();
+    private readonly List<int> nearbyIndices = new List<int>(200);
+    private readonly List<FieldEnemy> basicCandidates = new List<FieldEnemy>(200);
+    private readonly List<FieldEnemy> arrowImpactCandidates = new List<FieldEnemy>(200);
+    private readonly List<FieldEnemy> arrowCandidates = new List<FieldEnemy>(200);
+    private readonly List<FieldEnemy> lightningCandidates = new List<FieldEnemy>(200);
+    private readonly List<FieldEnemy> areaCandidates = new List<FieldEnemy>(200);
+    private int enemyCellsFrame = -1;
+
+    private void NearbyEnemies(Vector3 center, float radius, List<FieldEnemy> result)
+    {
+        if (enemyCellsFrame != Time.frameCount)
+        {
+            foreach (var bucket in enemyCells.Values) bucket.Clear();
+            for (int i = 0; i < enemies.Length; i++)
+            {
+                var enemy = enemies[i];
+                if (enemy == null || !enemy.Alive) continue;
+                var position = enemy.transform.position;
+                var key = new Vector2Int(Mathf.FloorToInt(position.x / EnemyCellSize), Mathf.FloorToInt(position.z / EnemyCellSize));
+                if (!enemyCells.TryGetValue(key, out var bucket)) enemyCells[key] = bucket = new List<int>();
+                bucket.Add(i);
+            }
+            enemyCellsFrame = Time.frameCount;
+        }
+        nearbyIndices.Clear();
+        for (int z = Mathf.FloorToInt((center.z - radius) / EnemyCellSize); z <= Mathf.FloorToInt((center.z + radius) / EnemyCellSize); z++)
+        for (int x = Mathf.FloorToInt((center.x - radius) / EnemyCellSize); x <= Mathf.FloorToInt((center.x + radius) / EnemyCellSize); x++)
+            if (enemyCells.TryGetValue(new Vector2Int(x, z), out var bucket)) nearbyIndices.AddRange(bucket);
+        // 동시 명중 순서를 기존 몬스터 배열과 동일하게 유지합니다.
+        nearbyIndices.Sort();
+        result.Clear();
+        foreach (int index in nearbyIndices) result.Add(enemies[index]);
+    }
+
     private OwnedCharacter skillOwner;
     private FieldEnemy focusEnemy;
     private CombatHealth focusLife;
@@ -75,7 +111,8 @@ public partial class FieldCombatController
         int rank = Skill(CatSkillTree.Mace);
         if (rank == 0) return;
         float radius = rank * .4f;
-        foreach (var target in enemies)
+        NearbyEnemies(closest.transform.position, radius, areaCandidates);
+        foreach (var target in areaCandidates)
             if (target != null && target.Alive && !attackTargets.Contains(target) &&
                 FlatDistanceSquared(target.transform.position, closest.transform.position) <= radius * radius)
                 attackTargets.Add(target);
@@ -96,6 +133,7 @@ public partial class FieldCombatController
             if (!killed)
             {
                 if (selectedId == "cat_shadow") target.ApplyIceSlow();
+                if (selectedId == "cat_moon") target.ApplyArmorBreak();
                 int poison = Skill(CatSkillTree.Poison), burn = Skill(CatSkillTree.Burn);
                 if (poison > 0 || burn > 0)
                 {
@@ -119,13 +157,14 @@ public partial class FieldCombatController
         }
         if (basicHit && Skill(CatSkillTree.Lightning) > 0)
         {
-            foreach (var nearby in enemies)
+            NearbyEnemies(position, 2f, lightningCandidates);
+            foreach (var nearby in lightningCandidates)
             {
                 if (nearby == null || nearby == target || !nearby.Alive ||
                     FlatDistanceSquared(position, nearby.transform.position) > 4 ||
                     (Navigation != null && !Navigation.Clear(position, nearby.transform.position))) continue;
                 SkillFlash(position, nearby.transform.position, new Color(1, .9f, .2f));
-                DealSkillDamage(nearby, attack * Skill(CatSkillTree.Lightning) * .2);
+                DealSkillDamage(nearby, attack * AllyAttackMultiplier * Skill(CatSkillTree.Lightning) * .2);
             }
         }
     }
@@ -144,6 +183,9 @@ public partial class FieldCombatController
         public double damage;
         public int explosion;
         public LineRenderer visual;
+        public SpriteRenderer spell;
+        public Sprite[] spellFrames;
+        public bool fire;
         public readonly HashSet<FieldEnemy> hit = new HashSet<FieldEnemy>();
         public void Stop() { active = false; if (visual != null) visual.gameObject.SetActive(false); }
     }
@@ -179,6 +221,17 @@ public partial class FieldCombatController
                 arrow = new SkillArrow { visual = SkillLineRenderer("Skill Arrow", new Color(.85f, .95f, 1), .07f) };
                 skillArrows.Add(arrow);
             }
+            arrow.spellFrames = CatSpellSprites.Get(selectedId);
+            arrow.fire = selectedId == "cat_lion";
+            if (arrow.spellFrames != null && arrow.spell == null)
+            {
+                var obj = new GameObject("Skill Spell Sprite");
+                obj.layer = 2;
+                obj.transform.SetParent(arrow.visual.transform, false);
+                arrow.spell = obj.AddComponent<SpriteRenderer>();
+            }
+            arrow.visual.enabled = arrow.spellFrames == null;
+            if (arrow.spell != null) arrow.spell.gameObject.SetActive(arrow.spellFrames != null);
             arrow.active = true;
             arrow.piercing = Skill(CatSkillTree.SteelArrow) > 0;
             arrow.scale = 1 + Skill(CatSkillTree.LargeArrow) * .1f;
@@ -202,7 +255,8 @@ public partial class FieldCombatController
         if (Navigation != null && !Navigation.Clear(start, end)) { arrow.Stop(); return; }
         FieldEnemy first = null;
         float firstAlong = float.MaxValue;
-        foreach (var target in enemies)
+        NearbyEnemies((start + end) * .5f, travel * .5f + .40f + .15f * arrow.scale, arrowCandidates);
+        foreach (var target in arrowCandidates)
         {
             if (target == null || !target.Alive || arrow.hit.Contains(target)) continue;
             Vector3 offset = target.transform.position - start;
@@ -222,7 +276,8 @@ public partial class FieldCombatController
         {
             float radius = 1 + arrow.explosion * .2f;
             SkillExplosion(end, radius);
-            foreach (var target in enemies)
+            NearbyEnemies(end, radius, areaCandidates);
+            foreach (var target in areaCandidates)
                 if (target != null && target.Alive && FlatDistanceSquared(end, target.transform.position) <= radius * radius &&
                     (Navigation == null || Navigation.Clear(end, target.transform.position)))
                     DealSkillDamage(target, arrow.damage * arrow.explosion * .2);
@@ -235,13 +290,41 @@ public partial class FieldCombatController
         arrow.hit.Add(target);
         double bonus = 0;
         TriggerRelics(EffectTrigger.OnHit, value => bonus += value);
-        DealSkillDamage(target, arrow.damage + bonus, false, true);
+        // 투사체 스킬을 배운 뒤에도 얼음/마법의 폭발, 용의 불길 특성을 유지합니다.
+        if (attackBehavior is TargetAreaAttack || attackBehavior is BreathAreaAttack)
+        {
+            bool splash = attackBehavior is TargetAreaAttack;
+            Vector3 origin = player.position, center = target.transform.position;
+            NearbyEnemies(splash ? center : origin, splash ? CharacterCombatRules.SplashRadius : Range, arrowImpactCandidates);
+            GetComponent<FieldCombatEffects>()?.SpellImpact(origin, center);
+            foreach (var nearby in arrowImpactCandidates)
+                if (nearby != null && nearby.Alive && CharacterCombatRules.Hits(splash ? "target_area" : "breath_area",
+                    CharacterCombatRules.Flat(origin), CharacterCombatRules.Flat(center), CharacterCombatRules.Flat(nearby.transform.position), Range) &&
+                    (Navigation == null || Navigation.Clear(origin, nearby.transform.position)))
+                    DealSkillDamage(nearby, arrow.damage + bonus, false, true);
+        }
+        else DealSkillDamage(target, arrow.damage + bonus, false, true);
         // 기존 무기 비행 이펙트를 중복 생성하지 않고 실제 명중 위치만 강조합니다.
         SkillFlash(target.transform.position, target.transform.position + Vector3.right * .25f, Color.white);
     }
 
     private void DrawArrow(SkillArrow arrow)
     {
+        if (arrow.spellFrames != null && arrow.spell != null)
+        {
+            var effects = GetComponent<FieldCombatEffects>();
+            var camera = effects != null ? effects.EffectCamera : null;
+            if (camera != null)
+            {
+                float angle = Mathf.Atan2(Vector3.Dot(arrow.direction, camera.transform.up), Vector3.Dot(arrow.direction, camera.transform.right)) * Mathf.Rad2Deg;
+                arrow.spell.sprite = CatSpellSprites.Frame(arrow.spellFrames, arrow.fire, Time.time % CatSpellSprites.FlightSeconds, false);
+                arrow.spell.transform.position = arrow.position + camera.transform.up * .55f;
+                arrow.spell.transform.rotation = camera.transform.rotation * Quaternion.Euler(0, 0, angle);
+                arrow.spell.transform.localScale = Vector3.one * arrow.scale * 1.2f;
+                arrow.spell.sortingOrder = 10005 - Mathf.RoundToInt(Vector3.Dot(arrow.position - camera.transform.position, camera.transform.forward) * 100);
+                return;
+            }
+        }
         Vector3 tip = arrow.position + Vector3.up * .45f;
         Vector3 forward = arrow.direction * arrow.scale;
         Vector3 side = new Vector3(forward.z, 0, -forward.x);

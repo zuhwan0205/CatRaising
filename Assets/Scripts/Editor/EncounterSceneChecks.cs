@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Linq;
 using System.Reflection;
 using System.Threading.Tasks;
@@ -78,6 +78,7 @@ public static class EncounterSceneChecks
             await Bounded(runtime.ReturnToMainAsync());
             AssertMain(runtime, session, data);
 
+            await CheckCachedCharacterUI(data);
             await CheckSettings();
 
             var dungeonTeam = data.characters.Take(3).ToList();
@@ -130,6 +131,35 @@ public static class EncounterSceneChecks
         typeof(CatEncounterScene).GetMethod("OnFinished", BindingFlags.Instance | BindingFlags.NonPublic)
             .Invoke(scene, new object[] { won });
         await Task.Delay(250);
+    }
+
+    private static async Task CheckCachedCharacterUI(BackendUserData data)
+    {
+        var ui = UnityEngine.Object.FindAnyObjectByType<CatGameSceneUI>();
+        const BindingFlags flags = BindingFlags.Instance | BindingFlags.NonPublic;
+        void Call(string method, params object[] args) => typeof(CatGameSceneUI).GetMethod(method, flags).Invoke(ui, args);
+        object Read(string field) => typeof(CatGameSceneUI).GetField(field, flags).GetValue(ui);
+        Call("Show", "캐릭터");
+        var root = (RectTransform)Read("characterListRoot");
+        var grid = (Transform)Read("characterListGrid");
+        var first = grid.GetChild(0);
+        for (int i = 0; i < 5; i++)
+        {
+            Call("Show", "모험");
+            Call("Show", "캐릭터");
+            Require(ReferenceEquals(root, Read("characterListRoot")) && first == grid.GetChild(0), "캐릭터 목록 재생성");
+            Call("CharacterDetail", data.characters[0]);
+            var overlay = (RectTransform)Read("detailOverlay");
+            ui.ShowSkillTree(data.characters[0]);
+            Call("CharacterDetail", data.characters[0]);
+            Require(ReferenceEquals(overlay, Read("detailOverlay")), "상세 팝업 배경 재생성");
+            var frame = (RectTransform)Read("cachedDetailFrame");
+            Require(frame.anchorMin == new Vector2(.035f, .15f), "스킬 창 복귀 크기 오류");
+            Call("CloseDetailPopup");
+            await Task.Delay(50);
+        }
+        Call("Show", "모험");
+        Debug.Log("PASS cached character list / popup reuse and skill return");
     }
 
     private static async Task CheckSettings()

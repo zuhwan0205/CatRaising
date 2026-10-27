@@ -1,10 +1,10 @@
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using UnityEngine;
 
 // 공격 대상 선택과 전투의 피해/보상 처리를 분리합니다.
 public interface ICharacterAttack
 {
-    void SelectTargets(Vector3 origin, FieldEnemy closest, FieldEnemy[] enemies, float range, List<FieldEnemy> results);
+    void SelectTargets(Vector3 origin, FieldEnemy closest, IReadOnlyList<FieldEnemy> enemies, float range, List<FieldEnemy> results);
 }
 
 public static class CharacterAttackFactory
@@ -23,61 +23,70 @@ public static class CharacterAttackFactory
                 return new ForwardAreaAttack();
             case "target_area":
                 return new TargetAreaAttack();
+            case "breath_area":
+                return new BreathAreaAttack();
             default:
                 return null;
         }
     }
 }
 
-// 지정 대상 방향으로 사거리만큼, 좌우 각각 1(전체 폭 2)의 전방 영역.
-public sealed class ForwardAreaAttack : ICharacterAttack
+// 메인/레이드(XZ)와 던전(타일 XY)이 공유하는 공격 범위와 고유 효과 수치입니다.
+public static class CharacterCombatRules
 {
-    public void SelectTargets(Vector3 origin, FieldEnemy closest, FieldEnemy[] enemies, float range, List<FieldEnemy> results)
+    public const float SplashRadius = 1.5f;
+    public const float AuraRadius = 3f;
+    public const double AuraMultiplier = 1.2;
+    public const float SlowDuration = 2f, SlowMultiplier = .6f;
+    public const float ArmorBreakDuration = 3f, ArmorMultiplier = .7f;
+    public static double DamageAfterDefense(double damage, double defense, bool armorBroken)
+        => System.Math.Max(.1, damage - defense * (armorBroken ? ArmorMultiplier : 1f));
+    public static Vector2 Flat(Vector3 point) => new Vector2(point.x, point.z);
+    public static bool Hits(string attackId, Vector2 origin, Vector2 target, Vector2 enemy, float range)
+    {
+        Vector2 offset = enemy - origin;
+        if (attackId == "target_area") return (enemy - target).sqrMagnitude <= SplashRadius * SplashRadius;
+        if (attackId == "spin_melee" || attackId == "trio_melee") return offset.sqrMagnitude <= range * range;
+        Vector2 direction = (target - origin).normalized;
+        if (direction.sqrMagnitude < .000001f) direction = Vector2.up;
+        float along = Vector2.Dot(offset, direction);
+        if (attackId == "breath_area")
+            return offset.sqrMagnitude <= range * range && along >= 0 &&
+                (offset.sqrMagnitude < .000001f || along >= offset.magnitude * .8660254f); // 전방 60도
+        if (attackId == "forward_area")
+            return along >= 0 && along <= range && Mathf.Abs(direction.x * offset.y - direction.y * offset.x) <= 1f;
+        return false;
+    }
+    public static void Select(string attackId, Vector3 origin, FieldEnemy closest, IReadOnlyList<FieldEnemy> enemies, float range, List<FieldEnemy> results)
     {
         results.Clear();
-        if (closest == null || !closest.Alive)
-            return;
-        Vector3 forward = closest.transform.position - origin;
-        forward.y = 0;
-        forward = forward.sqrMagnitude > .000001f ? forward.normalized : Vector3.forward;
+        if (closest == null || !closest.Alive) return;
         foreach (var enemy in enemies)
-        {
-            if (enemy == null || !enemy.Alive || results.Contains(enemy))
-                continue;
-            Vector3 offset = enemy.transform.position - origin;
-            offset.y = 0;
-            float along = Vector3.Dot(offset, forward);
-            float side = Vector3.Cross(forward, offset).y;
-            if (along >= 0 && along <= range && Mathf.Abs(side) <= 1f)
+            if (enemy != null && enemy.Alive && Hits(attackId, Flat(origin), Flat(closest.transform.position), Flat(enemy.transform.position), range))
                 results.Add(enemy);
-        }
     }
 }
 
-// 사거리는 주 대상 선택에 사용하고 폭발 범위는 대상 중심 반경 2로 계산합니다.
+public sealed class ForwardAreaAttack : ICharacterAttack
+{
+    public void SelectTargets(Vector3 origin, FieldEnemy closest, IReadOnlyList<FieldEnemy> enemies, float range, List<FieldEnemy> results)
+        => CharacterCombatRules.Select("forward_area", origin, closest, enemies, range, results);
+}
 public sealed class TargetAreaAttack : ICharacterAttack
 {
-    public void SelectTargets(Vector3 origin, FieldEnemy closest, FieldEnemy[] enemies, float range, List<FieldEnemy> results)
-    {
-        results.Clear();
-        if (closest == null || !closest.Alive)
-            return;
-        foreach (var enemy in enemies)
-        {
-            if (enemy == null || !enemy.Alive || results.Contains(enemy))
-                continue;
-            Vector3 offset = enemy.transform.position - closest.transform.position;
-            offset.y = 0;
-            if (offset.sqrMagnitude <= 4f)
-                results.Add(enemy);
-        }
-    }
+    public void SelectTargets(Vector3 origin, FieldEnemy closest, IReadOnlyList<FieldEnemy> enemies, float range, List<FieldEnemy> results)
+        => CharacterCombatRules.Select("target_area", origin, closest, enemies, range, results);
+}
+public sealed class BreathAreaAttack : ICharacterAttack
+{
+    public void SelectTargets(Vector3 origin, FieldEnemy closest, IReadOnlyList<FieldEnemy> enemies, float range, List<FieldEnemy> results)
+        => CharacterCombatRules.Select("breath_area", origin, closest, enemies, range, results);
 }
 
 public sealed class TrioAttack : ICharacterAttack
 {
     private readonly SpinAttack candidates = new SpinAttack();
-    public void SelectTargets(Vector3 origin, FieldEnemy closest, FieldEnemy[] enemies, float range, List<FieldEnemy> results)
+    public void SelectTargets(Vector3 origin, FieldEnemy closest, IReadOnlyList<FieldEnemy> enemies, float range, List<FieldEnemy> results)
     {
         candidates.SelectTargets(origin, closest, enemies, range, results);
         results.Sort((a, b) => a == b ? 0 : a == closest ? -1 : b == closest ? 1 :
@@ -97,7 +106,7 @@ public sealed class TrioAttack : ICharacterAttack
 
 public sealed class ClawAttack : ICharacterAttack
 {
-    public void SelectTargets(Vector3 origin, FieldEnemy closest, FieldEnemy[] enemies, float range, List<FieldEnemy> results)
+    public void SelectTargets(Vector3 origin, FieldEnemy closest, IReadOnlyList<FieldEnemy> enemies, float range, List<FieldEnemy> results)
     {
         results.Clear();
         if (closest != null && closest.Alive)
@@ -107,11 +116,6 @@ public sealed class ClawAttack : ICharacterAttack
 
 public sealed class SpinAttack : ICharacterAttack
 {
-    public void SelectTargets(Vector3 origin, FieldEnemy closest, FieldEnemy[] enemies, float range, List<FieldEnemy> results)
-    {
-        results.Clear();
-        foreach (var enemy in enemies)
-            if (enemy != null && enemy.Alive && (enemy.transform.position - origin).sqrMagnitude <= range * range)
-                results.Add(enemy);
-    }
+    public void SelectTargets(Vector3 origin, FieldEnemy closest, IReadOnlyList<FieldEnemy> enemies, float range, List<FieldEnemy> results)
+        => CharacterCombatRules.Select("spin_melee", origin, closest, enemies, range, results);
 }

@@ -23,7 +23,7 @@ public partial class CatGameSceneUI
         skillPopupAction = null;
         skillPopupCharacter = null;
         var panel = OpenDetailPopup("캐릭터");
-        var frame = (RectTransform)panel.parent;
+        var frame = cachedDetailFrame;
         frame.anchorMin = new Vector2(.025f, .035f);
         frame.anchorMax = new Vector2(.975f, .965f);
         var back = Button(panel, "", new Vector2(.02f, .92f), new Vector2(.18f, .99f), () => CharacterDetail(cat));
