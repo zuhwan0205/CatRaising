@@ -52,11 +52,10 @@ public static class EncounterSceneChecks
         Require(UnityEngine.Object.FindObjectsByType<CatGameScene>().Length == 1, "메인 진입점 수 오류");
         Require(UnityEngine.Object.FindObjectsByType<CatEncounterScene>().Length == 0, "전투 씬 오브젝트 잔류");
         Require(UnityEngine.Object.FindObjectsByType<DungeonDefenseBattle>().Length == 0, "던전 엔진 잔류");
-        foreach (string name in new[] { "BusyChanged", "StatusChanged", "GameplayBlockedChanged" })
-        {
-            var callbacks = typeof(CatGameSession).GetField(name, BindingFlags.Instance | BindingFlags.NonPublic)?.GetValue(session) as Delegate;
-            Require(callbacks?.GetInvocationList().Length == 1, "씬 왕복 후 이벤트 누적: " + name);
-        }
+        Require(session.Events.SubscriberCount<SessionBusyChanged>() == 1, "저장 상태 구독 누적");
+        Require(session.Events.SubscriberCount<SessionMessage>() == 1, "메시지 구독 누적");
+        Require(session.Events.SubscriberCount<GameplayBlockChanged>() == 1, "전투 상태 구독 누적");
+        Require(session.Events.SubscriberCount<WalletChanged>() == 1, "재화 구독 누적");
         UnityEngine.Object.FindAnyObjectByType<CatFieldController>().SetGameplayBlocked(true);
     }
 
@@ -67,6 +66,7 @@ public static class EncounterSceneChecks
         Application.logMessageReceived += onLog;
         try
         {
+            await CheckSessionNotifications();
             BackendGameData.userData = null;
             var data = BackendUserData.CreateNew();
             data.progress.accountLevel = 30;
@@ -121,6 +121,42 @@ public static class EncounterSceneChecks
             EditorApplication.Exit(1);
         }
         finally { Application.logMessageReceived -= onLog; }
+    }
+
+    private static async Task CheckSessionNotifications()
+    {
+        var data = BackendUserData.CreateNew();
+        data.characters.Add(new OwnedCharacter { characterId = "cat_spinner", fragments = 50 });
+        string original = data.loadout.characterId;
+        bool saveSucceeds = false;
+        var session = new CatGameSession(data, false, () => Task.FromResult(saveSucceeds));
+        int selections = 0, changes = 0, wallets = 0;
+        session.Events.Subscribe<SelectedCharacterChanged>(_ => selections++);
+        session.Events.Subscribe<CharacterProgressChanged>(_ => changes++);
+        session.Events.Subscribe<WalletChanged>(_ => wallets++);
+        try
+        {
+            var cat = data.characters[1];
+            Require(!await session.SelectCharacterAsync(cat), "실패 저장이 성공으로 반환됨");
+            Require(data.loadout.characterId == original && selections == 0, "실패한 선택 변경 이벤트/롤백 오류");
+            saveSucceeds = true;
+            Require(await session.SelectCharacterAsync(cat), "성공 저장 반환 오류");
+            Require(selections == 1, "선택 변경 알림 누락/중복");
+            int before = changes;
+            await session.LevelUpCharacterAsync(cat);
+            Require(changes == before + 1 && cat.ascension == 1, "강화 알림 누락");
+            saveSucceeds = false;
+            before = changes;
+            await session.LevelUpCharacterAsync(cat);
+            Require(changes == before && cat.ascension == 1, "롤백한 강화가 완료로 통지됨");
+            await session.AwardGoldAsync(10);
+            Require(wallets == 1, "골드 변경 알림 오류");
+            long gems = data.wallet.gems;
+            await session.CompleteEncounterAsync(0);
+            Require(data.wallet.gems == gems + 10 && session.HasPendingReward && wallets == 2, "저장 실패 보상 보류 알림 오류");
+            Debug.Log("PASS session notifications: save success, rollback, upgrade, gold, pending reward");
+        }
+        finally { session.Events.Dispose(); }
     }
 
     private static async Task SimulateResult(bool won)

@@ -117,9 +117,8 @@ public class CatGameScene : MonoBehaviour
         view.CharacterDrawRequested += DrawCharacter;
         view.BatchDrawRequested += DrawContent;
         view.CrystalAdRequested += WatchCrystalAd;
-        session.BusyChanged += view.SetBusy;
-        session.StatusChanged += view.ShowStatus;
-        session.GameplayBlockedChanged += SetSessionBlocked;
+        view.BindSessionEvents(session);
+        BindSessionBlock();
 
         view.RaidRequested += BeginFieldRaid;
 
@@ -160,7 +159,6 @@ public class CatGameScene : MonoBehaviour
 
     private void RefreshExperienceDisplay()
     {
-        view.RefreshWallet();
         var cat = activeData.characters.Find(x => x.characterId == activeData.loadout.characterId);
         view.ShowCombatMessage($"경험치 획득 · Lv.{cat.level} · EXP {cat.experience}/{CatProgression.RequiredExperience(cat.level)}");
     }
@@ -178,7 +176,6 @@ public class CatGameScene : MonoBehaviour
             {
                 if (pendingSave.IsFaulted) Debug.LogException(pendingSave.Exception);
                 pendingSave = null;
-                if (view != null) view.RefreshWallet();
             }
             if (++ticks < 5) continue;
             ticks = 0;
@@ -195,13 +192,7 @@ public class CatGameScene : MonoBehaviour
     private async System.Threading.Tasks.Task<bool> SaveFromSettings()
     {
         if (transitioning || watchingAd || session.IsSaving) return false;
-        bool saved = await session.SaveAsync();
-        if (view != null)
-        {
-            view.PendingAdSave = session.HasPendingReward;
-            view.RefreshWallet();
-        }
-        return saved;
+        return await session.SaveAsync();
     }
 
     private async System.Threading.Tasks.Task Logout()
@@ -245,7 +236,6 @@ public class CatGameScene : MonoBehaviour
     private async void AwardGold(long amount)
     {
         var request = session.AwardGoldAsync(amount);
-        view.RefreshWallet();
         await request;
         if(view != null && !session.HasPendingReward) view.PlayGoldReward();
     }
@@ -282,7 +272,6 @@ public class CatGameScene : MonoBehaviour
             if (view != null)
             {
                 view.PendingAdSave = session.HasPendingReward;
-                view.RefreshWallet();
                 view.SetBusy(false);
                 if (session.HasPendingReward) view.ShowStatus("저장 실패 · 상점의 보상 저장 재시도를 눌러주세요.");
             }
@@ -299,7 +288,6 @@ public class CatGameScene : MonoBehaviour
     {
         await session.ResetSkillsAsync(cat);
         if (view == null) return;
-        view.RefreshWallet();
         view.ShowSkillTree(cat);
     }
     private async void SelectCharacter(OwnedCharacter character)
@@ -346,7 +334,6 @@ public class CatGameScene : MonoBehaviour
         await session.LevelUpCharacterAsync(character);
         if (view != null)
         {
-            view.RefreshWallet();
             view.RefreshCharacterDetail(character);
             if(character.ascension > previousStars) view.PlayCharacterUpgrade();
         }
@@ -356,7 +343,6 @@ public class CatGameScene : MonoBehaviour
         await session.LevelUpRelicAsync(relic);
         if (view != null)
         {
-            view.RefreshWallet();
             view.RefreshRelicDetail(relic);
         }
     }
@@ -367,19 +353,26 @@ public class CatGameScene : MonoBehaviour
             view.RefreshRelics();
     }
 
+    private System.IDisposable sessionBlockSubscription;
+    private void BindSessionBlock()
+    {
+        if (session == null || field == null || sessionBlockSubscription != null) return;
+        sessionBlockSubscription = session.Events.Subscribe<GameplayBlockChanged>(change => SetSessionBlocked(change.Blocked));
+        SetSessionBlocked(session.GameplayBlocked);
+    }
+    private void OnEnable() => BindSessionBlock();
+    private void OnDisable() => ReleaseSessionBlock();
+    private void ReleaseSessionBlock()
+    {
+        sessionBlockSubscription?.Dispose();
+        sessionBlockSubscription = null;
+    }
+
     private void OnDestroy()
     {
         // 전송 중인 저장은 완료까지 처리하고 UI 이벤트만 해제합니다.
         // Unity의 컴포넌트 파괴 순서와 관계없이 영속 세션에서 구독을 제거합니다.
-        if (session != null)
-        {
-            session.GameplayBlockedChanged -= SetSessionBlocked;
-            if (!ReferenceEquals(view, null))
-            {
-                session.BusyChanged -= view.SetBusy;
-                session.StatusChanged -= view.ShowStatus;
-            }
-        }
+        ReleaseSessionBlock();
         if (!ReferenceEquals(view, null))
         {
             view.CharacterSelected -= SelectCharacter;

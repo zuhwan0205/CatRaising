@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Threading.Tasks;
 
 // UI/SDK에 독립적인 비동기 저장 기능입니다. 전송 중 씬이 닫혀도 완료 결과를 처리합니다.
@@ -49,6 +49,7 @@ public class CatGameSession
     }
     private bool rewardLimitReached;
     private bool savingCombatRewards;
+    public bool IsUiBusy => IsSaving && !savingCombatRewards;
     public bool GameplayBlocked => HasPendingReward || rewardLimitReached || (IsSaving && !savingCombatRewards);
     private long experienceRevision, savedExperienceRevision;
     private long goldRevision, savedGoldRevision, queuedGold;
@@ -72,11 +73,43 @@ public class CatGameSession
             }
             savingCombatRewards = IsSaving = false;
         }
-        if (!success) StatusChanged?.Invoke("전투 보상 저장 실패 · 보상을 보관하고 자동 재시도합니다.");
+        PublishSavedState(success);
+        if (!success) PublishMessage("전투 보상 저장 실패 · 보상을 보관하고 자동 재시도합니다.");
     }
-    public event Action<bool> GameplayBlockedChanged;
-    public event Action<bool> BusyChanged;
-    public event Action<string> StatusChanged;
+    public SessionEventBus Events { get; } = new SessionEventBus(UnityEngine.Debug.LogException);
+    private long publishedGold, publishedGems;
+    private string publishedCharacter;
+    private readonly System.Collections.Generic.Dictionary<string, (int level, int stars, long xp, long fragments, int skills)> publishedProgress =
+        new System.Collections.Generic.Dictionary<string, (int, int, long, long, int)>();
+    private void PublishBusy(bool value) => Events.Publish(new SessionBusyChanged(value));
+    private void PublishBlock(bool value) => Events.Publish(new GameplayBlockChanged(value));
+    private void PublishMessage(string text) => Events.Publish(new SessionMessage(text));
+    private void PublishWallet()
+    {
+        if (publishedGold == data.wallet.gold && publishedGems == data.wallet.gems) return;
+        publishedGold = data.wallet.gold; publishedGems = data.wallet.gems;
+        Events.Publish(new WalletChanged(publishedGold, publishedGems));
+    }
+    private void PublishCharacter(OwnedCharacter cat, bool notify = true)
+    {
+        if (cat == null) return;
+        var snapshot = (cat.level, cat.ascension, cat.experience, cat.fragments, CatSkillTree.Signature(cat));
+        if (publishedProgress.TryGetValue(cat.characterId, out var previous) && previous.Equals(snapshot)) return;
+        publishedProgress[cat.characterId] = snapshot;
+        if (notify) Events.Publish(new CharacterProgressChanged(cat.characterId));
+    }
+    private void PublishSavedState(bool success)
+    {
+        // 롤백/보상 보류 처리가 모두 끝난 실제 데이터를 알립니다.
+        PublishWallet();
+        if (publishedCharacter != data.loadout.characterId)
+        {
+            publishedCharacter = data.loadout.characterId;
+            Events.Publish(new SelectedCharacterChanged(publishedCharacter));
+        }
+        foreach (var cat in data.characters) PublishCharacter(cat);
+        Events.Publish(new SessionSaveFinished(success, HasPendingReward));
+    }
 
     public Task AwardGoldAsync(long amount)
     {
@@ -102,13 +135,14 @@ public class CatGameSession
         data.wallet.gold += amount;
         rewardJournal?.AddGold(amount);
         goldRevision++;
+        PublishWallet();
     }
 
     private void StopAtGoldLimit()
     {
         rewardLimitReached = true;
-        GameplayBlockedChanged?.Invoke(true);
-        StatusChanged?.Invoke("골드 한도에 도달해 전투를 중단했습니다.");
+        PublishBlock(true);
+        PublishMessage("골드 한도에 도달해 전투를 중단했습니다.");
     }
 
     private void ApplyQueuedGold()
@@ -124,6 +158,9 @@ public class CatGameSession
         this.saveData = saveData ?? throw new ArgumentNullException(nameof(saveData));
         this.catalog = catalog;
         this.rewardJournal = preview ? null : rewardJournal;
+        publishedGold = data.wallet.gold; publishedGems = data.wallet.gems;
+        publishedCharacter = data.loadout.characterId;
+        foreach (var cat in data.characters) PublishCharacter(cat, false);
         if (this.rewardJournal != null && this.rewardJournal.HasPending) goldRevision++;
     }
 
@@ -133,12 +170,12 @@ public class CatGameSession
             return;
         if (!CatProgression.TryStarCost(character.ascension, out long cost))
         {
-            StatusChanged?.Invoke("최대 성급(5성)이거나 성급 정보가 올바르지 않습니다.");
+            PublishMessage("최대 성급(5성)이거나 성급 정보가 올바르지 않습니다.");
             return;
         }
         if (character.fragments < cost)
         {
-            StatusChanged?.Invoke($"해당 캐릭터 조각이 부족합니다. 필요 조각: {cost:N0}");
+            PublishMessage($"해당 캐릭터 조각이 부족합니다. 필요 조각: {cost:N0}");
             return;
         }
         int oldStars = character.ascension;
@@ -156,6 +193,7 @@ public class CatGameSession
         CatProgression.AddExperience(cat, amount);
         rewardJournal?.AddExperience(cat.characterId, amount);
         experienceRevision++;
+        PublishCharacter(cat);
         return true;
     }
 
@@ -215,7 +253,7 @@ public class CatGameSession
         {
             var rules = catalog.characterDraw;
             var pool = catalog.CharacterDrawPool();
-            if (rules == null || !rules.Validate(pool)) { StatusChanged?.Invoke("캐릭터 뽑기 설정을 확인해주세요."); return null; }
+            if (rules == null || !rules.Validate(pool)) { PublishMessage("캐릭터 뽑기 설정을 확인해주세요."); return null; }
             return await DrawBatchAsync(pool, data.characters, count, rules.goldCost, rules.duplicateFragments,
                 () => rules.Pick(pool, drawRandom.NextDouble(), drawRandom.NextDouble()),
                 definition => definition.id, owned => owned.characterId,
@@ -227,7 +265,7 @@ public class CatGameSession
         {
             var rules = catalog.relicDraw;
             var pool = catalog.RelicDrawPool();
-            if (rules == null || !rules.Validate(pool)) { StatusChanged?.Invoke("유물 뽑기 설정을 확인해주세요."); return null; }
+            if (rules == null || !rules.Validate(pool)) { PublishMessage("유물 뽑기 설정을 확인해주세요."); return null; }
             return await DrawBatchAsync(pool, data.relics, count, rules.goldCost, rules.duplicateFragments,
                 () => rules.Pick(pool, drawRandom.NextDouble(), drawRandom.NextDouble()),
                 definition => definition.id, owned => owned.relicId,
@@ -245,16 +283,16 @@ public class CatGameSession
         where TDefinition : class where TOwned : class
     {
         if (cost > long.MaxValue / count || fragmentCount > long.MaxValue / count)
-        { StatusChanged?.Invoke("뽑기 비용 또는 조각 설정이 너무 큽니다."); return null; }
+        { PublishMessage("뽑기 비용 또는 조각 설정이 너무 큽니다."); return null; }
         long totalCost = cost * count, maximumFragments = fragmentCount * count;
         if (data.wallet.gold < totalCost)
-        { StatusChanged?.Invoke($"골드가 부족합니다. 필요 골드: {totalCost:N0}"); return null; }
+        { PublishMessage($"골드가 부족합니다. 필요 골드: {totalCost:N0}"); return null; }
         // 결과를 뽑기 전에 모든 후보의 조각 한도를 확인해 확률 편향을 막습니다.
         foreach (var definition in pool)
         {
             var existing = collection.Find(x => x != null && ownedId(x) == definitionId(definition));
             if (existing != null && fragments(existing) > long.MaxValue - maximumFragments)
-            { StatusChanged?.Invoke("조각 보유 한도에 도달했습니다."); return null; }
+            { PublishMessage("조각 보유 한도에 도달했습니다."); return null; }
         }
         var results = new System.Collections.Generic.List<ContentDrawResult>(count);
         var undo = new System.Collections.Generic.List<Action>(count);
@@ -300,17 +338,17 @@ public class CatGameSession
             return;
         if (offer == null || !offer.CanSell)
         {
-            StatusChanged?.Invoke("현재 판매하지 않는 상품입니다.");
+            PublishMessage("현재 판매하지 않는 상품입니다.");
             return;
         }
         if (alreadyOwned)
         {
-            StatusChanged?.Invoke("이미 보유하고 있습니다.");
+            PublishMessage("이미 보유하고 있습니다.");
             return;
         }
         if (data.wallet.gold < offer.goldPrice)
         {
-            StatusChanged?.Invoke($"골드가 부족합니다. 필요 골드: {offer.goldPrice:N0}");
+            PublishMessage($"골드가 부족합니다. 필요 골드: {offer.goldPrice:N0}");
             return;
         }
         long previousGold = data.wallet.gold;
@@ -333,12 +371,12 @@ public class CatGameSession
             return;
         if (rules == null || !rules.TryGetCost(level, out long cost))
         {
-            StatusChanged?.Invoke("최대 레벨이거나 성장 설정이 없습니다.");
+            PublishMessage("최대 레벨이거나 성장 설정이 없습니다.");
             return;
         }
         if (data.wallet.gold < cost)
         {
-            StatusChanged?.Invoke($"골드가 부족합니다. 필요 골드: {cost:N0}");
+            PublishMessage($"골드가 부족합니다. 필요 골드: {cost:N0}");
             return;
         }
         long previousGold = data.wallet.gold;
@@ -367,7 +405,7 @@ public class CatGameSession
         {
             if (data.loadout.relicIds.Count >= 3)
             {
-                StatusChanged?.Invoke("유물은 최대 3개까지 장착할 수 있습니다.");
+                PublishMessage("유물은 최대 3개까지 장착할 수 있습니다.");
                 return;
             }
             data.loadout.relicIds.Add(relic.relicId);
@@ -396,8 +434,8 @@ public class CatGameSession
             IsSaving = true;
             try
             {
-                BusyChanged?.Invoke(true);
-                GameplayBlockedChanged?.Invoke(true);
+                PublishBusy(true);
+                PublishBlock(true);
                 LastProfileError = await NicknameUpdateRequested(name);
             }
             catch (Exception) { LastProfileError = "이름 변경 결과를 확인하지 못했습니다. 다시 시도해주세요."; }
@@ -405,8 +443,8 @@ public class CatGameSession
             {
                 IsSaving = false;
                 ApplyQueuedGold();
-                BusyChanged?.Invoke(false);
-                GameplayBlockedChanged?.Invoke(rewardLimitReached);
+                PublishBusy(false);
+                PublishBlock(rewardLimitReached);
             }
             if (LastProfileError != null) return false;
         }
@@ -431,17 +469,18 @@ public class CatGameSession
             savedExperienceRevision = experienceSnapshot;
             savedGoldRevision = goldSnapshot;
             HasPendingReward = false;
-            GameplayBlockedChanged?.Invoke(rewardLimitReached);
-            StatusChanged?.Invoke("미리보기 변경입니다. 서버에는 저장하지 않습니다.");
+            PublishBlock(rewardLimitReached);
+            PublishSavedState(true);
+            PublishMessage("미리보기 변경입니다. 서버에는 저장하지 않습니다.");
             return true;
         }
         IsSaving = true;
-        GameplayBlockedChanged?.Invoke(true);
+        PublishBlock(true);
         bool success = false;
         try
         {
-            BusyChanged?.Invoke(true);
-            StatusChanged?.Invoke("저장 중…");
+            PublishBusy(true);
+            PublishMessage("저장 중…");
             success = await saveData();
         }
         catch (Exception) { success = false; }
@@ -457,10 +496,11 @@ public class CatGameSession
             }
             IsSaving = false;
             if (!HasPendingReward) ApplyQueuedGold();
-            GameplayBlockedChanged?.Invoke(HasPendingReward || rewardLimitReached);
-            BusyChanged?.Invoke(false);
+            PublishBlock(HasPendingReward || rewardLimitReached);
+            PublishBusy(false);
         }
-        StatusChanged?.Invoke(success ? "저장했습니다." : "저장 실패 · 전투가 대기 중이면 저장 버튼으로 재시도해주세요. 반복되면 다시 로그인해주세요.");
+        PublishSavedState(success);
+        PublishMessage(success ? "저장했습니다." : "저장 실패 · 전투가 대기 중이면 저장 버튼으로 재시도해주세요. 반복되면 다시 로그인해주세요.");
         return success;
     }
 }

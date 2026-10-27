@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using UnityEngine;
@@ -63,6 +63,7 @@ public sealed class CatGameRuntime : MonoBehaviour
         runtime.Catalog = catalog != null ? catalog : Resources.Load<CatGameCatalog>("DefaultCatCatalog");
         runtime.ownsCatalog = runtime.Catalog == null;
         if (runtime.ownsCatalog) runtime.Catalog = ScriptableObject.CreateInstance<CatGameCatalog>();
+        runtime.Session?.Events.Dispose();
         runtime.Session = new CatGameSession(data, preview, () => BackendGameData.Instance.GameDataUpdateAsync(),
             runtime.Catalog, preview ? null : BackendGameData.Instance.RewardJournal);
         runtime.Session.NicknameUpdateRequested = BackendLogin.Instance.UpdateNicknameAsync;
@@ -144,6 +145,7 @@ public sealed class CatGameRuntime : MonoBehaviour
             BackendLogin.ManualLoginRequired = true;
             BackendGameData.Instance.ClearLoggedOutSession();
             await LoadSceneAsync("LoadingScene");
+            Session.Events.Dispose();
             Current = null;
             if (ownsCatalog && Catalog != null) Destroy(Catalog);
             Destroy(gameObject);
@@ -163,6 +165,7 @@ public sealed class CatGameRuntime : MonoBehaviour
     private void OnDestroy()
     {
         if (Current != this) return;
+        Session?.Events.Dispose();
         Current = null;
         if (ownsCatalog && Catalog != null) Destroy(Catalog);
     }

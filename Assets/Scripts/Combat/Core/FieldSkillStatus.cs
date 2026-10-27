@@ -1,4 +1,4 @@
-using UnityEngine;
+﻿using UnityEngine;
 
 // 적별 중첩을 공유하여 파티원이 여러 명이어도 독/화상 각각 5중첩을 넘지 않습니다.
 public sealed class FieldSkillStatus : MonoBehaviour
@@ -33,6 +33,7 @@ public sealed class FieldSkillStatus : MonoBehaviour
     }
     private void Update()
     {
+        if (Time.timeScale == 0) return;
         if (enemy == null || !enemy.Alive || enemy.Health != life) { poison.Clear(); burn.Clear(); return; }
         Tick(poison);
         if (enemy.Alive) Tick(burn);
