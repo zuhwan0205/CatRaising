@@ -1,4 +1,4 @@
-using UnityEngine;
+﻿using UnityEngine;
 using UnityEngine.UI;
 
 // 시안의 나무 테두리를 UI 요소로 구성하여 버튼 폭이 달라도 선 두께를 유지합니다.
@@ -21,8 +21,29 @@ public static class CozyButtonStyle
         button.targetGraphic = face;
         button.transition = Selectable.Transition.ColorTint;
         SetColor(button, faceColor);
+        RoundCorners(button);
         if (button.GetComponent<ButtonTweenEffect>() == null)
             button.gameObject.AddComponent<ButtonTweenEffect>();
+    }
+
+    public static void RoundCorners(Button button)
+    {
+        if (button == null) return;
+        RoundImage(button.GetComponent<Image>());
+        // Only change the button frame, never its artwork or text/icon backgrounds.
+        var rim = button.transform.Find("Wood Rim");
+        if (rim == null) return;
+        foreach (var image in rim.GetComponentsInChildren<Image>(true)) RoundImage(image);
+    }
+
+    private static void RoundImage(Image image)
+    {
+        if (image == null || !image.enabled) return;
+        var shape = RoundedUIShape.GetSprite();
+        if (image.sprite != null && image.sprite != shape) return;
+        image.sprite = shape;
+        image.type = Image.Type.Sliced;
+        image.pixelsPerUnitMultiplier = .65f;
     }
 
     public static void SetColor(Button button, Color color)

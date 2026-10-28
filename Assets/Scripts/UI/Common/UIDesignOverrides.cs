@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
@@ -78,9 +78,13 @@ public sealed class UIDesignOverrides : ScriptableObject
     {
         Canvas.willRenderCanvases -= ApplyPending;
         if (!loaded) { settings = Resources.Load<UIDesignOverrides>("UIDesignOverrides"); loaded = true; }
-        if (settings != null)
-            foreach (var canvas in pending)
-                if (canvas != null) settings.ApplyTo(canvas);
+        foreach (var canvas in pending)
+        {
+            if (canvas == null) continue;
+            foreach (var button in canvas.GetComponentsInChildren<Button>(true))
+                CozyButtonStyle.RoundCorners(button);
+            if (settings != null) settings.ApplyTo(canvas);
+        }
         pending.Clear();
     }
 

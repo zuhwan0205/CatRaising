@@ -150,6 +150,11 @@ public class LoadingLoginUI : MonoBehaviour
 
     private void BindButtons()
     {
+        foreach (var button in root.GetComponentsInChildren<Button>(true))
+        {
+            CozyButtonStyle.RoundCorners(button);
+            if (button.GetComponent<ButtonTweenEffect>() == null) button.gameObject.AddComponent<ButtonTweenEffect>();
+        }
         // 재초기화에서도 런타임 이벤트가 중복되지 않도록 합니다.
         signUpButton.onClick.RemoveAllListeners();
         loginButton.onClick.RemoveAllListeners();
