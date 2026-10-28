@@ -325,13 +325,14 @@ public partial class FieldCombatController : MonoBehaviour
         int level = owned == null ? 0 : owned.level;
         if (PlayerHealth != null && selectedId == data.loadout.characterId && selectedLevel == level && selectedStars == (owned == null ? 0 : owned.ascension) && selectedSkills == CatSkillTree.Signature(owned))
             return;
+        bool characterChanged = selectedId != data.loadout.characterId || PlayerHealth == null;
         selectedId = data.loadout.characterId;
         skillOwner = owned;
         ResetSkillAttacks();
         selectedLevel = level;
         selectedSkills = CatSkillTree.Signature(owned);
         selectedStars = owned == null ? 0 : owned.ascension;
-        cooldown = 0;
+        if (characterChanged) cooldown = 0; // 성장 갱신으로 추가 공격이 즉시 발생하지 않게 유지
         valid = false;
         var definition = catalog.FindCharacter(selectedId);
         attackBehavior = CharacterAttackFactory.Create(definition == null ? null : definition.attackId);

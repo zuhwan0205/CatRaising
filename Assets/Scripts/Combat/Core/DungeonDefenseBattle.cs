@@ -213,7 +213,7 @@ public sealed class DungeonDefenseBattle : MonoBehaviour
             CombatStats(tower.choice, out double damage, out float speed, tower);
             tower.cooldown=1/speed; tower.attackTime=.3f;
             tower.image.rectTransform.localScale=new Vector3(target.rect.anchoredPosition.x<position.x?-1:1,1,1);
-            LaunchShot(position, target, tower.choice, damage);
+            LaunchShot(position, target, tower.choice, damage, tower.image);
         }
         if(running && spawned==total && living==0)
         {
@@ -227,11 +227,12 @@ public sealed class DungeonDefenseBattle : MonoBehaviour
     {
         public RectTransform root; public Image[] parts; public Image spellImage; public Sprite[] spellFrames;
         public Vector2 impactPosition;
+        public Image sourceImage;
         public Vector2 source; public Enemy target; public string id;
         public float age, range; public int choice; public double damage; public bool active, resolved;
     }
     private readonly List<Shot> shots = new List<Shot>();
-    private void LaunchShot(Vector2 source, Enemy target, int choice, double damage)
+    private void LaunchShot(Vector2 source, Enemy target, int choice, double damage, Image sourceImage)
     {
         Shot shot=null;
         foreach(var candidate in shots) if(!candidate.active) { shot=candidate; break; }
@@ -255,6 +256,7 @@ public sealed class DungeonDefenseBattle : MonoBehaviour
             shot.spellImage.preserveAspect=true;
             shots.Add(shot);
         }
+        shot.sourceImage=sourceImage;
         shot.source=source; shot.target=target; shot.choice=choice; shot.id=team[choice].characterId; shot.range=Range(choice); shot.damage=damage; shot.age=0; shot.active=true;
         shot.spellFrames=CatSpellSprites.Get(shot.id);
         shot.spellImage.gameObject.SetActive(shot.spellFrames!=null);
@@ -262,6 +264,7 @@ public sealed class DungeonDefenseBattle : MonoBehaviour
         shot.impactPosition=target.rect.anchoredPosition + Vector2.up * (target.rect.rect.height * .18f);
         shot.resolved=!IsProjectile(shot.id);
         if(shot.resolved) ResolveHit(shot);
+        shot.root.SetAsLastSibling(); // 풀에서 재사용해도 몬스터보다 앞에 표시
         shot.root.gameObject.SetActive(true);
         RenderShot(shot,0);
     }
@@ -289,6 +292,17 @@ public sealed class DungeonDefenseBattle : MonoBehaviour
     }
     private static void StopShot(Shot shot) { shot.active=false; shot.root.gameObject.SetActive(false); }
 
+    private Vector2 DragonMouthPoint(Shot shot)
+    {
+        var image = shot.sourceImage;
+        if (image == null || image.sprite == null) return shot.source;
+        var rect = image.GetPixelAdjustedRect();
+        var size = image.sprite.rect.size;
+        float fit = Mathf.Min(rect.width / size.x, rect.height / size.y);
+        var offset = Vector2.Scale(CatCharacterVisual.DragonMouthUV - Vector2.one * .5f, size * fit);
+        return map.InverseTransformPoint(image.rectTransform.TransformPoint(rect.center + offset));
+    }
+
     private void RenderSpellShot(Shot shot)
     {
         bool fire=shot.id=="cat_lion";
@@ -304,7 +318,7 @@ public sealed class DungeonDefenseBattle : MonoBehaviour
             width=direction.magnitude;
         }
         shot.root.localScale=Vector3.one;
-        shot.root.anchoredPosition=fire ? shot.source : impact ? shot.impactPosition :
+        shot.root.anchoredPosition=fire ? DragonMouthPoint(shot) : impact ? shot.impactPosition :
             Vector2.Lerp(shot.source,shot.impactPosition,Mathf.Clamp01(shot.age/CatSpellSprites.FlightSeconds));
         shot.root.localRotation=Quaternion.Euler(0,0,impact?0:Mathf.Atan2(direction.y,direction.x)*Mathf.Rad2Deg);
         var rect=shot.spellImage.rectTransform;

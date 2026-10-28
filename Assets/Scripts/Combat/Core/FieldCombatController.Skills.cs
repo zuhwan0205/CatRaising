@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using UnityEngine;
 
@@ -201,7 +201,7 @@ public partial class FieldCombatController
         line.useWorldSpace = true;
         line.startColor = line.endColor = color;
         line.startWidth = line.endWidth = width;
-        line.sortingOrder = 11000;
+        line.sortingOrder = FieldCombatEffects.AttackSortingOrder;
         return line;
     }
 
@@ -287,7 +287,7 @@ public partial class FieldCombatController
 
     private void HitArrow(SkillArrow arrow, FieldEnemy target)
     {
-        arrow.hit.Add(target);
+        if (arrow.hit.Contains(target)) return;
         double bonus = 0;
         TriggerRelics(EffectTrigger.OnHit, value => bonus += value);
         // 투사체 스킬을 배운 뒤에도 얼음/마법의 폭발, 용의 불길 특성을 유지합니다.
@@ -300,10 +300,15 @@ public partial class FieldCombatController
             foreach (var nearby in arrowImpactCandidates)
                 if (nearby != null && nearby.Alive && CharacterCombatRules.Hits(splash ? "target_area" : "breath_area",
                     CharacterCombatRules.Flat(origin), CharacterCombatRules.Flat(center), CharacterCombatRules.Flat(nearby.transform.position), Range) &&
-                    (Navigation == null || Navigation.Clear(origin, nearby.transform.position)))
+                    (Navigation == null || Navigation.Clear(origin, nearby.transform.position)) && arrow.hit.Add(nearby))
                     DealSkillDamage(nearby, arrow.damage + bonus, false, true);
+            arrow.hit.Add(target);
         }
-        else DealSkillDamage(target, arrow.damage + bonus, false, true);
+        else
+        {
+            arrow.hit.Add(target);
+            DealSkillDamage(target, arrow.damage + bonus, false, true);
+        }
         // 기존 무기 비행 이펙트를 중복 생성하지 않고 실제 명중 위치만 강조합니다.
         SkillFlash(target.transform.position, target.transform.position + Vector3.right * .25f, Color.white);
     }
@@ -321,7 +326,7 @@ public partial class FieldCombatController
                 arrow.spell.transform.position = arrow.position + camera.transform.up * .55f;
                 arrow.spell.transform.rotation = camera.transform.rotation * Quaternion.Euler(0, 0, angle);
                 arrow.spell.transform.localScale = Vector3.one * arrow.scale * 1.2f;
-                arrow.spell.sortingOrder = 10005 - Mathf.RoundToInt(Vector3.Dot(arrow.position - camera.transform.position, camera.transform.forward) * 100);
+                arrow.spell.sortingOrder = FieldCombatEffects.AttackSortingOrder;
                 return;
             }
         }

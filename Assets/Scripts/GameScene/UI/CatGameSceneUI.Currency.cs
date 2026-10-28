@@ -15,7 +15,7 @@ public partial class CatGameSceneUI
         var header = safeArea.Find("Currency Bar");
         if (headerVersion >= 2 && header != null)
         {
-            bool changed = headerVersion < 5;
+            bool changed = headerVersion < 6;
             ConfigureProfileHeader(header);
             return changed;
         }
@@ -36,13 +36,13 @@ public partial class CatGameSceneUI
         if (trim != null) trim.gameObject.SetActive(false);
         foreach (Transform child in header)
         {
-            if (child.GetComponent<Text>() != null) child.gameObject.SetActive(false);
+            if (child.GetComponent<Text>() != null) child.gameObject.SetActive(true);
             if (child.name == "Diamond Row" || child.name == "Gold Row")
             {
                 child.GetComponent<Image>().color = new Color(.10f, .17f, .17f, .40f);
                 var row = (RectTransform)child;
-                row.anchorMin = new Vector2(.46f, row.anchorMin.y);
-                row.anchorMax = new Vector2(.83f, row.anchorMax.y);
+                row.anchorMin = new Vector2(.64f, row.anchorMin.y);
+                row.anchorMax = new Vector2(.98f, row.anchorMax.y);
                 row.offsetMin = row.offsetMax = Vector2.zero;
             }
         }
@@ -56,7 +56,7 @@ public partial class CatGameSceneUI
             button.onClick.RemoveListener(ShowProfilePopup);
             button.onClick.AddListener(ShowProfilePopup);
         }
-        headerVersion = 5;
+        headerVersion = 6;
         ConfigureSettingsButton(header);
     }
     private void BuildCurrencyHeader()
@@ -83,6 +83,16 @@ public partial class CatGameSceneUI
     {
         if (profileLevel == null || profilePortrait == null) return;
         profileLevel.text = $"Lv.{(data == null ? 1 : data.progress.accountLevel)}";
+        if (data != null)
+            foreach (var label in profileLevel.transform.parent.GetComponentsInChildren<Text>(true))
+                if (label.transform.parent == profileLevel.transform.parent && label != profileLevel)
+                {
+                    label.text = ProfileName;
+                    label.supportRichText = false;
+                    label.resizeTextForBestFit = true;
+                    label.resizeTextMinSize = 14;
+                    label.resizeTextMaxSize = 23;
+                }
         string id = ProfilePortraitId;
         if (profileCharacterId == id) return;
         for (int i = profilePortrait.childCount - 1; i >= 0; i--)

@@ -66,6 +66,7 @@ public static class EncounterSceneChecks
         Application.logMessageReceived += onLog;
         try
         {
+            CheckAttackDeduplication();
             await CheckSessionNotifications();
             BackendGameData.userData = null;
             var data = BackendUserData.CreateNew();
@@ -199,6 +200,54 @@ public static class EncounterSceneChecks
         await Task.Delay(50);
         Require(GameObject.Find("Encounter Pause") == null, "계속하기 후 팝업 잔류");
         Debug.Log("PASS encounter pause/resume: " + SceneManager.GetActiveScene().name);
+    }
+
+    private static void CheckAttackDeduplication()
+    {
+        var root = new GameObject("Attack Regression Check");
+        try
+        {
+            var data = BackendUserData.CreateNew();
+            var catalog = Resources.Load<CatGameCatalog>("DefaultCatCatalog");
+            var enemies = new FieldEnemy[3];
+            for (int i = 0; i < enemies.Length; i++)
+            {
+                var obj = new GameObject("Test Enemy " + i);
+                obj.transform.SetParent(root.transform);
+                obj.transform.localPosition = new Vector3(0, 0, 1 + i * 1.3f);
+                enemies[i] = obj.AddComponent<FieldEnemy>();
+                var art = obj.AddComponent<SpriteRenderer>();
+                var bar = new GameObject("HP").transform;
+                bar.SetParent(obj.transform);
+                enemies[i].Initialize(art, bar, 100);
+            }
+            var fighter = root.AddComponent<FieldCombatController>();
+            fighter.Initialize(root.transform, enemies, data, catalog);
+            var type = typeof(FieldCombatController);
+            const BindingFlags flags = BindingFlags.Instance | BindingFlags.NonPublic;
+            var resolve = type.GetMethod("ResolveStats", flags);
+            resolve.Invoke(fighter, null);
+            var cooldown = type.GetField("cooldown", flags);
+            cooldown.SetValue(fighter, 1.2f);
+            data.characters.Find(cat => cat.characterId == data.loadout.characterId).level++;
+            resolve.Invoke(fighter, null);
+            Require((float)cooldown.GetValue(fighter) == 1.2f, "레벨업이 공격 대기시간을 초기화함");
+            type.GetField("attackBehavior", flags).SetValue(fighter, new TargetAreaAttack());
+            var arrowType = type.GetNestedType("SkillArrow", BindingFlags.NonPublic);
+            object arrow = Activator.CreateInstance(arrowType, true);
+            arrowType.GetField("damage").SetValue(arrow, 10d);
+            var hit = type.GetMethod("HitArrow", flags);
+            hit.Invoke(fighter, new[] { arrow, enemies[0] });
+            hit.Invoke(fighter, new[] { arrow, enemies[1] });
+            hit.Invoke(fighter, new[] { arrow, enemies[2] });
+            foreach (var enemy in enemies) Require(enemy.Health.Current == 90, "관통 범위 공격 중복 피해");
+            object secondArrow = Activator.CreateInstance(arrowType, true);
+            arrowType.GetField("damage").SetValue(secondArrow, 10d);
+            hit.Invoke(fighter, new[] { secondArrow, enemies[1] });
+            foreach (var enemy in enemies) Require(enemy.Health.Current == 80, "별도 투사체의 정상 피해가 차단됨");
+            Debug.Log("PASS attacks: growth cooldown preserved, piercing area deduplicated, separate projectile damage retained");
+        }
+        finally { UnityEngine.Object.DestroyImmediate(root); }
     }
 
     private static async Task CheckSessionNotifications()
