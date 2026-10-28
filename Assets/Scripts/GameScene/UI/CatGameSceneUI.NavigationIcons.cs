@@ -1,4 +1,4 @@
-using UnityEngine;
+﻿using UnityEngine;
 using UnityEngine.UI;
 
 public partial class CatGameSceneUI
@@ -50,14 +50,6 @@ public partial class CatGameSceneUI
             var existing = tab.transform.Find("Navigation Icon");
             if (existing != null)
             {
-                if (existing.localScale != Vector3.one * iconScale)
-                {
-                    existing.localScale = Vector3.one * iconScale;
-                    changed = true;
-                }
-                var current = existing.GetComponent<RawImage>();
-                var uv = CenteredIconRect(i, false);
-                if (current != null && current.uvRect != uv) { current.uvRect = uv; changed = true; }
                 continue;
             }
             foreach (var label in tab.GetComponentsInChildren<Text>(true)) label.gameObject.SetActive(false);

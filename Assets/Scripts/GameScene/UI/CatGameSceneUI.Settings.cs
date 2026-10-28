@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Threading.Tasks;
 using UnityEngine;
 using UnityEngine.UI;
@@ -15,10 +15,6 @@ public partial class CatGameSceneUI
         var existing = header.Find("Settings");
         if (existing != null)
         {
-            var rect = (RectTransform)existing;
-            rect.anchorMin = new Vector2(.88f, -.64f);
-            rect.anchorMax = new Vector2(.98f, -.06f);
-            rect.offsetMin = rect.offsetMax = Vector2.zero;
             var button = existing.GetComponent<Button>();
             button.onClick.RemoveAllListeners();
             button.onClick.AddListener(ShowSettings);

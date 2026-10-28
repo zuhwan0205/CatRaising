@@ -1,0 +1,120 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 5cf4422ed73e454fb40980f02b85649b, type: 3}
+  m_Name: UIDesignOverrides
+  m_EditorClassIdentifier: Assembly-CSharp::UIDesignOverrides
+  entries:
+  - canvasKey: GameScene/Game Canvas
+    path: Safe%20Area#0/Page#0/Field#0/Label#0
+    anchorMin: {x: 0.03, y: 0.91}
+    anchorMax: {x: 0.97, y: 1}
+    pivot: {x: 0.5, y: 0.5}
+    size: {x: 0, y: 0}
+    position: {x: 0, y: 0}
+    scale: {x: 1, y: 1, z: 1}
+    graphic: 1
+    text: 1
+    image: 0
+    rawImage: 0
+    aspect: 0
+    fixedCaption: 1
+    caption: 
+    color: {r: 0.2, g: 0.18, b: 0.29, a: 1}
+    fontSize: 33
+    minSize: 16
+    maxSize: 33
+    bestFit: 1
+    preserveAspect: 0
+    aspectEnabled: 0
+    fontStyle: 0
+    alignment: 4
+    font: {fileID: 12800000, guid: ffe40219fd8a4b929b2c14b585ce072a, type: 3}
+    sprite: {fileID: 0}
+    texture: {fileID: 0}
+    uv:
+      serializedVersion: 2
+      x: 0
+      y: 0
+      width: 0
+      height: 0
+    aspectMode: 0
+    aspectRatio: 0
+  - canvasKey: GameScene/Game Canvas
+    path: Safe%20Area#0/Page#0/Field#0/Label#1
+    anchorMin: {x: 0.02, y: 0.8}
+    anchorMax: {x: 0.5, y: 0.89}
+    pivot: {x: 0.5, y: 0.5}
+    size: {x: 0, y: 0}
+    position: {x: 0, y: 0}
+    scale: {x: 1, y: 1, z: 1}
+    graphic: 1
+    text: 1
+    image: 0
+    rawImage: 0
+    aspect: 0
+    fixedCaption: 1
+    caption: 
+    color: {r: 0.2, g: 0.18, b: 0.29, a: 1}
+    fontSize: 28
+    minSize: 16
+    maxSize: 28
+    bestFit: 1
+    preserveAspect: 0
+    aspectEnabled: 0
+    fontStyle: 0
+    alignment: 4
+    font: {fileID: 12800000, guid: ffe40219fd8a4b929b2c14b585ce072a, type: 3}
+    sprite: {fileID: 0}
+    texture: {fileID: 0}
+    uv:
+      serializedVersion: 2
+      x: 0
+      y: 0
+      width: 0
+      height: 0
+    aspectMode: 0
+    aspectRatio: 0
+  - canvasKey: GameScene/Game Canvas
+    path: Safe%20Area#0/Label#0
+    anchorMin: {x: 0.05, y: 0.125}
+    anchorMax: {x: 0.95, y: 0.17}
+    pivot: {x: 0.5, y: 0.5}
+    size: {x: 0, y: 0}
+    position: {x: 0, y: 0}
+    scale: {x: 1, y: 1, z: 1}
+    graphic: 1
+    text: 1
+    image: 0
+    rawImage: 0
+    aspect: 0
+    fixedCaption: 1
+    caption: 
+    color: {r: 0.2, g: 0.18, b: 0.29, a: 1}
+    fontSize: 24
+    minSize: 16
+    maxSize: 24
+    bestFit: 1
+    preserveAspect: 0
+    aspectEnabled: 0
+    fontStyle: 0
+    alignment: 4
+    font: {fileID: 12800000, guid: ffe40219fd8a4b929b2c14b585ce072a, type: 3}
+    sprite: {fileID: 0}
+    texture: {fileID: 0}
+    uv:
+      serializedVersion: 2
+      x: 0
+      y: 0
+      width: 0
+      height: 0
+    aspectMode: 0
+    aspectRatio: 0

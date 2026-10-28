@@ -9,6 +9,12 @@ public sealed class ButtonTweenEffect : MonoBehaviour, IPointerDownHandler, IPoi
     private Button button;
     private Vector3 initialScale;
     private Tween animation;
+    public void SetDesignScale(Vector3 scale)
+    {
+        animation?.Kill();
+        initialScale = scale;
+        transform.localScale = scale;
+    }
     private void Awake()
     {
         button = GetComponent<Button>();

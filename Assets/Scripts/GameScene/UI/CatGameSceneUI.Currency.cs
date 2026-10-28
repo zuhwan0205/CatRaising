@@ -1,4 +1,4 @@
-using System.Globalization;
+﻿using System.Globalization;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -16,7 +16,7 @@ public partial class CatGameSceneUI
         if (headerVersion >= 2 && header != null)
         {
             bool changed = headerVersion < 6;
-            ConfigureProfileHeader(header);
+            ConfigureProfileHeader(header, changed);
             return changed;
         }
         if (header != null)
@@ -29,21 +29,24 @@ public partial class CatGameSceneUI
         return true;
     }
 
-    private void ConfigureProfileHeader(Transform header)
+    private void ConfigureProfileHeader(Transform header, bool updateLayout = true)
     {
-        header.GetComponent<Image>().color = Color.clear;
-        var trim = header.Find("Bottom Trim");
-        if (trim != null) trim.gameObject.SetActive(false);
-        foreach (Transform child in header)
+        if (updateLayout)
         {
-            if (child.GetComponent<Text>() != null) child.gameObject.SetActive(true);
-            if (child.name == "Diamond Row" || child.name == "Gold Row")
+            header.GetComponent<Image>().color = Color.clear;
+            var trim = header.Find("Bottom Trim");
+            if (trim != null) trim.gameObject.SetActive(false);
+            foreach (Transform child in header)
             {
-                child.GetComponent<Image>().color = new Color(.10f, .17f, .17f, .40f);
-                var row = (RectTransform)child;
-                row.anchorMin = new Vector2(.64f, row.anchorMin.y);
-                row.anchorMax = new Vector2(.98f, row.anchorMax.y);
-                row.offsetMin = row.offsetMax = Vector2.zero;
+                if (child.GetComponent<Text>() != null) child.gameObject.SetActive(true);
+                if (child.name == "Diamond Row" || child.name == "Gold Row")
+                {
+                    child.GetComponent<Image>().color = new Color(.10f, .17f, .17f, .40f);
+                    var row = (RectTransform)child;
+                    row.anchorMin = new Vector2(.64f, row.anchorMin.y);
+                    row.anchorMax = new Vector2(.98f, row.anchorMax.y);
+                    row.offsetMin = row.offsetMax = Vector2.zero;
+                }
             }
         }
         var frame = header.Find("Profile Frame");

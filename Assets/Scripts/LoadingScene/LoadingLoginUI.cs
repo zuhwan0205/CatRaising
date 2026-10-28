@@ -1,4 +1,4 @@
-using System.Collections;
+﻿using System.Collections;
 using UnityEngine;
 using UnityEngine.EventSystems;
 using UnityEngine.UI;
@@ -62,6 +62,7 @@ public class LoadingLoginUI : MonoBehaviour
         {
             UpgradeTextSize();
             UpgradeBackgroundSize();
+            UIDesignOverrides.Schedule(root.transform);
             BindButtons();
             PrepareInitialView();
             return;
@@ -314,6 +315,7 @@ public class LoadingLoginUI : MonoBehaviour
         rect.anchorMin = rect.anchorMax = new Vector2(0.5f, 0.5f);
         rect.sizeDelta = size;
         rect.anchoredPosition = position;
+        UIDesignOverrides.Schedule(rect);
         return rect;
     }
 

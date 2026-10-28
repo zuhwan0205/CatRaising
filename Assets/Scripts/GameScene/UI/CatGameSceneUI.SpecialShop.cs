@@ -1,4 +1,4 @@
-using UnityEngine;
+﻿using UnityEngine;
 using UnityEngine.UI;
 
 public partial class CatGameSceneUI
@@ -54,7 +54,7 @@ public partial class CatGameSceneUI
             specialRect.offsetMin = specialRect.offsetMax = Vector2.zero;
         }
         var giftIcon = specialShopButton.transform.Find("Gift Icon Slot/Gift Icon");
-        if (giftIcon != null && giftIcon.localScale != Vector3.one * .85f)
+        if (changed && giftIcon != null && giftIcon.localScale != Vector3.one * .85f)
         {
             giftIcon.localScale = Vector3.one * .85f;
             changed = true;
@@ -112,16 +112,14 @@ public partial class CatGameSceneUI
             RoundCollectionPanel(card);
             var face = Panel(card, "Package Face", new Vector2(.018f,.015f), new Vector2(.982f,.985f), offer.color);
             RoundCollectionPanel(face);
-            var shine = Panel(face, "Package Highlight", new Vector2(.035f,.34f), new Vector2(.965f,.96f), Color.Lerp(offer.color,Color.white,.26f));
-            RoundCollectionPanel(shine);
-            Label(face, "PACKAGE", 17, new Vector2(.06f,.87f), new Vector2(.94f,.97f)).color = cream;
-            PackageGift(face, new Vector2(.20f,.53f), new Vector2(.80f,.85f));
-            var title = Label(face, offer.title, 26, new Vector2(.025f,.40f), new Vector2(.975f,.54f));
+            face.gameObject.AddComponent<Mask>().showMaskGraphic = true;
+            PackageArtwork(face, index, Vector2.zero, Vector2.one, true);
+            var titleBand = Panel(face, "Package Title Band", new Vector2(0,.82f), Vector2.one, new Color(.12f,.09f,.07f,.72f));
+            var title = Label(titleBand, offer.title, 26, new Vector2(.03f,0), new Vector2(.97f,1));
             title.color = Color.white;
             title.fontStyle = FontStyle.Bold;
             title.resizeTextForBestFit = true; title.resizeTextMinSize = 18; title.resizeTextMaxSize = 26;
-            PackageRewards(face, offer, new Vector2(.04f,.20f), new Vector2(.96f,.38f));
-            var price = Panel(face, "Preview Price", new Vector2(.025f,.025f), new Vector2(.975f,.17f), Color.Lerp(offer.color,Color.black,.38f));
+            var price = Panel(face, "Preview Price", new Vector2(.025f,.025f), new Vector2(.975f,.17f), new Color(.12f,.09f,.07f,.82f));
             RoundCollectionPanel(price);
             Label(price, offer.price, 28, Vector2.zero, Vector2.one).color = Color.white;
             // 장식은 입력을 받지 않고 카드 전체가 상세 보기 버튼입니다.
@@ -134,20 +132,21 @@ public partial class CatGameSceneUI
         }
     }
 
-    private void PackageGift(Transform parent, Vector2 min, Vector2 max)
+    private static Texture2D packageArtwork;
+
+    private void PackageArtwork(Transform parent, int index, Vector2 min, Vector2 max, bool fill = false)
     {
-        var slot = Rect(parent, "Package Gift Slot", min, max);
-        var gift = Rect(slot, "Package Gift", Vector2.zero, Vector2.one);
-        var aspect = gift.gameObject.AddComponent<AspectRatioFitter>();
-        aspect.aspectMode = AspectRatioFitter.AspectMode.FitInParent;
-        aspect.aspectRatio = 1;
-        Panel(gift, "Shadow", new Vector2(.10f,.06f), new Vector2(.90f,.75f), new Color(.30f,.18f,.15f));
-        Panel(gift, "Box", new Vector2(.15f,.12f), new Vector2(.85f,.74f), new Color(.98f,.68f,.35f));
-        Panel(gift, "Lid", new Vector2(.08f,.66f), new Vector2(.92f,.81f), new Color(1,.86f,.52f));
-        Panel(gift, "Ribbon", new Vector2(.43f,.12f), new Vector2(.57f,.82f), new Color(.80f,.28f,.30f));
-        Panel(gift, "Bow Left", new Vector2(.22f,.82f), new Vector2(.45f,.96f), new Color(.96f,.40f,.41f));
-        Panel(gift, "Bow Right", new Vector2(.55f,.82f), new Vector2(.78f,.96f), new Color(.96f,.40f,.41f));
-        foreach (var graphic in gift.GetComponentsInChildren<Graphic>()) graphic.raycastTarget = false;
+        if (packageArtwork == null) packageArtwork = Resources.Load<Texture2D>("PackageShopArt");
+        if (packageArtwork == null) return;
+        var slot = Rect(parent, "Package Illustration", min, max);
+        var art = Rect(slot, "Artwork", Vector2.zero, Vector2.one);
+        var image = art.gameObject.AddComponent<RawImage>();
+        image.texture = packageArtwork;
+        image.uvRect = new Rect(index % 2 * .5f, index < 2 ? .5f : 0, .5f, .5f);
+        image.raycastTarget = false;
+        var fit = art.gameObject.AddComponent<AspectRatioFitter>();
+        fit.aspectMode = fill ? AspectRatioFitter.AspectMode.EnvelopeParent : AspectRatioFitter.AspectMode.FitInParent;
+        fit.aspectRatio = (float)packageArtwork.width / packageArtwork.height;
     }
 
     private void PackageRewards(Transform parent, PackagePreview offer, Vector2 min, Vector2 max)
@@ -155,13 +154,36 @@ public partial class CatGameSceneUI
         var row = Rect(parent, "Package Contents", min, max);
         for (int i = 0; i < 2; i++)
         {
-            var tile = Panel(row, i == 0 ? "Diamonds" : "Gold", new Vector2(i*.51f,0), new Vector2(i*.51f+.49f,1), new Color(.28f,.23f,.20f));
+            bool diamond = i == 0;
+            var tile = Panel(row, diamond ? "Diamonds" : "Gold", new Vector2(i*.51f,0), new Vector2(i*.51f+.49f,1), new Color(.28f,.23f,.20f));
             RoundCollectionPanel(tile);
-            var amount = CurrencyCell(tile, "Reward", 0, i == 0);
-            amount.text = (i == 0 ? offer.gems : offer.gold).ToString("N0");
-            amount.fontSize = 22;
-            amount.resizeTextMaxSize = 22;
-            amount.resizeTextMinSize = 15;
+            var name = Label(tile, diamond ? "다이아" : "골드", 22, new Vector2(.03f,.76f), new Vector2(.97f,.98f));
+            name.color = diamond ? new Color(.65f,.93f,1) : new Color(1,.85f,.45f);
+            name.fontStyle = FontStyle.Bold;
+            name.resizeTextForBestFit = true;
+            name.resizeTextMinSize = 16;
+            name.resizeTextMaxSize = 22;
+            var amount = CurrencyCell(tile, "Reward", 0, diamond);
+            var icon = (RectTransform)tile.Find("Reward/Reward Icon");
+            icon.anchorMin = new Vector2(.20f,.33f);
+            icon.anchorMax = new Vector2(.80f,.74f);
+            icon.offsetMin = icon.offsetMax = Vector2.zero;
+            var fit = icon.gameObject.AddComponent<AspectRatioFitter>();
+            fit.aspectMode = AspectRatioFitter.AspectMode.FitInParent;
+            // FitInParent은 전용 슬롯 안에서만 적용해 이름/수량 영역을 침범하지 않습니다.
+            var slot = Rect(tile, "Reward Icon Slot", new Vector2(.20f,.33f), new Vector2(.80f,.74f));
+            icon.SetParent(slot, false);
+            fit.aspectRatio = 1;
+            var amountRect = amount.rectTransform;
+            amountRect.anchorMin = new Vector2(.03f,.03f);
+            amountRect.anchorMax = new Vector2(.97f,.31f);
+            amountRect.offsetMin = amountRect.offsetMax = Vector2.zero;
+            amount.text = (diamond ? offer.gems : offer.gold).ToString("N0");
+            amount.alignment = TextAnchor.MiddleCenter;
+            amount.fontStyle = FontStyle.Bold;
+            amount.fontSize = 26;
+            amount.resizeTextMaxSize = 26;
+            amount.resizeTextMinSize = 16;
         }
     }
 
@@ -173,13 +195,20 @@ public partial class CatGameSceneUI
         packagePopup.SetAsLastSibling();
         var body = PopupContent(packagePopup, "Package Popup Frame", "Package Popup Paper", new Vector2(.045f,.18f), new Vector2(.955f,.85f), new Color(.44f,.28f,.15f), ClosePackagePreview, out var frame);
         DecorateCatPopup(body);
-        var hero = Panel(body, "Package Hero", new Vector2(.025f,.48f), new Vector2(.975f,.975f), Color.Lerp(offer.color,Color.white,.22f));
+        var hero = Panel(body, "Package Hero", new Vector2(.025f,.55f), new Vector2(.975f,.975f), Color.Lerp(offer.color,Color.white,.22f));
         RoundCollectionPanel(hero);
-        Label(hero, offer.title, 30, new Vector2(.04f,.68f), new Vector2(.88f,.96f)).color = Color.white;
-        PackageGift(hero, new Vector2(.24f,.08f), new Vector2(.76f,.67f));
+        PackageArtwork(hero, index, Vector2.zero, Vector2.one);
+        var titleRibbon = Panel(hero, "Title Ribbon", new Vector2(0,.82f), Vector2.one, new Color(.16f,.10f,.07f,.82f));
+        var heroTitle = Label(titleRibbon, offer.title, 28, new Vector2(.03f,0), new Vector2(.86f,1));
+        heroTitle.color = cream;
+        heroTitle.fontStyle = FontStyle.Bold;
+        heroTitle.resizeTextForBestFit = true;
+        heroTitle.resizeTextMinSize = 18;
+        heroTitle.resizeTextMaxSize = 28;
+
         Button(body, "×", new Vector2(.88f,.90f), new Vector2(.98f,.98f), ClosePackagePreview);
-        Label(body, "패키지 구성", 24, new Vector2(.08f,.40f), new Vector2(.92f,.48f));
-        PackageRewards(body, offer, new Vector2(.07f,.28f), new Vector2(.93f,.40f));
+        Label(body, "패키지 구성", 24, new Vector2(.08f,.47f), new Vector2(.92f,.54f));
+        PackageRewards(body, offer, new Vector2(.07f,.27f), new Vector2(.93f,.47f));
         var price = Button(body, offer.price + " · 시안", new Vector2(.15f,.12f), new Vector2(.85f,.24f), () => { });
         CozyButtonStyle.SetColor(price, new Color(1,.75f,.27f));
         var colors = price.colors; colors.disabledColor = new Color(.87f,.72f,.43f); price.colors = colors;

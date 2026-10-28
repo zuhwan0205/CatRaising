@@ -6,6 +6,13 @@ public sealed class UISelectionMotion : MonoBehaviour
 {
     private Vector3 restScale;
     private Tween motion;
+    public void SetDesignScale(Vector3 scale)
+    {
+        motion?.Kill();
+        motion = null;
+        restScale = scale;
+        transform.localScale = scale;
+    }
     private void Awake() => restScale = transform.localScale;
 
     public static void Play(Transform target, bool opening)
