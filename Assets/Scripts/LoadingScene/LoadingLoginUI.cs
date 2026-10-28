@@ -1,4 +1,4 @@
-using System.Collections;
+﻿using System.Collections;
 using UnityEngine;
 using UnityEngine.EventSystems;
 using UnityEngine.UI;
@@ -62,6 +62,7 @@ public class LoadingLoginUI : MonoBehaviour
         {
             UpgradeTextSize();
             UpgradeBackgroundSize();
+            UIDesignOverrides.Schedule(root.transform);
             BindButtons();
             PrepareInitialView();
             return;
@@ -149,6 +150,11 @@ public class LoadingLoginUI : MonoBehaviour
 
     private void BindButtons()
     {
+        foreach (var button in root.GetComponentsInChildren<Button>(true))
+        {
+            CozyButtonStyle.RoundCorners(button);
+            if (button.GetComponent<ButtonTweenEffect>() == null) button.gameObject.AddComponent<ButtonTweenEffect>();
+        }
         // 재초기화에서도 런타임 이벤트가 중복되지 않도록 합니다.
         signUpButton.onClick.RemoveAllListeners();
         loginButton.onClick.RemoveAllListeners();
@@ -314,6 +320,7 @@ public class LoadingLoginUI : MonoBehaviour
         rect.anchorMin = rect.anchorMax = new Vector2(0.5f, 0.5f);
         rect.sizeDelta = size;
         rect.anchoredPosition = position;
+        UIDesignOverrides.Schedule(rect);
         return rect;
     }
 

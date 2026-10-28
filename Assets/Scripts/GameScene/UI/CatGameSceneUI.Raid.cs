@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
@@ -42,7 +42,8 @@ public partial class CatGameSceneUI
         }
         if (title != "모험") { Show(title); return; }
         if (adventureMenu != null) { CloseAdventureMenu(); return; }
-        adventureMenu = Panel(safeArea, "Adventure Menu", new Vector2(.26f, .14f), new Vector2(.74f, .235f), new Color(.16f, .20f, .17f, .8f));
+        adventureMenu = Panel(safeArea, "Adventure Menu", new Vector2(.24f, .13f), new Vector2(.76f, .27f), Color.clear);
+        adventureMenu.GetComponent<Image>().raycastTarget = false;
         adventureMenu.SetAsLastSibling();
         AdventureIconButton("전투", 0, .02f, .32f, () => Show("모험"));
         AdventureIconButton("던전", 2, .35f, .65f, () => Show("던전"));

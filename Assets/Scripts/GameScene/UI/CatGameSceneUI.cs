@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Linq;
 using UnityEngine;
 using UnityEngine.Events;
@@ -62,6 +62,7 @@ public partial class CatGameSceneUI : MonoBehaviour
         if (uiFont == null)
             uiFont = font;
         preview = isPreview;
+        UIDesignOverrides.Schedule(safeArea);
         if (uiFont == null)
             uiFont = Font.CreateDynamicFontFromOSFont(new[] { "Malgun Gothic", "Apple SD Gothic Neo", "Noto Sans CJK KR", "Arial" }, 24);
         if (HasSceneUI) { UpgradeTextSize(); UpgradeBackground(); UpgradeCurrencyHeader(); UpgradeNavigationIcons(); BindTabs(); Show("모험"); return; }
@@ -490,6 +491,7 @@ public partial class CatGameSceneUI : MonoBehaviour
         rect.anchorMin = min;
         rect.anchorMax = max;
         rect.offsetMin = rect.offsetMax = Vector2.zero;
+        UIDesignOverrides.Schedule(rect);
         return rect;
     }
     private RectTransform Panel(Transform parent, string name, Vector2 min, Vector2 max, Color color)

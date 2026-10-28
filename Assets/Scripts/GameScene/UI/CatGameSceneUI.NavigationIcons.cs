@@ -1,4 +1,4 @@
-using UnityEngine;
+﻿using UnityEngine;
 using UnityEngine.UI;
 
 public partial class CatGameSceneUI
@@ -50,14 +50,6 @@ public partial class CatGameSceneUI
             var existing = tab.transform.Find("Navigation Icon");
             if (existing != null)
             {
-                if (existing.localScale != Vector3.one * iconScale)
-                {
-                    existing.localScale = Vector3.one * iconScale;
-                    changed = true;
-                }
-                var current = existing.GetComponent<RawImage>();
-                var uv = CenteredIconRect(i, false);
-                if (current != null && current.uvRect != uv) { current.uvRect = uv; changed = true; }
                 continue;
             }
             foreach (var label in tab.GetComponentsInChildren<Text>(true)) label.gameObject.SetActive(false);
@@ -77,9 +69,12 @@ public partial class CatGameSceneUI
         return changed;
     }
 
-    private void AdventureIconButton(string title, int icon, float bottom, float top, UnityEngine.Events.UnityAction action)
+    private void AdventureIconButton(string title, int icon, float left, float right, UnityEngine.Events.UnityAction action)
     {
-        var button = Button(adventureMenu, title, new Vector2(bottom, .05f), new Vector2(top, .95f), action);
+        // 전투 / 던전 / 레이드: 가운데를 높여 아치형으로 펼칩니다.
+        float bottom = icon == 2 ? .34f : .02f;
+        var button = Button(adventureMenu, title, new Vector2(left, bottom), new Vector2(right, bottom + .62f), action);
+        button.gameObject.AddComponent<MenuButtonReveal>().Order = icon == 0 ? 0 : icon == 2 ? 1 : 2;
         var texture = Resources.Load<Texture2D>("GameUIArt/AdventureIcons");
         if (texture == null) return;
         texture.filterMode = FilterMode.Point;
