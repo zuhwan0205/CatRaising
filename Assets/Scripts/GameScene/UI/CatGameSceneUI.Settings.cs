@@ -32,6 +32,8 @@ public partial class CatGameSceneUI
 
     private void BuildSettingsGear(Transform button)
     {
+        if (button.GetComponent<SettingsGearTween>() == null)
+            button.gameObject.AddComponent<SettingsGearTween>();
         var old = button.Find("Gear Icon");
         if (old != null && old.GetComponent<SettingsGearGraphic>() != null) return;
         if (old != null)
@@ -83,8 +85,8 @@ public partial class CatGameSceneUI
         Button low = null, high = null;
         Action refresh = () =>
         {
-            CozyButtonStyle.SetColor(low, CatLocalSettings.FrameRate == 30 ? CozyButtonStyle.Green : CozyButtonStyle.Cream);
-            CozyButtonStyle.SetColor(high, CatLocalSettings.FrameRate == 60 ? CozyButtonStyle.Green : CozyButtonStyle.Cream);
+            StyleFrameRateOption(low, CatLocalSettings.FrameRate == 30, "30 FPS · 절전");
+            StyleFrameRateOption(high, CatLocalSettings.FrameRate == 60, "60 FPS · 부드럽게");
         };
         low = Button(body, "30 FPS · 절전", new Vector2(.10f, .305f), new Vector2(.48f, .385f), () => { CatLocalSettings.SetFrameRate(30); refresh(); });
         high = Button(body, "60 FPS · 부드럽게", new Vector2(.52f, .305f), new Vector2(.90f, .385f), () => { CatLocalSettings.SetFrameRate(60); refresh(); });
@@ -106,6 +108,23 @@ public partial class CatGameSceneUI
         var logout = Button(body, "로그아웃", new Vector2(.52f, .18f), new Vector2(.90f, .28f), () => { if (!settingsBusy && !saving) ShowLogoutConfirmation(); });
         CozyButtonStyle.Apply(logout, CozyButtonStyle.Peach);
         Label(body, "v" + Application.version, 16, new Vector2(.10f, 0), new Vector2(.90f, .035f));
+    }
+
+    private static void StyleFrameRateOption(Button button, bool applied, string title)
+    {
+        // 포커스가 이동해도 실제 저장된 프레임 설정을 기준으로 표시합니다.
+        var color = applied ? new Color(.96f, .72f, .29f) : new Color(.72f, .70f, .66f);
+        CozyButtonStyle.SetColor(button, color);
+        var colors = button.colors;
+        colors.selectedColor = color;
+        button.colors = colors;
+        var label = button.GetComponentInChildren<Text>();
+        label.text = applied ? title + "\n적용 중" : title;
+        label.fontStyle = applied ? FontStyle.Bold : FontStyle.Normal;
+        label.color = applied ? new Color(.24f, .16f, .06f) : new Color(.30f, .29f, .27f);
+        label.resizeTextForBestFit = true;
+        label.resizeTextMinSize = 16;
+        label.resizeTextMaxSize = 23;
     }
 
     private void AudioVolumeRow(RectTransform body, CatAudioChannel channel, string title, float top)

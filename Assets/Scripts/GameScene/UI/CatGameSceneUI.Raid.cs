@@ -34,6 +34,12 @@ public partial class CatGameSceneUI
     private void Navigate(string title)
     {
         if (raidActive) { ShowStatus("레이드를 종료한 뒤 이동해주세요."); return; }
+        if (detailOverlay == null && drawOverlay == null && tabs != null)
+        {
+            int index = title == "모험" ? 0 : title == "상점" ? 1 : title == "캐릭터" ? 2 : title == "유물" ? 3 : -1;
+            if (index >= 0 && index < tabs.Length && tabs[index] != null)
+                UISelectionMotion.Play(tabs[index].transform.Find("Navigation Icon"), false);
+        }
         if (title != "모험") { Show(title); return; }
         if (adventureMenu != null) { CloseAdventureMenu(); return; }
         adventureMenu = Panel(safeArea, "Adventure Menu", new Vector2(.045f, .135f), new Vector2(.27f, .428f), new Color(.16f, .20f, .17f, .8f));
@@ -263,6 +269,7 @@ public partial class CatGameSceneUI
         image.gameObject.AddComponent<FieldViewportSize>().Target = fieldTexture;
         var header = Panel(page, "Raid HUD", new Vector2(0, .85f), Vector2.one, new Color(0, 0, 0, .65f));
         raidHealth = Label(header, "", 26, Vector2.zero, Vector2.one);
+        raidHealth.rectTransform.offsetMax = new Vector2(-80, 0);
         raidHealth.color = Color.white;
         if (!dungeonMode)
         {

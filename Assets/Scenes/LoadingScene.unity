@@ -3304,7 +3304,7 @@ RectTransform:
   m_AnchorMax: {x: 0, y: 0}
   m_AnchoredPosition: {x: 0, y: 0}
   m_SizeDelta: {x: 0, y: 0}
-  m_Pivot: {x: 0.5, y: 0.5}
+  m_Pivot: {x: 0.5, y: 0.25}
 --- !u!114 &1996408628
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -3318,7 +3318,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: UnityEngine.UI::UnityEngine.UI.AspectRatioFitter
   m_AspectMode: 4
-  m_AspectRatio: 1
+  m_AspectRatio: 0.5
 --- !u!114 &1996408629
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -3419,7 +3419,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::LoadingLoginUI
   textSizeVersion: 1
-  backgroundSizeVersion: 2
+  backgroundSizeVersion: 4
   uiFont: {fileID: 12800000, guid: ffe40219fd8a4b929b2c14b585ce072a, type: 3}
   root: {fileID: 939176403}
   choice: {fileID: 784993284}
