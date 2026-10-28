@@ -1,0 +1,8 @@
+# 세로형 로그인 배경
+
+내장 image_gen 도구로 생성. CatVillageLogin.png를 교체하고 기존 meta/GUID 유지.
+전체 화면 채우기(EnvelopeParent), pivot (0.5, 0.25). 화면 비율에 따라 주변 풍경이 잘리며 하단 고양이를 우선 보존한다.
+
+## 생성 프롬프트
+
+Use case: stylized-concept. Create a finished full-bleed mobile game login background, very tall portrait aspect ratio 9:20 (e.g. 1080x2400). Reference image is STYLE AND MOOD only; redesign composition for a tall phone, do not repeat its wide composition. Cute finely crafted crisp pixel-art cat village at golden peach sunset, moss-green grass, cream cottage with warm terracotta roof, distant lavender mountains and glowing lake, flowers, small lanterns. Three adorable cats (orange tabby holding a fish, white sleeping kitten, gray kitten with red yarn) grouped together in the lower central area, ALL fully inside central 60% of width and between 68% and 83% of image height. Main small cottage comfortably inside middle 65% width near upper-middle-left; no important characters or buildings touching edges. Central middle 35%-65% height is a quiet low-detail softly lit grassy path / distant lake area reserved for login controls; no UI drawn. Upper 25% is beautiful soft peach pixel sky reserved for game title. Extra scenery padding top and bottom, outer 18% left/right only foliage and grass that may be cropped for 9:21 phones. Compose safe for cropping top/bottom for 9:16 and 3:4 screens while retaining cats. Painterly richness but clear square pixel clusters, warm cozy adorable fantasy farm mood, consistent pixel size, no blur, no photorealism. No text, letters, logo, watermark, buttons, borders, framing, blank margins or transparency. Entire canvas painted edge to edge.

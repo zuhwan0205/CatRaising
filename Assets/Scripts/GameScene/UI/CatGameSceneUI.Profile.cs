@@ -17,21 +17,51 @@ public partial class CatGameSceneUI
     {
         if (!Application.isPlaying || data == null || detailOverlay != null || drawOverlay != null || profilePopup != null) return;
         var body = ProfileBody("집사 프로필", false);
-        var portrait = Panel(body, "Portrait Border", new Vector2(.05f, .32f), new Vector2(.35f, .79f), new Color(.40f, .27f, .20f));
-        var inset = Panel(portrait, "Portrait Inset", new Vector2(.04f, .04f), new Vector2(.96f, .96f), new Color(.84f, .71f, .55f));
-        CharacterPortrait(inset, catalog.FindCharacter(ProfilePortraitId));
-        var name = Label(body, ProfileName, 27, new Vector2(.40f, .57f), new Vector2(.81f, .78f));
+        var definition = catalog.FindCharacter(ProfilePortraitId);
+        Color rarity = definition != null ? CharacterRarityColor(definition.rarity) : CozyButtonStyle.Cream;
+        var portraitArea = Rect(body, "Portrait Area", new Vector2(.055f, .34f), new Vector2(.365f, .77f));
+        // FitInParent는 자신의 앵커를 부모 전체로 바꾸므로 배치 슬롯과 분리합니다.
+        var portraitSquare = Rect(portraitArea, "Portrait Square", Vector2.zero, Vector2.one);
+        var square = portraitSquare.gameObject.AddComponent<AspectRatioFitter>();
+        square.aspectMode = AspectRatioFitter.AspectMode.FitInParent;
+        square.aspectRatio = 1;
+        var portrait = CollectionFrame(portraitSquare, "Portrait Border", rarity);
+        var inset = Panel(portrait, "Portrait Inset", new Vector2(.075f, .075f), new Vector2(.925f, .925f), new Color(.95f,.87f,.70f));
+        RoundCollectionPanel(inset);
+        CharacterPortrait(inset, definition);
+        ProfileIconButton(portrait, "사진 변경", "photo", new Vector2(.73f, -.04f), new Vector2(1.08f, .31f), ShowProfilePortraitPicker);
+
+        var namePlate = Panel(body, "Name Plate", new Vector2(.405f,.53f), new Vector2(.95f,.76f), new Color(.91f,.82f,.66f));
+        RoundCollectionPanel(namePlate);
+        var name = Label(namePlate, ProfileName, 30, new Vector2(.07f,.08f), new Vector2(.78f,.92f));
         name.supportRichText = false;
         name.alignment = TextAnchor.MiddleLeft;
-        ProfileIconButton(body, "이름 변경", "edit", new Vector2(.82f, .57f), new Vector2(.96f, .79f), ShowProfileNameEditor, .5f);
-        ProfileIconButton(body, "사진 변경", "photo", new Vector2(.25f, .27f), new Vector2(.39f, .49f), ShowProfilePortraitPicker, .5f);
-        Label(body, $"Lv. {data.progress.accountLevel}", 23, new Vector2(.40f, .35f), new Vector2(.58f, .53f));
+        name.color = new Color(.28f,.22f,.16f);
+        name.resizeTextForBestFit = true;
+        name.resizeTextMinSize = 19;
+        name.resizeTextMaxSize = 30;
+        ProfileIconButton(namePlate, "이름 변경", "edit", new Vector2(.80f,.17f), new Vector2(.97f,.83f), ShowProfileNameEditor);
+        var level = Panel(body, "Level Badge", new Vector2(.405f,.36f), new Vector2(.69f,.49f), new Color(.56f,.40f,.28f));
+        RoundCollectionPanel(level);
+        Label(level, $"Lv. {data.progress.accountLevel}", 24, Vector2.zero, Vector2.one).color = new Color(1,.94f,.77f);
+
         long required = Math.Max(1, data.progress.accountLevel) * 100L;
         long experience = Math.Max(0, data.progress.accountExperience);
-        var track = Panel(body, "Account EXP Track", new Vector2(.40f, .11f), new Vector2(.95f, .27f), new Color(.27f, .20f, .16f));
-        var fill = Panel(track, "Account EXP Fill", new Vector2(.02f, .12f), new Vector2(.02f + .96f * Mathf.Clamp01((float)((double)experience / required)), .88f), new Color(.96f, .68f, .22f));
+        var expCard = Panel(body, "Experience Card", new Vector2(.055f,.055f), new Vector2(.945f,.29f), new Color(.93f,.85f,.71f));
+        RoundCollectionPanel(expCard);
+        var caption = Label(expCard, "EXP", 20, new Vector2(.04f,.58f), new Vector2(.52f,.96f));
+        caption.alignment = TextAnchor.MiddleLeft;
+        caption.color = new Color(.38f,.30f,.21f);
+        var track = Panel(expCard, "Account EXP Track", new Vector2(.035f,.13f), new Vector2(.965f,.53f), new Color(.70f,.57f,.42f));
+        RoundCollectionPanel(track);
+        var fill = Panel(track, "Account EXP Fill", new Vector2(.012f,.13f), new Vector2(.988f,.87f), new Color(.93f,.67f,.25f));
+        RoundCollectionPanel(fill);
+        fill.pivot = new Vector2(0,.5f);
+        fill.localScale = new Vector3(Mathf.Clamp01((float)((double)experience / required)), 1, 1);
         fill.GetComponent<Image>().raycastTarget = false;
-        Label(track, $"EXP {experience:N0} / {required:N0}", 17, Vector2.zero, Vector2.one).color = Color.white;
+        var value = Label(expCard, $"{experience:N0} / {required:N0}", 19, new Vector2(.50f,.58f), new Vector2(.96f,.96f));
+        value.alignment = TextAnchor.MiddleRight;
+        value.color = new Color(.38f,.30f,.21f);
     }
 
     private RectTransform ProfileBody(string title, bool tall)
@@ -40,10 +70,19 @@ public partial class CatGameSceneUI
         profilePopup = Panel(safeArea, "Profile Popup", Vector2.zero, Vector2.one, new Color(.06f, .04f, .03f, .72f));
         profilePopup.SetAsLastSibling();
         var body = PopupContent(profilePopup, "Profile Frame", "Profile Content",
-            new Vector2(.045f, tall ? .20f : .36f), new Vector2(.955f, tall ? .82f : .70f), new Color(.35f, .23f, .17f), CloseProfilePopup, out _);
-        body.GetComponent<Image>().color = new Color(.97f, .89f, .79f);
-        Label(body, title, 28, new Vector2(.08f, .82f), new Vector2(.82f, .98f));
+            new Vector2(.045f, tall ? .20f : .31f), new Vector2(.955f, tall ? .82f : .73f), new Color(.35f, .23f, .17f), CloseProfilePopup, out var frame);
+        RoundCollectionPanel(frame);
+        var shadow = frame.gameObject.AddComponent<Shadow>();
+        shadow.effectColor = new Color(.10f,.07f,.04f,.45f);
+        shadow.effectDistance = new Vector2(0,-8);
+        DecorateCatPopup(body);
+        var ribbon = Panel(body, "Profile Title Ribbon", new Vector2(.025f,.815f), new Vector2(.975f,.985f), new Color(.56f,.40f,.28f));
+        RoundCollectionPanel(ribbon);
+        var trim = Panel(ribbon, "Ribbon Gold Trim", new Vector2(.04f,.06f), new Vector2(.96f,.10f), new Color(.85f,.68f,.39f));
+        trim.GetComponent<Image>().raycastTarget = false;
+        Label(body, title, 29, new Vector2(.08f,.83f), new Vector2(.82f,.98f)).color = new Color(1,.94f,.78f);
         ProfileIconButton(body, "닫기", "close", new Vector2(.85f, .81f), new Vector2(.98f, .99f), CloseProfilePopup);
+        UISelectionMotion.Play(frame, true);
         return body;
     }
 
@@ -61,16 +100,27 @@ public partial class CatGameSceneUI
         var fit = face.gameObject.AddComponent<AspectRatioFitter>();
         fit.aspectMode = AspectRatioFitter.AspectMode.FitInParent;
         fit.aspectRatio = 1;
-        // 기존 버튼 스킨을 작은 정사각형에 적용하고 라벨 없이 아이콘만 표시합니다.
+        // 프로필의 작은 아이콘은 같은 모카 색상으로 통일합니다.
+        // 루트 이미지는 투명한 클릭 영역, 정사각형 face는 표시와 색상 전환 전용입니다.
+        RoundCollectionPanel(face);
+        face.GetComponent<Image>().color = Color.white;
         button.targetGraphic = face.GetComponent<Image>();
-        CozyButtonStyle.Apply(button, CozyButtonStyle.Cream);
+        CozyButtonStyle.SetColor(button, new Color(.56f,.40f,.28f));
+        button.gameObject.AddComponent<ButtonTweenEffect>();
         var drawing = Rect(face, "Icon", new Vector2(.22f, .22f), new Vector2(.78f, .78f));
         if (icon == "edit")
         {
             drawing.anchorMin = new Vector2(.10f, .10f);
             drawing.anchorMax = new Vector2(.90f, .90f);
         }
-        Color dark = new Color(.28f, .18f, .12f);
+        if (icon == "close")
+        {
+            // 투명한 루트는 클릭 영역으로 남기고 닫기 아이콘의 배경만 숨깁니다.
+            face.GetComponent<Image>().enabled = false;
+            button.targetGraphic = hitImage;
+            button.transition = Selectable.Transition.None;
+        }
+        Color dark = new Color(1f, .94f, .82f);
         if (icon == "edit")
         {
             drawing.localRotation = Quaternion.Euler(0, 0, -40);

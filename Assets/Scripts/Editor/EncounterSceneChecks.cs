@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Linq;
 using System.Reflection;
 using System.Threading.Tasks;
@@ -86,6 +86,7 @@ public static class EncounterSceneChecks
             Require(SceneManager.GetActiveScene().name == CatGameRuntime.DungeonScene, "던전 씬 전환 실패");
             Require(UnityEngine.Object.FindAnyObjectByType<DungeonDefenseBattle>() != null, "던전 전투 생성 실패");
             Require(UnityEngine.Object.FindAnyObjectByType<CatFieldController>() == null, "던전에 메인 필드가 생성됨");
+            await CheckEncounterPause();
             await SimulateResult(true);
             Require(data.wallet.gems == gems + 10 && data.progress.dungeonClearedStage == 1, "던전 보상/진행도 오류");
             await SimulateResult(true);
@@ -98,6 +99,7 @@ public static class EncounterSceneChecks
             var field = UnityEngine.Object.FindAnyObjectByType<CatFieldController>();
             Require(field != null && field.RaidRunning && field.Combat == null, "레이드 전용 필드 생성 실패");
             Require(UnityEngine.Object.FindObjectsByType<FieldCombatController>().Length == 4, "레이드 고양이 수 오류");
+            await CheckEncounterPause();
             await SimulateResult(true);
             await SimulateResult(true);
             Require(data.wallet.gems == gems + 20, "레이드 보상/중복 방지 오류");
@@ -108,6 +110,10 @@ public static class EncounterSceneChecks
             await SimulateResult(false);
             Require(data.wallet.gems == gems + 20 && data.progress.dungeonClearedStage == 1, "패배 시 보상이 지급됨");
             await Bounded(runtime.ReturnToMainAsync());
+            AssertMain(runtime, session, data);
+            await CheckPauseExit(runtime, true);
+            AssertMain(runtime, session, data);
+            await CheckPauseExit(runtime, false);
             AssertMain(runtime, session, data);
             Require(errors == 0, "플레이 중 오류 로그 발생: " + errors);
             Debug.Log("PASS EncounterSceneChecks: dungeon/raid transitions, persistent data, no duplicate rewards, defeat, event cleanup");
@@ -121,6 +127,78 @@ public static class EncounterSceneChecks
             EditorApplication.Exit(1);
         }
         finally { Application.logMessageReceived -= onLog; }
+    }
+
+    private static void ClickThroughRaycast(UnityEngine.UI.Button button)
+    {
+        Canvas.ForceUpdateCanvases();
+        var rect = (RectTransform)button.transform;
+        var canvas = button.GetComponentInParent<Canvas>();
+        var camera = canvas.renderMode == RenderMode.ScreenSpaceOverlay ? null : canvas.worldCamera;
+        var pointer = new UnityEngine.EventSystems.PointerEventData(UnityEngine.EventSystems.EventSystem.current)
+        {
+            position = RectTransformUtility.WorldToScreenPoint(camera, rect.TransformPoint(rect.rect.center)),
+            button = UnityEngine.EventSystems.PointerEventData.InputButton.Left
+        };
+        var hits = new System.Collections.Generic.List<UnityEngine.EventSystems.RaycastResult>();
+        UnityEngine.EventSystems.EventSystem.current.RaycastAll(pointer, hits);
+        Require(hits.Count > 0, "버튼에 클릭이 도달하지 않음: " + button.name);
+        var target = UnityEngine.EventSystems.ExecuteEvents.GetEventHandler<UnityEngine.EventSystems.IPointerClickHandler>(hits[0].gameObject);
+        Require(target == button.gameObject, "다른 UI가 버튼 클릭을 가림: " + hits[0].gameObject.name);
+        UnityEngine.EventSystems.ExecuteEvents.Execute(target, pointer, UnityEngine.EventSystems.ExecuteEvents.pointerDownHandler);
+        UnityEngine.EventSystems.ExecuteEvents.Execute(target, pointer, UnityEngine.EventSystems.ExecuteEvents.pointerUpHandler);
+        UnityEngine.EventSystems.ExecuteEvents.Execute(target, pointer, UnityEngine.EventSystems.ExecuteEvents.pointerClickHandler);
+    }
+
+    private static async Task CheckPauseExit(CatGameRuntime runtime, bool dungeon)
+    {
+        var team = runtime.Data.characters.Take(dungeon ? 3 : 4).ToList();
+        await Bounded(runtime.EnterEncounterAsync(dungeon, dungeon ? 1 : 0, team));
+        long gems = runtime.Data.wallet.gems;
+        float previousScale = Time.timeScale;
+        var view = UnityEngine.Object.FindAnyObjectByType<CatGameSceneUI>();
+        ClickThroughRaycast(GameObject.Find("Encounter Pause Button").GetComponent<UnityEngine.UI.Button>());
+        var overlay = GameObject.Find("Encounter Pause");
+        var exit = overlay.GetComponentsInChildren<UnityEngine.UI.Button>()
+            .Single(button => button.GetComponentInChildren<UnityEngine.UI.Text>().text == "나가기");
+        ClickThroughRaycast(exit);
+        var deadline = DateTime.UtcNow.AddSeconds(45);
+        while (SceneManager.GetActiveScene().name != CatGameRuntime.MainScene)
+        {
+            if (DateTime.UtcNow > deadline) throw new TimeoutException("일시정지 메뉴에서 복귀 실패");
+            await Task.Delay(50);
+        }
+        await Task.Delay(250);
+        Require(Time.timeScale == previousScale, "메인 복귀 후 정지가 풀리지 않음");
+        Require(GameObject.Find("Encounter Pause") == null, "메인 복귀 후 정지 팝업 잔류");
+        Require(runtime.Data.wallet.gems == gems, "포기에 클리어 보상이 지급됨");
+        Debug.Log("PASS paused exit to main: " + (dungeon ? "DungeonScene" : "RaidScene"));
+    }
+
+    private static async Task CheckEncounterPause()
+    {
+        var view = UnityEngine.Object.FindAnyObjectByType<CatGameSceneUI>();
+        var field = UnityEngine.Object.FindAnyObjectByType<CatFieldController>();
+        float previousScale = Time.timeScale;
+        ClickThroughRaycast(GameObject.Find("Encounter Pause Button").GetComponent<UnityEngine.UI.Button>());
+        Require(Time.timeScale == 0, "메뉴를 열어도 전투가 정지되지 않음");
+        float seconds = field != null ? field.RaidSeconds : 0;
+        double hp = field != null ? field.RaidBoss.Health.Current : 0;
+        await Task.Delay(200);
+        if (field != null)
+        {
+            Require(field.RaidSeconds == seconds, "일시정지 중 레이드 시간 감소");
+            Require(field.RaidBoss.Health.Current == hp, "일시정지 중 공격 발생");
+        }
+        var overlay = GameObject.Find("Encounter Pause");
+        Require(overlay != null, "일시정지 메뉴가 없음");
+        var resume = overlay.GetComponentsInChildren<UnityEngine.UI.Button>()
+            .Single(button => button.GetComponentInChildren<UnityEngine.UI.Text>().text == "계속하기");
+        ClickThroughRaycast(resume);
+        Require(Time.timeScale == previousScale, "계속하기 후 시간 배율 복원 실패");
+        await Task.Delay(50);
+        Require(GameObject.Find("Encounter Pause") == null, "계속하기 후 팝업 잔류");
+        Debug.Log("PASS encounter pause/resume: " + SceneManager.GetActiveScene().name);
     }
 
     private static async Task CheckSessionNotifications()

@@ -171,6 +171,7 @@ public partial class CatGameSceneUI
     {
         var area = Rect(root, "Defense HUD Safe Area", safeArea.anchorMin, safeArea.anchorMax);
         var panel = MapDecoration(area, "Battle Information", new Vector2(.025f,.89f), new Vector2(.975f,.985f), new Color(.19f,.24f,.18f,.83f));
+        panel.offsetMax = new Vector2(-80, 0); // 오른쪽 상단 메뉴 버튼 공간
         RoundCollectionPanel(panel);
         MapDecoration(panel, "Gold Trim", new Vector2(.03f,.04f), new Vector2(.97f,.065f), new Color(.86f,.69f,.40f,.8f));
         var waveText = Label(panel, "", 22, new Vector2(.02f,.43f), new Vector2(.33f,.93f));

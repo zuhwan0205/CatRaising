@@ -9,10 +9,14 @@ public partial class CatGameSceneUI
 
     private void BuildEncounterPauseButton(RectTransform parent)
     {
-        var button = Button(parent, "", Vector2.one, Vector2.one, OpenEncounterPause);
+        var buttonArea = dungeonMode
+            ? Rect(parent, "Pause Button Safe Area", safeArea.anchorMin, safeArea.anchorMax)
+            : parent;
+        var button = Button(buttonArea, "", Vector2.one, Vector2.one, OpenEncounterPause);
+        button.name = "Encounter Pause Button";
         var rect = (RectTransform)button.transform;
         rect.sizeDelta = new Vector2(64, 64);
-        rect.anchoredPosition = new Vector2(-48, -140);
+        rect.anchoredPosition = new Vector2(-44, -44);
         CozyButtonStyle.Apply(button, CozyButtonStyle.Cream);
         for (int i = 0; i < 3; i++)
         {
@@ -22,8 +26,10 @@ public partial class CatGameSceneUI
             var face = Panel(edge, "Menu Line", new Vector2(.07f,.20f), new Vector2(.93f,.80f), new Color(1,.96f,.84f));
             RoundCollectionPanel(face);
         }
+        // targetGraphic은 색상 전환용 내부 장식입니다. 실제 클릭 영역은 루트 이미지입니다.
+        var hitArea = button.GetComponent<Image>();
         foreach (var graphic in button.GetComponentsInChildren<Graphic>())
-            if (graphic != button.targetGraphic) graphic.raycastTarget = false;
+            graphic.raycastTarget = graphic == hitArea;
     }
 
     private void OpenEncounterPause()

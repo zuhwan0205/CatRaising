@@ -13,12 +13,21 @@ public class LoadingLoginUI : MonoBehaviour
     [SerializeField] private int backgroundSizeVersion;
     public bool UpgradeBackgroundSize()
     {
-        if (backgroundSizeVersion >= 2 || root == null) return false;
+        if (backgroundSizeVersion >= 4 || root == null) return false;
         var picture = root.transform.Find("Background/Cat Village Background");
         if (picture == null) return false;
-        // 씬에 저장된 축소 상태도 원래 크기로 복원합니다.
+        // 세로형 아트로 화면을 채우고, 짧은 화면에서도 아래쪽 고양이를 보존합니다.
         picture.localScale = Vector3.one;
-        backgroundSizeVersion = 2;
+        var fit = picture.GetComponent<AspectRatioFitter>();
+        if (fit != null)
+        {
+            fit.aspectMode = AspectRatioFitter.AspectMode.EnvelopeParent;
+            var image = picture.GetComponent<RawImage>();
+            if (image != null && image.texture != null)
+                fit.aspectRatio = (float)image.texture.width / image.texture.height;
+        }
+        ((RectTransform)picture).pivot = new Vector2(.5f, .25f);
+        backgroundSizeVersion = 4;
         return true;
     }
     public bool UpgradeTextSize()
