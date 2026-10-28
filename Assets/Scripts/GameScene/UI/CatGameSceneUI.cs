@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Linq;
 using UnityEngine;
 using UnityEngine.Events;
@@ -178,11 +178,14 @@ public partial class CatGameSceneUI : MonoBehaviour
         string[] names = { "모험", "상점", "캐릭터", "유물" };
         for (int i = 0; i < tabs.Length; i++)
             CozyButtonStyle.SetColor(tabs[i], names[i] == tab ? CozyButtonStyle.Green : CozyButtonStyle.Cream);
+        if (specialShopButton != null) CozyButtonStyle.SetColor(specialShopButton, tab == "특별 상점" ? CozyButtonStyle.Peach : CozyButtonStyle.Cream);
         AdventureVisibilityChanged?.Invoke(tab == "모험");
         if (tab == "모험")
             Adventure();
         else if (tab == "상점")
             Shop();
+        else if (tab == "특별 상점")
+            SpecialShop();
         else if (tab == "캐릭터")
             Characters();
         else if (tab == "레이드")

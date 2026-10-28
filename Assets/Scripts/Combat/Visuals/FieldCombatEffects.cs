@@ -1,10 +1,12 @@
-﻿using UnityEngine;
+using UnityEngine;
 using UnityEngine.Rendering;
 
 // 재사용하는 할퀴기 3줄과 피격 색상. 피해 판정에는 관여하지 않습니다.
 [DefaultExecutionOrder(210)]
 public class FieldCombatEffects : MonoBehaviour
 {
+    // 전투 개체의 깊이 정렬(10000 기준)보다 앞, 피해 숫자(20000)보다 뒤에 표시합니다.
+    public const int AttackSortingOrder = 18000;
     private Camera view;
     public Camera EffectCamera => view;
     private FieldCombatController combat;
@@ -80,14 +82,15 @@ public class FieldCombatEffects : MonoBehaviour
             float angle = Mathf.Atan2(projected.y, projected.x) * Mathf.Rad2Deg;
             Vector3 position = spell.fire ? spell.source : impact ? spell.destination :
                 Vector3.Lerp(spell.source, spell.destination, Mathf.Clamp01(spell.age / CatSpellSprites.FlightSeconds));
-            sprite.transform.position = position + view.transform.up * .55f;
+            sprite.transform.position = spell.fire && characterVisual != null
+                ? characterVisual.DragonMouthPosition : position + view.transform.up * .55f;
             sprite.transform.rotation = view.transform.rotation * Quaternion.Euler(0, 0, impact ? 0 : angle);
             float size = spell.fire ? Mathf.Max(.3f, projected.magnitude) : impact ? CharacterCombatRules.SplashRadius * 2 : 1.2f;
             sprite.transform.localScale = Vector3.one * size;
             float fade = spell.fire ? Mathf.Clamp01((CatSpellSprites.BreathSeconds - spell.age) / .10f) :
                 impact ? Mathf.Clamp01(1 - (spell.age - CatSpellSprites.FlightSeconds) / CatSpellSprites.ImpactSeconds) : 1;
             sprite.color = new Color(1, 1, 1, fade);
-            sprite.sortingOrder = 10005 - Mathf.RoundToInt(Vector3.Dot(position - view.transform.position, view.transform.forward) * 100);
+            sprite.sortingOrder = AttackSortingOrder;
         }
     }
 
@@ -175,7 +178,7 @@ public class FieldCombatEffects : MonoBehaviour
         slash.rotation = view.transform.rotation;
         float progress = 1 - slashTime / Duration;
         slash.localScale = new Vector3(facing * (.65f + progress * .6f), .65f + progress * .6f, 1);
-        group.sortingOrder = 10002 - Mathf.RoundToInt(Vector3.Dot(target - view.transform.position, view.transform.forward) * 100);
+        group.sortingOrder = AttackSortingOrder;
         bool ice = characterVisual != null && characterVisual.UsesIce;
         bool magic = characterVisual != null && (characterVisual.UsesMagic || ice);
         bool fire = characterVisual != null && characterVisual.UsesFireBreath;

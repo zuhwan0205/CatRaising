@@ -1,4 +1,4 @@
-﻿using UnityEngine;
+using UnityEngine;
 
 // 몸의 연출만 담당합니다. 이동/피해/HP 바와 별도의 계층에서 움직입니다.
 [DefaultExecutionOrder(205)]
@@ -24,6 +24,20 @@ public sealed class CatCharacterVisual : MonoBehaviour
     public bool UsesIce => selectedId == "cat_shadow";
     public bool UsesBow => selectedId == "cat_ninja";
     public bool UsesFireBreath => selectedId == "cat_lion";
+    public static readonly Vector2 DragonMouthUV = new Vector2(.69f, .56f);
+    public Vector3 DragonMouthPosition
+    {
+        get
+        {
+            if (catSprite == null || catSprite.sprite == null) return transform.position;
+            var bounds = catSprite.sprite.bounds;
+            var point = new Vector3(bounds.min.x + bounds.size.x * DragonMouthUV.x,
+                bounds.min.y + bounds.size.y * DragonMouthUV.y, 0);
+            if (catSprite.flipX) point.x = -point.x;
+            return catSprite.transform.TransformPoint(point);
+        }
+    }
+
     public bool UsesMagic => selectedId == "cat_moon";
     private Sprite[] activePixelFrames;
     private bool usePixelCat;
