@@ -25,13 +25,17 @@ MonoBehaviour:
       maxLevel: 100
       baseGoldCost: 40
       goldCostPerLevel: 20
-    description: "고등어로 근거리의 적 한 마리를 공격합니다. 기본 고양이보다 능력치가 높습니다."
+    description: "\uACE0\uB4F1\uC5B4\uB85C \uADFC\uAC70\uB9AC\uC758 \uC801 \uD55C \uB9C8\uB9AC\uB97C \uACF5\uACA9\uD569\uB2C8\uB2E4. \uAE30\uBCF8 \uACE0\uC591\uC774\uBCF4\uB2E4 \uB2A5\uB825\uCE58\uAC00 \uB192\uC2B5\uB2C8\uB2E4."
     icon: {fileID: 0}
     attackRange: 1.2
     id: cat_knight
-    displayName: "고등어 고양이"
+    displayName: "\uACE0\uB4F1\uC5B4 \uACE0\uC591\uC774"
     rarity: 1
     attackId: claw_melee
+    combatConfigurationVersion: 1
+    delivery: 0
+    hitEffect: 0
+    grantsAttackAura: 0
     baseStats:
       attack: 2
       defense: 2

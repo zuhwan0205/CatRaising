@@ -20,8 +20,11 @@ public partial class CatGameSceneUI
     }
 #endif
 
+    private void OnDestroy() => ReleaseSpecialShop();
+
     private void ClearPage()
     {
+        ReleaseSpecialShop();
         var header = safeArea != null ? safeArea.Find("Currency Bar") : null;
         if (header != null) header.gameObject.SetActive(false);
         if (adventureImage != null) adventureImage.gameObject.SetActive(false);

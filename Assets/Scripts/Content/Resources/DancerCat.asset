@@ -25,13 +25,17 @@ MonoBehaviour:
       maxLevel: 100
       baseGoldCost: 40
       goldCostPerLevel: 20
-    description: "회전 고양이와 같은 능력치로 조금 더 넓게 회전 공격합니다. 레이드·던전에서 주변 3거리의 다른 고양이 공격력 1.2배 (중첩 불가)."
+    description: "\uD68C\uC804 \uACE0\uC591\uC774\uC640 \uAC19\uC740 \uB2A5\uB825\uCE58\uB85C \uC870\uAE08 \uB354 \uB113\uAC8C \uD68C\uC804 \uACF5\uACA9\uD569\uB2C8\uB2E4. \uB808\uC774\uB4DC\xB7\uB358\uC804\uC5D0\uC11C \uC8FC\uBCC0 3\uAC70\uB9AC\uC758 \uB2E4\uB978 \uACE0\uC591\uC774 \uACF5\uACA9\uB825 1.2\uBC30 (\uC911\uCCA9 \uBD88\uAC00)."
     icon: {fileID: 0}
     attackRange: 1.8
     id: cat_dancer
-    displayName: "무희 고양이"
+    displayName: "\uBB34\uD76C \uACE0\uC591\uC774"
     rarity: 1
     attackId: spin_melee
+    combatConfigurationVersion: 1
+    delivery: 0
+    hitEffect: 0
+    grantsAttackAura: 1
     baseStats:
       attack: 2.5
       defense: 0

@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using UnityEngine;
 
 // RaidScene / DungeonScene의 공통 진입점. 전투 구현과 UI는 기존 코드를 재사용합니다.
@@ -7,8 +7,7 @@ public sealed class CatEncounterScene : MonoBehaviour
     private CatGameRuntime runtime;
     private CatGameSceneUI view;
     private CatFieldController field;
-    private bool finished;
-    private bool returning;
+    private readonly EncounterFlowState flow = new EncounterFlowState();
     private bool menuPaused;
     private float resumeTimeScale;
 
@@ -36,6 +35,7 @@ public sealed class CatEncounterScene : MonoBehaviour
             view.Build(runtime.Data, runtime.Catalog, null, runtime.IsPreview, field != null ? field.Output : null, encounterOnly: true);
             BindEvents();
             var team = entry.ResolveTeam(runtime.Data);
+            flow.Ready();
             if (dungeonScene) view.BeginDungeonDefense(entry.Index, team);
             else
             {
@@ -48,6 +48,7 @@ public sealed class CatEncounterScene : MonoBehaviour
         }
         catch (Exception error)
         {
+            flow.Fail();
             // 초기화 실패 시에도 메인으로 복귀할 수 있는 화면을 제공합니다.
             if (!viewReady)
             {
@@ -72,17 +73,18 @@ public sealed class CatEncounterScene : MonoBehaviour
 
     private async void OnFinished(bool won)
     {
-        if (finished || returning) return;
-        finished = true;
+        if (!flow.BeginResult()) return;
         RestorePause();
         view.CloseEncounterPause();
         try
         {
             bool rewarded = await runtime.FinishEncounterAsync(won);
+            flow.CompleteResult();
             if (view != null) view.ShowRaidResult(won, rewarded, runtime.Session.HasPendingReward);
         }
         catch (Exception error)
         {
+            flow.Fail();
             Debug.LogException(error);
             if (view != null) view.ShowEncounterError("결과 처리 중 오류가 발생했습니다. 메인에서 저장 상태를 확인해주세요.");
         }
@@ -90,8 +92,7 @@ public sealed class CatEncounterScene : MonoBehaviour
 
     private async void ReturnToMain()
     {
-        if (returning || runtime.Session.IsSaving || runtime.IsTransitioning) return;
-        returning = true;
+        if (runtime.Session.IsSaving || runtime.IsTransitioning || !flow.BeginReturn()) return;
         view.SetBusy(true);
         view.SetSceneTransition(true);
         // 포기는 보상을 지급하지 않으며 화면 전환 중 전투 종료를 다시 처리하지 않습니다.
@@ -100,25 +101,27 @@ public sealed class CatEncounterScene : MonoBehaviour
         {
             if (view != null) { view.SetSceneTransition(false); view.SetBusy(false); view.ShowStatus(error.Message); }
         }
-        finally { if (this != null) returning = false; }
+        finally { if (this != null) flow.CancelReturn(); }
     }
 
     private void SetMenuPaused(bool value)
     {
-        if (returning || finished || menuPaused == value) return;
+        if (menuPaused == value) return;
         if (value)
         {
+            if (!flow.Pause()) return;
             resumeTimeScale = Time.timeScale;
             menuPaused = true;
             Time.timeScale = 0;
             if (field != null) field.SetStick(Vector2.zero);
         }
-        else RestorePause();
+        else if (flow.Resume()) RestorePause();
     }
     private void RestorePause()
     {
         if (!menuPaused) return;
         menuPaused = false;
+        flow.Resume();
         Time.timeScale = resumeTimeScale;
     }
     private void OnDisable()

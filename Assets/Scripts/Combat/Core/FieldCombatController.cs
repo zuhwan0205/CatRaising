@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using UnityEngine;
 
@@ -26,6 +26,7 @@ public partial class FieldCombatController : MonoBehaviour
     private float contactCooldown;
     private float deathRemaining;
     private double defense;
+    private CharacterDefinition combatDefinition;
     public bool Blocked;
     public bool RaidMode;
     public IList<FieldCombatController> RaidAllies { get; set; }
@@ -36,7 +37,7 @@ public partial class FieldCombatController : MonoBehaviour
             if (!RaidMode || RaidAllies == null) return 1;
             foreach (var ally in RaidAllies)
                 if (ally != null && ally != this && ally.isActiveAndEnabled && !ally.Blocked &&
-                    ally.data.loadout.characterId == "cat_dancer" && (ally.PlayerHealth == null || !ally.PlayerHealth.Dead) &&
+                    (ally.combatDefinition != null && ally.combatDefinition.grantsAttackAura) && (ally.PlayerHealth == null || !ally.PlayerHealth.Dead) &&
                     (ally.transform.position - transform.position).sqrMagnitude <= CharacterCombatRules.AuraRadius * CharacterCombatRules.AuraRadius)
                     return CharacterCombatRules.AuraMultiplier;
             return 1;
@@ -335,6 +336,7 @@ public partial class FieldCombatController : MonoBehaviour
         if (characterChanged) cooldown = 0; // 성장 갱신으로 추가 공격이 즉시 발생하지 않게 유지
         valid = false;
         var definition = catalog.FindCharacter(selectedId);
+        combatDefinition = definition;
         attackBehavior = CharacterAttackFactory.Create(definition == null ? null : definition.attackId);
         Range = definition != null && definition.attackRange > 0 && !float.IsInfinity(definition.attackRange) ? definition.attackRange : 1.7f;
         Range *= CatSkillTree.Range(owned);

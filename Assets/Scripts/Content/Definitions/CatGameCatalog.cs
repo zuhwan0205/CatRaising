@@ -25,6 +25,9 @@ public class StatValues
     public float maxHealth;
 }
 
+public enum AttackDelivery { Immediate, Projectile }
+public enum CharacterHitEffect { None, Slow, ArmorBreak }
+
 [Serializable]
 public class CharacterDefinition
 {
@@ -39,6 +42,10 @@ public class CharacterDefinition
     public string displayName;
     public ItemRarity rarity;
     public string attackId;
+    [HideInInspector] public int combatConfigurationVersion;
+    public AttackDelivery delivery;
+    public CharacterHitEffect hitEffect;
+    public bool grantsAttackAura;
     public StatValues baseStats = new StatValues();
     public StatValues statsPerLevel = new StatValues();
 }

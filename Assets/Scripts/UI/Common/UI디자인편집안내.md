@@ -1,5 +1,7 @@
 # Unity에서 UI 직접 편집하기
 
+특별 상점은 이제 프리팹에서 직접 편집합니다. `Assets/Scripts/Resources/SpecialShop`의 View/Card/Popup 프리팹과 Catalog 에셋을 사용하세요. 상품 제목·수량·가격은 Catalog, 배치·폰트·색은 프리팹에서 수정합니다. 아래 런타임 디자인 저장 방식은 아직 프리팹으로 전환하지 않은 나머지 UI에 사용합니다.
+
 ## 씬에 이미 있는 UI
 Play가 꺼진 상태에서 Game Canvas 또는 Login Canvas 내부 오브젝트를 선택하고 Rect Transform / Image / Raw Image / Text를 수정한 뒤 씬을 저장합니다. 기존 내비게이션 아이콘 크기, 설정 버튼 위치, 재화 행 위치·색을 반복해서 기본값으로 되돌리던 코드를 수정했습니다.
 

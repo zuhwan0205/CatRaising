@@ -25,13 +25,17 @@ MonoBehaviour:
       maxLevel: 100
       baseGoldCost: 80
       goldCostPerLevel: 40
-    description: "전방 부채꼴 범위로 불을 뿜어 불길에 닿는 모든 적에게 피해를 줍니다."
+    description: "\uC804\uBC29 \uBD80\uCC44\uAF34 \uBC94\uC704\uB85C \uBD88\uC744 \uBFDC\uC5B4 \uBD88\uAE38\uC5D0 \uB2FF\uB294 \uBAA8\uB4E0 \uC801\uC5D0\uAC8C \uD53C\uD574\uB97C \uC90D\uB2C8\uB2E4."
     icon: {fileID: 0}
     attackRange: 4
     id: cat_lion
-    displayName: "용 고양이"
+    displayName: "\uC6A9 \uACE0\uC591\uC774"
     rarity: 2
     attackId: breath_area
+    combatConfigurationVersion: 1
+    delivery: 0
+    hitEffect: 0
+    grantsAttackAura: 0
     baseStats:
       attack: 3
       defense: 3

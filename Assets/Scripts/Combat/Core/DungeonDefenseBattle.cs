@@ -6,10 +6,12 @@ using UnityEngine.UI;
 // 던전 전용 고정 경로 전투. 재화와 배치는 이 전투 안에서만 유지됩니다.
 public sealed class DungeonDefenseBattle : MonoBehaviour
 {
-    private sealed class Enemy
+    private sealed class Enemy : ICharacterHitReceiver
     {
         public RectTransform rect; public RawImage art; public int segment, kind;
         public float distance, slowRemaining, armorBreakRemaining; public double hp; public bool alive, boss;
+        public void ApplyIceSlow() => slowRemaining = CharacterCombatRules.SlowDuration;
+        public void ApplyArmorBreak() => armorBreakRemaining = CharacterCombatRules.ArmorBreakDuration;
     }
     private sealed class Tower
     {
@@ -24,13 +26,13 @@ public sealed class DungeonDefenseBattle : MonoBehaviour
     public int Selected { get; set; }
     public int WaveNumber => wave;
     public int BaseHealth => Mathf.Max(0, lives);
-    public bool IsFinished => finished;
+    public bool IsFinished => flow.IsFinished;
     public int Coins { get; private set; } = 120;
-    public bool CanStartWave => !running && !finished && wave < DungeonStageRules.WaveCount;
+    public bool CanStartWave => flow.CanPrepare && wave < DungeonStageRules.WaveCount;
     public static int Cost(ItemRarity rarity) => rarity == ItemRarity.Legendary ? 110 : rarity == ItemRarity.Unique ? 80 : rarity == ItemRarity.Epic ? 55 : 35;
     private int stage, wave, spawned, total, lives = DungeonStageRules.BaseLives;
     private float spawnTime;
-    private bool running, finished;
+    private readonly DungeonWaveState flow = new DungeonWaveState();
     private RectTransform map;
     private Vector2[] route;
     private Vector2[] routePoints;
@@ -67,7 +69,7 @@ public sealed class DungeonDefenseBattle : MonoBehaviour
     }
     public bool Place(int slot)
     {
-        if(finished || towers[slot]!=null) return false;
+        if(flow.IsFinished || towers[slot]!=null) return false;
         int cost=Cost(definitions[Selected].rarity);
         if(Coins<cost) { hint("소환 재화가 부족해요"); return false; }
         var frames=CatAnimationFrames.Get(team[Selected].characterId);
@@ -128,7 +130,7 @@ public sealed class DungeonDefenseBattle : MonoBehaviour
         bool placed=false; foreach(var tower in towers) if(tower!=null) placed=true;
         if(!placed) { hint("고양이를 먼저 배치해주세요"); return; }
         foreach(var shot in shots) { shot.active=false; shot.root.gameObject.SetActive(false); }
-        wave++; total=DungeonStageRules.EnemyCount(stage,wave); spawned=0; spawnTime=0; running=true; Refresh();
+        wave++; total=DungeonStageRules.EnemyCount(stage,wave); spawned=0; spawnTime=0; flow.StartWave(); Refresh();
     }
     private Vector2 Point(int i) => routePoints[i];
 
@@ -152,10 +154,10 @@ public sealed class DungeonDefenseBattle : MonoBehaviour
     }
     private void Update()
     {
-        if(finished || map==null || Time.timeScale == 0) return;
+        if(flow.IsFinished || map==null || Time.timeScale == 0) return;
         UpdateLayout();
         float dt=Mathf.Min(Time.deltaTime,.05f);
-        if(running && spawned<total)
+        if(flow.IsFighting && spawned<total)
         {
             spawnTime-=dt;
             if(spawnTime<=0)
@@ -215,9 +217,9 @@ public sealed class DungeonDefenseBattle : MonoBehaviour
             tower.image.rectTransform.localScale=new Vector3(target.rect.anchoredPosition.x<position.x?-1:1,1,1);
             LaunchShot(position, target, tower.choice, damage, tower.image);
         }
-        if(running && spawned==total && living==0)
+        if(flow.IsFighting && spawned==total && living==0)
         {
-            running=false;
+            flow.ClearWave();
             if(wave>=DungeonStageRules.WaveCount) { Finish(true); return; }
             Coins+=DungeonStageRules.WaveClearCoins; hint("웨이브 클리어! 추가 배치 후 다음 웨이브를 시작하세요"); Refresh();
             WaveCleared?.Invoke(wave);
@@ -262,7 +264,7 @@ public sealed class DungeonDefenseBattle : MonoBehaviour
         shot.spellImage.gameObject.SetActive(shot.spellFrames!=null);
         foreach(var part in shot.parts) part.gameObject.SetActive(shot.spellFrames==null);
         shot.impactPosition=target.rect.anchoredPosition + Vector2.up * (target.rect.rect.height * .18f);
-        shot.resolved=!IsProjectile(shot.id);
+        shot.resolved=!IsProjectile(shot.choice);
         if(shot.resolved) ResolveHit(shot);
         shot.root.SetAsLastSibling(); // 풀에서 재사용해도 몬스터보다 앞에 표시
         shot.root.gameObject.SetActive(true);
@@ -335,7 +337,7 @@ public sealed class DungeonDefenseBattle : MonoBehaviour
         if(shot.spellFrames!=null) { RenderSpellShot(shot); return; }
         bool arrow=shot.id=="cat_ninja", ice=shot.id=="cat_shadow", magic=shot.id=="cat_moon" || ice;
         bool fire=shot.id=="cat_lion", hammer=shot.id=="cat_tiger";
-        bool projectile=IsProjectile(shot.id);
+        bool projectile=IsProjectile(shot.choice);
         Vector2 target=shot.target.rect.anchoredPosition + Vector2.up * (shot.target.rect.rect.height * .18f);
         Vector2 direction=target-shot.source;
         shot.root.anchoredPosition=projectile ? Vector2.Lerp(shot.source,target,progress) : target;
@@ -370,7 +372,7 @@ public sealed class DungeonDefenseBattle : MonoBehaviour
         }
     }
 
-    private static bool IsProjectile(string id) => id == "cat_ninja" || id == "cat_shadow" || id == "cat_moon";
+    private bool IsProjectile(int choice) => definitions[choice].delivery == AttackDelivery.Projectile;
     private Vector2 TilePoint(Vector2 point) => new Vector2(point.x / Mathf.Max(1, map.rect.width) * DefenseTileBoard.Width,
         point.y / Mathf.Max(1, map.rect.height) * DefenseTileBoard.Height);
     private Vector2 TowerPoint(Tower tower) => Vector2.Scale(slots[tower.slot].anchorMin, new Vector2(DefenseTileBoard.Width, DefenseTileBoard.Height));
@@ -380,7 +382,7 @@ public sealed class DungeonDefenseBattle : MonoBehaviour
     {
         if(recipient==null) return 1;
         foreach(var ally in towers)
-            if(ally!=null && ally!=recipient && team[ally.choice].characterId=="cat_dancer" &&
+            if(ally!=null && ally!=recipient && definitions[ally.choice].grantsAttackAura &&
                 (TowerPoint(ally)-TowerPoint(recipient)).sqrMagnitude<=CharacterCombatRules.AuraRadius*CharacterCombatRules.AuraRadius)
                 return CharacterCombatRules.AuraMultiplier;
         return 1;
@@ -400,8 +402,8 @@ public sealed class DungeonDefenseBattle : MonoBehaviour
         double defense=(enemy.kind==3?2:0)+(enemy.boss?2:0);
         enemy.hp-=CharacterCombatRules.DamageAfterDefense(shot.damage,defense,enemy.armorBreakRemaining>0);
         if(enemy.hp<=0) { Remove(enemy); Coins+=enemy.boss?20:4; Refresh(); return; }
-        if(shot.id=="cat_shadow") enemy.slowRemaining=CharacterCombatRules.SlowDuration;
-        if(shot.id=="cat_moon") enemy.armorBreakRemaining=CharacterCombatRules.ArmorBreakDuration;
+        CharacterCombatRules.ApplyHit(definitions[shot.choice].hitEffect, enemy);
+
     }
 
     private void ShowRange(int slot, bool toggle = true)
@@ -442,5 +444,5 @@ public sealed class DungeonDefenseBattle : MonoBehaviour
 
     private void Remove(Enemy enemy) { enemy.alive=false; enemy.rect.gameObject.SetActive(false); }
     private void Refresh() => hud?.Invoke($"1-{stage}  ·  기지 {Mathf.Max(0,lives)}/{DungeonStageRules.BaseLives}  ·  소환 {Coins}  ·  웨이브 {wave}/{DungeonStageRules.WaveCount}");
-    private void Finish(bool won) { finished=true; running=false; Refresh(); ended?.Invoke(won); }
+    private void Finish(bool won) { if (!flow.Finish()) return; Refresh(); ended?.Invoke(won); }
 }

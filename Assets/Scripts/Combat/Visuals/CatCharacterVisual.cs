@@ -1,4 +1,4 @@
-using UnityEngine;
+﻿using UnityEngine;
 
 // 몸의 연출만 담당합니다. 이동/피해/HP 바와 별도의 계층에서 움직입니다.
 [DefaultExecutionOrder(205)]
@@ -231,27 +231,7 @@ public sealed class CatCharacterVisual : MonoBehaviour
         generatedSprite = combatFrames[4];
     }
 
-    private static float MainBattleScale(string id)
-    {
-        // 대기 첫 프레임의 실제 불투명 높이 / PPU 기준입니다.
-        // 셀의 투명 여백은 제외하고, 공격 중에는 같은 배율을 유지합니다.
-        const float starterHeight = 262f / (1254f / 4f) * 1.65f;
-        float height;
-        switch (id)
-        {
-            case "cat_knight": height = 336f / 362f * 1.45f; break;
-            case "cat_kitten_trio": height = 228f / 362f * 1.65f; break;
-            case "cat_celestial": height = 294f / 362f * 1.65f; break;
-            case "cat_moon": height = 325f / 362f * 1.45f; break;
-            case "cat_lion": height = 317f / 362f * 1.55f; break;
-            case "cat_ninja": height = 321f / 362f * 1.45f; break;
-            case "cat_shadow": height = 334f / 362f * 1.45f; break;
-            case "cat_tiger": height = 296f / 362f * 1.65f; break;
-            // 방금 제작한 네 고양이의 크기는 유지합니다.
-            default: return 1f;
-        }
-        return starterHeight / height;
-    }
+    private static float MainBattleScale(string id) => CatVisualCatalog.Find(id)?.mainBattleScale ?? 1f;
 
     private void OnDestroy()
     {
