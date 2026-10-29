@@ -25,13 +25,17 @@ MonoBehaviour:
       maxLevel: 100
       baseGoldCost: 40
       goldCostPerLevel: 20
-    description: "높은 체력과 방어력으로 버티며 방패로 근거리 범위 공격합니다. 공격력과 공격 속도는 낮습니다."
+    description: "\uB192\uC740 \uCCB4\uB825\uACFC \uBC29\uC5B4\uB825\uC73C\uB85C \uBC84\uD2F0\uBA70 \uBC29\uD328\uB85C \uADFC\uAC70\uB9AC \uBC94\uC704 \uACF5\uACA9\uD569\uB2C8\uB2E4. \uACF5\uACA9\uB825\uACFC \uACF5\uACA9 \uC18D\uB3C4\uB294 \uB0AE\uC2B5\uB2C8\uB2E4."
     icon: {fileID: 0}
     attackRange: 1.4
     id: cat_guardian
-    displayName: "수호 고양이"
+    displayName: "\uC218\uD638 \uACE0\uC591\uC774"
     rarity: 1
     attackId: forward_area
+    combatConfigurationVersion: 1
+    delivery: 0
+    hitEffect: 0
+    grantsAttackAura: 0
     baseStats:
       attack: 1.5
       defense: 5

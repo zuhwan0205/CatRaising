@@ -22,7 +22,7 @@ public sealed class SpecialShopPopupView : MonoBehaviour
         // Remains a preview even if interactability is accidentally enabled in the prefab.
         if (priceButton != null) priceButton.interactable = false;
         BindClose(closeButton); BindClose(backdropButton);
-        UISelectionMotion.Play(frame, true);
+        if (Application.isPlaying) UISelectionMotion.Play(frame, true);
     }
     private void BindClose(Button button)
     {

@@ -178,11 +178,11 @@ public class CatGameSession
             PublishMessage($"해당 캐릭터 조각이 부족합니다. 필요 조각: {cost:N0}");
             return;
         }
-        int oldStars = character.ascension;
-        long oldFragments = character.fragments;
-        character.ascension++;
-        character.fragments -= cost;
-        await SaveAsync(() => { character.ascension = oldStars; character.fragments = oldFragments; });
+        await ExecuteMutationAsync(change =>
+        {
+            change.Set(() => character.ascension, value => character.ascension = value, character.ascension + 1);
+            change.Set(() => character.fragments, value => character.fragments = value, character.fragments - cost);
+        });
     }
 
     public bool TryAwardExperience(long amount)
@@ -201,27 +201,22 @@ public class CatGameSession
     {
         if (MutationBlocked || cat == null || !data.characters.Contains(cat) ||
             !CatSkillTree.HasLearnedSkills(cat) || data.wallet.gems < CatSkillTree.ResetCost) return;
-        var previousRanks = cat.skillRanks;
-        long previousGems = data.wallet.gems;
-        cat.skillRanks = new int[CatSkillTree.Count];
-        data.wallet.gems -= CatSkillTree.ResetCost;
-        await SaveAsync(() =>
+        await ExecuteMutationAsync(change =>
         {
-            cat.skillRanks = previousRanks;
-            data.wallet.gems = previousGems;
+            change.Set(() => cat.skillRanks, value => cat.skillRanks = value, new int[CatSkillTree.Count]);
+            change.Set(() => data.wallet.gems, value => data.wallet.gems = value, data.wallet.gems - CatSkillTree.ResetCost);
         });
     }
 
     public async Task LearnSkillAsync(OwnedCharacter cat, int node)
     {
         if (MutationBlocked || cat == null || !data.characters.Contains(cat) || !CatSkillTree.CanLearn(cat, node)) return;
-        var previous = cat.skillRanks;
         var ranks = new int[CatSkillTree.Count];
         for (int i = 0; i < ranks.Length; i++) ranks[i] = CatSkillTree.Rank(cat, i);
         ranks[node]++;
-        cat.skillRanks = ranks;
-        await SaveAsync(() => cat.skillRanks = previous);
+        await ExecuteMutationAsync(change => change.Set(() => cat.skillRanks, value => cat.skillRanks = value, ranks));
     }
+
     public Task BuyCharacterAsync(string id)
     {
         if (string.IsNullOrWhiteSpace(id) || catalog == null)
@@ -295,14 +290,7 @@ public class CatGameSession
             { PublishMessage("조각 보유 한도에 도달했습니다."); return null; }
         }
         var results = new System.Collections.Generic.List<ContentDrawResult>(count);
-        var undo = new System.Collections.Generic.List<Action>(count);
-        long previousGold = data.wallet.gold;
-        Action rollback = () =>
-        {
-            data.wallet.gold = previousGold;
-            for (int i = undo.Count - 1; i >= 0; i--) undo[i]();
-        };
-        try
+        bool saved = await ExecuteMutationAsync(change =>
         {
             for (int i = 0; i < count; i++)
             {
@@ -313,24 +301,19 @@ public class CatGameSession
                 result.duplicate = owned != null;
                 if (owned != null)
                 {
-                    long before = fragments(owned);
-                    undo.Add(() => setFragments(owned, before));
-                    setFragments(owned, before + fragmentCount);
+                    change.Set(() => fragments(owned), value => setFragments(owned, value), fragments(owned) + fragmentCount);
                     result.fragments = fragmentCount;
                 }
                 else
                 {
                     owned = create(definition);
-                    collection.Add(owned);
-                    undo.Add(() => collection.Remove(owned));
+                    change.Apply(() => collection.Add(owned), () => collection.Remove(owned));
                 }
                 results.Add(result);
             }
-            data.wallet.gold -= totalCost;
-        }
-        catch { rollback(); throw; }
-        // 10개 모두 한 번에 저장합니다. 실패하면 차감과 지급 전체를 복원합니다.
-        return await SaveAsync(rollback) ? results : null;
+            change.Set(() => data.wallet.gold, value => data.wallet.gold = value, data.wallet.gold - totalCost);
+        });
+        return saved ? results : null;
     }
     private async Task PurchaseAsync(ShopOffer offer, bool alreadyOwned, Action grant, Action revoke)
     {
@@ -351,10 +334,11 @@ public class CatGameSession
             PublishMessage($"골드가 부족합니다. 필요 골드: {offer.goldPrice:N0}");
             return;
         }
-        long previousGold = data.wallet.gold;
-        data.wallet.gold -= offer.goldPrice;
-        grant();
-        await SaveAsync(() => { data.wallet.gold = previousGold; revoke(); });
+        await ExecuteMutationAsync(change =>
+        {
+            change.Set(() => data.wallet.gold, value => data.wallet.gold = value, data.wallet.gold - offer.goldPrice);
+            change.Apply(grant, revoke);
+        });
     }
 
     public Task LevelUpRelicAsync(OwnedRelic relic)
@@ -379,38 +363,45 @@ public class CatGameSession
             PublishMessage($"골드가 부족합니다. 필요 골드: {cost:N0}");
             return;
         }
-        long previousGold = data.wallet.gold;
-        data.wallet.gold -= cost;
-        setLevel(level + 1);
-        await SaveAsync(() => { data.wallet.gold = previousGold; setLevel(level); });
+        await ExecuteMutationAsync(change =>
+        {
+            change.Set(() => data.wallet.gold, value => data.wallet.gold = value, data.wallet.gold - cost);
+            change.Apply(() => setLevel(level + 1), () => setLevel(level));
+        });
     }
 
     public async Task<bool> SelectCharacterAsync(OwnedCharacter character)
     {
         if (MutationBlocked || character == null || !data.characters.Contains(character))
             return false;
-        string previous = data.loadout.characterId;
-        data.loadout.characterId = character.characterId;
-        return await SaveAsync(() => data.loadout.characterId = previous);
+        return await ExecuteMutationAsync(change =>
+            change.Set(() => data.loadout.characterId, value => data.loadout.characterId = value, character.characterId));
     }
 
     public async Task ToggleRelicAsync(OwnedRelic relic)
     {
         if (MutationBlocked || relic == null || !data.relics.Contains(relic))
             return;
-        var previous = new System.Collections.Generic.List<string>(data.loadout.relicIds);
-        if (data.loadout.relicIds.Contains(relic.relicId))
-            data.loadout.relicIds.RemoveAll(id => id == relic.relicId);
+        var next = new System.Collections.Generic.List<string>(data.loadout.relicIds);
+        if (next.Contains(relic.relicId)) next.RemoveAll(id => id == relic.relicId);
         else
         {
-            if (data.loadout.relicIds.Count >= 3)
-            {
-                PublishMessage("유물은 최대 3개까지 장착할 수 있습니다.");
-                return;
-            }
-            data.loadout.relicIds.Add(relic.relicId);
+            if (next.Count >= 3) { PublishMessage("유물은 최대 3개까지 장착할 수 있습니다."); return; }
+            next.Add(relic.relicId);
         }
-        await SaveAsync(() => data.loadout.relicIds = previous);
+        await ExecuteMutationAsync(change => change.Set(() => data.loadout.relicIds, value => data.loadout.relicIds = value, next));
+    }
+
+    private async Task<bool> ExecuteMutationAsync(Action<ReversibleMutation> apply)
+    {
+        if (MutationBlocked) return false;
+        using (var change = new ReversibleMutation())
+        {
+            apply(change);
+            bool saved = await SaveAsync(change.Rollback);
+            if (saved) change.Commit();
+            return saved;
+        }
     }
 
     public Func<string, Task<string>> NicknameUpdateRequested;

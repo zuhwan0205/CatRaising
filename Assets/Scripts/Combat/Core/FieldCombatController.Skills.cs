@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using UnityEngine;
 
@@ -132,8 +132,7 @@ public partial class FieldCombatController
             HealSkill(actual * Skill(CatSkillTree.Vampire) * .02);
             if (!killed)
             {
-                if (selectedId == "cat_shadow") target.ApplyIceSlow();
-                if (selectedId == "cat_moon") target.ApplyArmorBreak();
+                CharacterCombatRules.ApplyHit(combatDefinition?.hitEffect ?? CharacterHitEffect.None, target);
                 int poison = Skill(CatSkillTree.Poison), burn = Skill(CatSkillTree.Burn);
                 if (poison > 0 || burn > 0)
                 {

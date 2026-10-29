@@ -25,13 +25,17 @@ MonoBehaviour:
       maxLevel: 100
       baseGoldCost: 20
       goldCostPerLevel: 10
-    description: "좁은 주변 반경 1.4 안의 적들을 회전 공격합니다."
+    description: "\uC881\uC740 \uC8FC\uBCC0 \uBC18\uACBD 1.4 \uC548\uC758 \uC801\uB4E4\uC744 \uD68C\uC804 \uACF5\uACA9\uD569\uB2C8\uB2E4."
     icon: {fileID: 0}
     attackRange: 1.4
     id: cat_spinner
-    displayName: "회전 고양이"
+    displayName: "\uD68C\uC804 \uACE0\uC591\uC774"
     rarity: 0
     attackId: spin_melee
+    combatConfigurationVersion: 1
+    delivery: 0
+    hitEffect: 0
+    grantsAttackAura: 0
     baseStats:
       attack: 2.5
       defense: 0

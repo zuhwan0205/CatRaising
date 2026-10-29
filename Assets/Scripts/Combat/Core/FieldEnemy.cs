@@ -1,6 +1,6 @@
 ﻿using UnityEngine;
 
-public class FieldEnemy : MonoBehaviour
+public class FieldEnemy : MonoBehaviour, ICharacterHitReceiver
 {
     public CombatHealth Health
     {

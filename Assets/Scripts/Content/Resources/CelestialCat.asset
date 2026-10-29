@@ -25,13 +25,17 @@ MonoBehaviour:
       maxLevel: 100
       baseGoldCost: 150
       goldCostPerLevel: 75
-    description: "높은 공격력·공격 속도·체력·방어력으로 전방의 가까운 적들을 베어냅니다."
+    description: "\uB192\uC740 \uACF5\uACA9\uB825\xB7\uACF5\uACA9 \uC18D\uB3C4\xB7\uCCB4\uB825\xB7\uBC29\uC5B4\uB825\uC73C\uB85C \uC804\uBC29\uC758 \uAC00\uAE4C\uC6B4 \uC801\uB4E4\uC744 \uBCA0\uC5B4\uB0C5\uB2C8\uB2E4."
     icon: {fileID: 0}
     attackRange: 2
     id: cat_celestial
-    displayName: "장화 신은 검객 고양이"
+    displayName: "\uC7A5\uD654 \uC2E0\uC740 \uAC80\uAC1D \uACE0\uC591\uC774"
     rarity: 3
     attackId: forward_area
+    combatConfigurationVersion: 1
+    delivery: 0
+    hitEffect: 0
+    grantsAttackAura: 0
     baseStats:
       attack: 8
       defense: 6

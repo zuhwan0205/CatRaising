@@ -13,6 +13,8 @@ public partial class CatGameSceneUI
         uiFont = Resources.Load<Font>("Fonts/Mona12TextKR");
         page = Rect(transform, "Authoring Page", Vector2.zero, Vector2.one);
         safeArea = Rect(transform, "Authoring Safe Area", Vector2.zero, Vector2.one);
+        page.sizeDelta = new Vector2(720, 1000);
+        safeArea.sizeDelta = new Vector2(720, 1280);
         if (!System.IO.File.Exists(folder + "/SpecialShopView.prefab") || !System.IO.File.Exists(folder + "/SpecialShopCard.prefab"))
             BuildShopTemplate(folder);
         if (!System.IO.File.Exists(folder + "/SpecialShopPopup.prefab")) BuildPopupTemplate(0, folder);
@@ -139,15 +141,15 @@ public partial class CatGameSceneUI
             name.resizeTextMaxSize = 22;
             var amount = CurrencyCell(tile, "Reward", 0, diamond);
             var icon = (RectTransform)tile.Find("Reward/Reward Icon");
-            icon.anchorMin = new Vector2(.20f,.33f);
-            icon.anchorMax = new Vector2(.80f,.74f);
-            icon.offsetMin = icon.offsetMax = Vector2.zero;
-            var fit = icon.gameObject.AddComponent<AspectRatioFitter>();
-            fit.aspectMode = AspectRatioFitter.AspectMode.FitInParent;
-            // FitInParent은 전용 슬롯 안에서만 적용해 이름/수량 영역을 침범하지 않습니다.
+            // Set the final parent before enabling ratio-driven layout.
             var slot = Rect(tile, "Reward Icon Slot", new Vector2(.20f,.33f), new Vector2(.80f,.74f));
             icon.SetParent(slot, false);
+            icon.anchorMin = Vector2.zero;
+            icon.anchorMax = Vector2.one;
+            icon.offsetMin = icon.offsetMax = Vector2.zero;
+            var fit = icon.gameObject.AddComponent<AspectRatioFitter>();
             fit.aspectRatio = 1;
+            fit.aspectMode = AspectRatioFitter.AspectMode.FitInParent;
             var amountRect = amount.rectTransform;
             amountRect.anchorMin = new Vector2(.03f,.03f);
             amountRect.anchorMax = new Vector2(.97f,.31f);
@@ -189,12 +191,7 @@ public partial class CatGameSceneUI
         price.interactable = false;
         Label(body, "예시 상품입니다 · 현재 구매할 수 없습니다", 18, new Vector2(.04f,.025f), new Vector2(.96f,.10f));
         var contents = body.Find("Package Contents");
-        packagePopup.gameObject.AddComponent<SpecialShopPopupView>().Configure(heroTitle, price.GetComponentInChildren<Text>(),
-            contents.Find("Diamonds/Reward").GetComponentInChildren<Text>(),
-            contents.Find("Gold/Reward").GetComponentsInChildren<Text>()[1], hero.GetComponentInChildren<RawImage>(),
-            closeButton, packagePopup.GetComponent<Button>(), price, frame);
-        // Select exact amount labels, not the gold icon's decorative G.
-        var popupView = packagePopup.GetComponent<SpecialShopPopupView>();
+        var popupView = packagePopup.gameObject.AddComponent<SpecialShopPopupView>();
         popupView.Configure(heroTitle, price.GetComponentInChildren<Text>(),
             contents.Find("Diamonds/Reward/Label").GetComponent<Text>(),
             contents.Find("Gold/Reward/Label").GetComponent<Text>(), hero.GetComponentInChildren<RawImage>(),

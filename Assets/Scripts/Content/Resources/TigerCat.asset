@@ -25,13 +25,17 @@ MonoBehaviour:
       maxLevel: 100
       baseGoldCost: 40
       goldCostPerLevel: 20
-    description: "큰 망치로 전방의 가까운 적들을 한 번에 공격합니다."
+    description: "\uD070 \uB9DD\uCE58\uB85C \uC804\uBC29\uC758 \uAC00\uAE4C\uC6B4 \uC801\uB4E4\uC744 \uD55C \uBC88\uC5D0 \uACF5\uACA9\uD569\uB2C8\uB2E4."
     icon: {fileID: 0}
     attackRange: 1.6
     id: cat_tiger
-    displayName: "망치 기사 고양이"
+    displayName: "\uB9DD\uCE58 \uAE30\uC0AC \uACE0\uC591\uC774"
     rarity: 1
     attackId: forward_area
+    combatConfigurationVersion: 1
+    delivery: 0
+    hitEffect: 0
+    grantsAttackAura: 0
     baseStats:
       attack: 7
       defense: 3

@@ -143,7 +143,8 @@ public static class EncounterSceneChecks
         };
         var hits = new System.Collections.Generic.List<UnityEngine.EventSystems.RaycastResult>();
         UnityEngine.EventSystems.EventSystem.current.RaycastAll(pointer, hits);
-        Require(hits.Count > 0, "버튼에 클릭이 도달하지 않음: " + button.name);
+        if (hits.Count == 0) Debug.Log("Raycast diagnostics: canvas=" + canvas.name + " enabled=" + canvas.enabled + " display=" + canvas.targetDisplay + " graphics=" + string.Join(";", button.GetComponentsInChildren<UnityEngine.UI.Graphic>().Select(g => g.name + ":ray=" + g.raycastTarget + ":depth=" + g.depth + ":cull=" + g.canvasRenderer.cull)) + " groups=" + string.Join(";", button.GetComponentsInParent<CanvasGroup>().Select(g => g.name + ":" + g.blocksRaycasts)));
+        Require(hits.Count > 0, "버튼에 클릭이 도달하지 않음: " + button.name + " position=" + pointer.position + " screen=" + Screen.width + "x" + Screen.height + " rect=" + rect.rect + " active=" + button.gameObject.activeInHierarchy);
         var target = UnityEngine.EventSystems.ExecuteEvents.GetEventHandler<UnityEngine.EventSystems.IPointerClickHandler>(hits[0].gameObject);
         Require(target == button.gameObject, "다른 UI가 버튼 클릭을 가림: " + hits[0].gameObject.name);
         UnityEngine.EventSystems.ExecuteEvents.Execute(target, pointer, UnityEngine.EventSystems.ExecuteEvents.pointerDownHandler);
@@ -151,6 +152,21 @@ public static class EncounterSceneChecks
         UnityEngine.EventSystems.ExecuteEvents.Execute(target, pointer, UnityEngine.EventSystems.ExecuteEvents.pointerClickHandler);
     }
 
+    private static Task WaitForRenderedPauseButton() => WaitForRenderedButton(GameObject.Find("Encounter Pause Button").GetComponent<UnityEngine.UI.Button>());
+
+    private static async Task WaitForRenderedButton(UnityEngine.UI.Button button)
+    {
+        // Async scene loading can finish before the new canvas has submitted its first geometry.
+        var deadline = DateTime.UtcNow.AddSeconds(10);
+        while (DateTime.UtcNow < deadline)
+        {
+            Canvas.ForceUpdateCanvases();
+
+            if (button != null && button.GetComponent<UnityEngine.UI.Image>().depth >= 0) return;
+            await Task.Delay(50);
+        }
+        throw new TimeoutException("일시정지 버튼의 첫 렌더링 대기 시간 초과");
+    }
     private static async Task CheckPauseExit(CatGameRuntime runtime, bool dungeon)
     {
         var team = runtime.Data.characters.Take(dungeon ? 3 : 4).ToList();
@@ -158,10 +174,12 @@ public static class EncounterSceneChecks
         long gems = runtime.Data.wallet.gems;
         float previousScale = Time.timeScale;
         var view = UnityEngine.Object.FindAnyObjectByType<CatGameSceneUI>();
+        await WaitForRenderedPauseButton();
         ClickThroughRaycast(GameObject.Find("Encounter Pause Button").GetComponent<UnityEngine.UI.Button>());
         var overlay = GameObject.Find("Encounter Pause");
         var exit = overlay.GetComponentsInChildren<UnityEngine.UI.Button>()
             .Single(button => button.GetComponentInChildren<UnityEngine.UI.Text>().text == "나가기");
+        await WaitForRenderedButton(exit);
         ClickThroughRaycast(exit);
         var deadline = DateTime.UtcNow.AddSeconds(45);
         while (SceneManager.GetActiveScene().name != CatGameRuntime.MainScene)
@@ -181,6 +199,7 @@ public static class EncounterSceneChecks
         var view = UnityEngine.Object.FindAnyObjectByType<CatGameSceneUI>();
         var field = UnityEngine.Object.FindAnyObjectByType<CatFieldController>();
         float previousScale = Time.timeScale;
+        await WaitForRenderedPauseButton();
         ClickThroughRaycast(GameObject.Find("Encounter Pause Button").GetComponent<UnityEngine.UI.Button>());
         Require(Time.timeScale == 0, "메뉴를 열어도 전투가 정지되지 않음");
         float seconds = field != null ? field.RaidSeconds : 0;

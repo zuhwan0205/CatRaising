@@ -1,6 +1,12 @@
 ﻿using System.Collections.Generic;
 using UnityEngine;
 
+public interface ICharacterHitReceiver
+{
+    void ApplyIceSlow();
+    void ApplyArmorBreak();
+}
+
 // 공격 대상 선택과 전투의 피해/보상 처리를 분리합니다.
 public interface ICharacterAttack
 {
@@ -9,26 +15,13 @@ public interface ICharacterAttack
 
 public static class CharacterAttackFactory
 {
-    public static ICharacterAttack Create(string id)
+    private static readonly Dictionary<string, ICharacterAttack> strategies = new Dictionary<string, ICharacterAttack>
     {
-        switch (id)
-        {
-            case "claw_melee":
-                return new ClawAttack();
-            case "spin_melee":
-                return new SpinAttack();
-            case "trio_melee":
-                return new TrioAttack();
-            case "forward_area":
-                return new ForwardAreaAttack();
-            case "target_area":
-                return new TargetAreaAttack();
-            case "breath_area":
-                return new BreathAreaAttack();
-            default:
-                return null;
-        }
-    }
+        { "claw_melee", new ClawAttack() }, { "spin_melee", new SpinAttack() }, { "trio_melee", new TrioAttack() },
+        { "forward_area", new ForwardAreaAttack() }, { "target_area", new TargetAreaAttack() }, { "breath_area", new BreathAreaAttack() }
+    };
+    public static ICharacterAttack Create(string id) => id != null && strategies.TryGetValue(id, out var strategy) ? strategy : null;
+
 }
 
 // 메인/레이드(XZ)와 던전(타일 XY)이 공유하는 공격 범위와 고유 효과 수치입니다.
@@ -39,30 +32,26 @@ public static class CharacterCombatRules
     public const double AuraMultiplier = 1.2;
     public const float SlowDuration = 2f, SlowMultiplier = .6f;
     public const float ArmorBreakDuration = 3f, ArmorMultiplier = .7f;
+    public static void ApplyHit(CharacterHitEffect effect, ICharacterHitReceiver target)
+    {
+        if (effect == CharacterHitEffect.Slow) target.ApplyIceSlow();
+        else if (effect == CharacterHitEffect.ArmorBreak) target.ApplyArmorBreak();
+    }
     public static double DamageAfterDefense(double damage, double defense, bool armorBroken)
         => System.Math.Max(.1, damage - defense * (armorBroken ? ArmorMultiplier : 1f));
     public static Vector2 Flat(Vector3 point) => new Vector2(point.x, point.z);
     public static bool Hits(string attackId, Vector2 origin, Vector2 target, Vector2 enemy, float range)
     {
-        Vector2 offset = enemy - origin;
-        if (attackId == "target_area") return (enemy - target).sqrMagnitude <= SplashRadius * SplashRadius;
-        if (attackId == "spin_melee" || attackId == "trio_melee") return offset.sqrMagnitude <= range * range;
-        Vector2 direction = (target - origin).normalized;
-        if (direction.sqrMagnitude < .000001f) direction = Vector2.up;
-        float along = Vector2.Dot(offset, direction);
-        if (attackId == "breath_area")
-            return offset.sqrMagnitude <= range * range && along >= 0 &&
-                (offset.sqrMagnitude < .000001f || along >= offset.magnitude * .8660254f); // 전방 60도
-        if (attackId == "forward_area")
-            return along >= 0 && along <= range && Mathf.Abs(direction.x * offset.y - direction.y * offset.x) <= 1f;
-        return false;
+        return AttackAreaStrategies.Find(attackId)?.Contains(origin, target, enemy, range) ?? false;
     }
     public static void Select(string attackId, Vector3 origin, FieldEnemy closest, IReadOnlyList<FieldEnemy> enemies, float range, List<FieldEnemy> results)
     {
         results.Clear();
         if (closest == null || !closest.Alive) return;
+        var area = AttackAreaStrategies.Find(attackId);
+        if (area == null) return;
         foreach (var enemy in enemies)
-            if (enemy != null && enemy.Alive && Hits(attackId, Flat(origin), Flat(closest.transform.position), Flat(enemy.transform.position), range))
+            if (enemy != null && enemy.Alive && area.Contains(Flat(origin), Flat(closest.transform.position), Flat(enemy.transform.position), range))
                 results.Add(enemy);
     }
 }

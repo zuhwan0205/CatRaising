@@ -1,0 +1,67 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 667131a70a113bb49970288137f481cf, type: 3}
+  m_Name: SpecialShopCatalog
+  m_EditorClassIdentifier: Assembly-CSharp::SpecialShopCatalog
+  offers:
+  - id: welcome_preview
+    title: "\uCCAB \uB9CC\uB0A8 \uD328\uD0A4\uC9C0"
+    previewPrice: "\u20A94,900"
+    diamonds: 200
+    gold: 30000
+    artwork: {fileID: 2800000, guid: efa0772fe24b43539c735e6ff572118a, type: 3}
+    artworkUV:
+      serializedVersion: 2
+      x: 0
+      y: 0.5
+      width: 0.5
+      height: 0.5
+    background: {r: 0.2, g: 0.59, b: 0.65, a: 1}
+  - id: diamond_preview
+    title: "\uBC18\uC9DD \uB2E4\uC774\uC544 \uD328\uD0A4\uC9C0"
+    previewPrice: "\u20A99,900"
+    diamonds: 500
+    gold: 60000
+    artwork: {fileID: 2800000, guid: efa0772fe24b43539c735e6ff572118a, type: 3}
+    artworkUV:
+      serializedVersion: 2
+      x: 0.5
+      y: 0.5
+      width: 0.5
+      height: 0.5
+    background: {r: 0.43, g: 0.39, b: 0.69, a: 1}
+  - id: growth_preview
+    title: "\uC465\uC465 \uC131\uC7A5 \uD328\uD0A4\uC9C0"
+    previewPrice: "\u20A919,000"
+    diamonds: 1200
+    gold: 200000
+    artwork: {fileID: 2800000, guid: efa0772fe24b43539c735e6ff572118a, type: 3}
+    artworkUV:
+      serializedVersion: 2
+      x: 0
+      y: 0
+      width: 0.5
+      height: 0.5
+    background: {r: 0.7, g: 0.39, b: 0.29, a: 1}
+  - id: treasure_preview
+    title: "\uC9D1\uC0AC\uC758 \uBCF4\uBB3C \uD328\uD0A4\uC9C0"
+    previewPrice: "\u20A929,000"
+    diamonds: 2000
+    gold: 500000
+    artwork: {fileID: 2800000, guid: efa0772fe24b43539c735e6ff572118a, type: 3}
+    artworkUV:
+      serializedVersion: 2
+      x: 0.5
+      y: 0
+      width: 0.5
+      height: 0.5
+    background: {r: 0.62, g: 0.48, b: 0.23, a: 1}

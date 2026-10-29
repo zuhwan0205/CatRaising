@@ -18,17 +18,24 @@ MonoBehaviour:
       maxLevel: 100
       baseFragments: 1
       fragmentsPerLevel: 1
+    shop:
+      available: 0
+      goldPrice: 100
     growth:
       maxLevel: 100
       baseGoldCost: 20
       goldCostPerLevel: 10
-    description: "근거리의 적 한 마리를 공격하는 기본 고양이입니다."
+    description: "\uADFC\uAC70\uB9AC\uC758 \uC801 \uD55C \uB9C8\uB9AC\uB97C \uACF5\uACA9\uD558\uB294 \uAE30\uBCF8 \uACE0\uC591\uC774\uC785\uB2C8\uB2E4."
     icon: {fileID: 0}
     attackRange: 1.2
     id: cat_starter
-    displayName: "기본 고양이"
+    displayName: "\uAE30\uBCF8 \uACE0\uC591\uC774"
     rarity: 0
     attackId: claw_melee
+    combatConfigurationVersion: 1
+    delivery: 0
+    hitEffect: 0
+    grantsAttackAura: 0
     baseStats:
       attack: 1
       defense: 0
