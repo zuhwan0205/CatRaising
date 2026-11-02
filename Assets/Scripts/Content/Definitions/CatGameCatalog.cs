@@ -150,8 +150,11 @@ public class CatGameCatalog : ScriptableObject
 
     public RelicDefinition FindRelic(string id)
     {
-        var asset = relicAssets.Find(x => x != null && x.definition != null && x.definition.id == id);
-        return asset != null ? asset.definition : relics.Find(x => x != null && x.id == id);
+        foreach (var asset in relicAssets)
+            if (asset != null && asset.definition != null && asset.definition.id == id) return asset.definition;
+        foreach (var definition in relics)
+            if (definition != null && definition.id == id) return definition;
+        return null;
     }
     public const string StarterCharacterId = "cat_starter";
     public List<CharacterDefinition> characters = new List<CharacterDefinition>

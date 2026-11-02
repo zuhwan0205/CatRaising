@@ -43,6 +43,7 @@ public sealed class DungeonDefenseBattle : MonoBehaviour
     private IList<OwnedCharacter> team;
     private CharacterDefinition[] definitions;
     private readonly List<Enemy> enemies = new List<Enemy>();
+    private readonly CombatTargetGrid<Enemy> targetGrid = new CombatTargetGrid<Enemy>(enemy => enemy.alive);
     private readonly Texture2D[] textures = new Texture2D[4];
     private Action<string> hud, hint;
     private Action<bool> ended;
@@ -172,15 +173,19 @@ public sealed class DungeonDefenseBattle : MonoBehaviour
             }
         }
         int living=0;
+        targetGrid.Clear();
+        float movementScale = Mathf.Max(.6f, layoutSize.x / 700f);
+        var animationUV = new Rect(((int)(Time.time * 6) % 4) * .25f, .5f, .25f, .5f);
         foreach(var enemy in enemies)
         {
             if(!enemy.alive) continue;
             living++;
-            float speed=(enemy.kind==1?62:enemy.kind==3?34:45)*Mathf.Max(.6f,map.rect.width/700f);
+            float speed=(enemy.kind==1?62:enemy.kind==3?34:45)*movementScale;
             enemy.slowRemaining=Mathf.Max(0,enemy.slowRemaining-dt);
             enemy.armorBreakRemaining=Mathf.Max(0,enemy.armorBreakRemaining-dt);
             if(enemy.slowRemaining>0) speed*=CharacterCombatRules.SlowMultiplier;
-            enemy.art.color=enemy.slowRemaining>0 ? new Color(.55f,.85f,1) : enemy.armorBreakRemaining>0 ? new Color(.85f,.65f,1) : Color.white;
+            var tint=enemy.slowRemaining>0 ? new Color(.55f,.85f,1) : enemy.armorBreakRemaining>0 ? new Color(.85f,.65f,1) : Color.white;
+            if (enemy.art.color != tint) enemy.art.color = tint;
             enemy.distance+=speed*dt;
             while(enemy.segment<route.Length-1)
             {
@@ -194,8 +199,10 @@ public sealed class DungeonDefenseBattle : MonoBehaviour
                 if(lives<=0) { Finish(false); return; } continue;
             }
             Vector2 from=Point(enemy.segment), to=Point(enemy.segment+1);
-            enemy.rect.anchoredPosition=Vector2.Lerp(from,to,enemy.distance/segmentLengths[enemy.segment]);
-            enemy.art.uvRect=new Rect(((int)(Time.time*6)%4)*.25f,.5f,.25f,.5f);
+            var position = Vector2.Lerp(from,to,enemy.distance/segmentLengths[enemy.segment]);
+            enemy.rect.anchoredPosition=position;
+            targetGrid.Add(enemy, TilePoint(position));
+            if (enemy.art.uvRect != animationUV) enemy.art.uvRect=animationUV;
         }
         TickShots(dt);
         for(int i=0;i<towers.Length;i++)
@@ -203,14 +210,15 @@ public sealed class DungeonDefenseBattle : MonoBehaviour
             var tower=towers[i]; if(tower==null) continue;
             tower.cooldown-=dt; tower.attackTime=Mathf.Max(0,tower.attackTime-dt);
 
-            if(tower.frames[0]!=null) tower.image.sprite=tower.frames[tower.attackTime>0?8+Mathf.Min(3,(int)((.3f-tower.attackTime)/.075f)):(int)(Time.time*4)%4];
+            if(tower.frames[0]!=null)
+            {
+                var frame=tower.frames[tower.attackTime>0?8+Mathf.Min(3,(int)((.3f-tower.attackTime)/.075f)):(int)(Time.time*4)%4];
+                if(tower.image.sprite!=frame) tower.image.sprite=frame;
+            }
             if(tower.cooldown>0) continue;
             float range=Range(tower.choice);
-            Vector2 position=Vector2.Scale(slots[i].anchorMin,map.rect.size);
-            Enemy target=null; float nearest=range*range;
-            foreach(var enemy in enemies)
-                if(enemy.alive && (TilePoint(enemy.rect.anchoredPosition)-TilePoint(position)).sqrMagnitude<nearest)
-                { target=enemy; nearest=(TilePoint(enemy.rect.anchoredPosition)-TilePoint(position)).sqrMagnitude; }
+            Vector2 position=Vector2.Scale(slots[i].anchorMin,layoutSize);
+            Enemy target=targetGrid.Nearest(TilePoint(position), range);
             if(target==null) continue;
             CombatStats(tower.choice, out double damage, out float speed, tower);
             tower.cooldown=1/speed; tower.attackTime=.3f;

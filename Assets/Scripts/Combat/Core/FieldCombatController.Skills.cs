@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using UnityEngine;
 
@@ -152,7 +152,7 @@ public partial class FieldCombatController
             if (!RaidMode) ExperienceDropped?.Invoke(position, CatProgression.DropExperience(target.Kind));
             pendingSkillGold += target.GoldReward;
             EnemyGoldDropped?.Invoke(position, target.GoldReward);
-            TriggerRelics(EffectTrigger.OnKill, null);
+            TriggerRelics(EffectTrigger.OnKill, false);
         }
         if (basicHit && Skill(CatSkillTree.Lightning) > 0)
         {
@@ -287,18 +287,19 @@ public partial class FieldCombatController
     private void HitArrow(SkillArrow arrow, FieldEnemy target)
     {
         if (arrow.hit.Contains(target)) return;
-        double bonus = 0;
-        TriggerRelics(EffectTrigger.OnHit, value => bonus += value);
+        double bonus = TriggerRelics(EffectTrigger.OnHit, true);
         // 투사체 스킬을 배운 뒤에도 얼음/마법의 폭발, 용의 불길 특성을 유지합니다.
         if (attackBehavior is TargetAreaAttack || attackBehavior is BreathAreaAttack)
         {
             bool splash = attackBehavior is TargetAreaAttack;
             Vector3 origin = player.position, center = target.transform.position;
+            var area = AttackAreaStrategies.Find(splash ? "target_area" : "breath_area");
+            var flatOrigin = CharacterCombatRules.Flat(origin);
+            var flatCenter = CharacterCombatRules.Flat(center);
             NearbyEnemies(splash ? center : origin, splash ? CharacterCombatRules.SplashRadius : Range, arrowImpactCandidates);
             GetComponent<FieldCombatEffects>()?.SpellImpact(origin, center);
             foreach (var nearby in arrowImpactCandidates)
-                if (nearby != null && nearby.Alive && CharacterCombatRules.Hits(splash ? "target_area" : "breath_area",
-                    CharacterCombatRules.Flat(origin), CharacterCombatRules.Flat(center), CharacterCombatRules.Flat(nearby.transform.position), Range) &&
+                if (nearby != null && nearby.Alive && area.Contains(flatOrigin, flatCenter, CharacterCombatRules.Flat(nearby.transform.position), Range) &&
                     (Navigation == null || Navigation.Clear(origin, nearby.transform.position)) && arrow.hit.Add(nearby))
                     DealSkillDamage(nearby, arrow.damage + bonus, false, true);
             arrow.hit.Add(target);

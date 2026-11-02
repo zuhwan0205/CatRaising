@@ -10,6 +10,27 @@ public class FieldBillboard : MonoBehaviour
     public Camera ViewCamera;
     public Transform Feet;
     public float CenterHeight = .4f;
+    // Set only for ordinary enemies; characters and boss attack animations keep updating.
+    public Renderer VisibilityRenderer;
+    private static readonly Plane[] visibilityPlanes = new Plane[6];
+    private static Camera visibilityCamera;
+    private static int visibilityFrame = -1;
+    private static Matrix4x4 visibilityMatrix;
+    public static bool IsNearView(Camera camera, Renderer renderer)
+    {
+        if (camera == null || renderer == null) return true;
+        var matrix = camera.projectionMatrix * camera.worldToCameraMatrix;
+        if (visibilityFrame != Time.frameCount || visibilityCamera != camera || visibilityMatrix != matrix)
+        {
+            GeometryUtility.CalculateFrustumPlanes(matrix, visibilityPlanes);
+            visibilityFrame = Time.frameCount;
+            visibilityCamera = camera;
+            visibilityMatrix = matrix;
+        }
+        var bounds = renderer.bounds;
+        bounds.Expand(2f); // One world unit of margin prevents edge popping.
+        return GeometryUtility.TestPlanesAABB(visibilityPlanes, bounds);
+    }
     private SortingGroup group;
     private Transform visual;
     private static int cameraFrame = -1;
@@ -24,7 +45,7 @@ public class FieldBillboard : MonoBehaviour
     private int desiredOrder;
 
     [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.SubsystemRegistration)]
-    private static void ResetCache() { cameras.Clear(); cameraFrame = -1; }
+    private static void ResetCache() { cameras.Clear(); cameraFrame = -1; visibilityCamera = null; visibilityFrame = -1; }
 
     private static CameraPose ReadCamera(Camera camera)
     {
@@ -49,6 +70,7 @@ public class FieldBillboard : MonoBehaviour
     {
         if (ViewCamera == null || Feet == null)
             return;
+        if (VisibilityRenderer != null && !IsNearView(ViewCamera, VisibilityRenderer)) return;
         var camera = ReadCamera(ViewCamera);
         var feet = Feet.position;
         var position = feet + camera.up * CenterHeight;

@@ -1313,31 +1313,31 @@ MonoBehaviour:
         x: 0
         y: 0
         width: 0.25
-        height: 0.33333334
-      pivot: {x: 0.48, y: 0.16}
+        height: 0.368324125
+      pivot: {x: 0.48, y: 0.1448}
       pixelsPerUnitPerSheetHeight: 0.2020202
     - normalizedRect:
         serializedVersion: 2
         x: 0.25
         y: 0
         width: 0.25
-        height: 0.33333334
-      pivot: {x: 0.38, y: 0.16}
+        height: 0.35174954
+      pivot: {x: 0.38, y: 0.151623037}
       pixelsPerUnitPerSheetHeight: 0.2020202
     - normalizedRect:
         serializedVersion: 2
         x: 0.5
         y: 0
-        width: 0.25
-        height: 0.33333334
-      pivot: {x: 0.32, y: 0.16}
+        width: 0.279696133
+        height: 0.276243094
+      pivot: {x: 0.286024691, y: 0.193066667}
       pixelsPerUnitPerSheetHeight: 0.2020202
     - normalizedRect:
         serializedVersion: 2
         x: 0.75
-        y: 0
+        y: 0.6666667
         width: 0.25
         height: 0.33333334
-      pivot: {x: 0.64, y: 0.16}
+      pivot: {x: 0.64, y: 0.07}
       pixelsPerUnitPerSheetHeight: 0.2020202
     mainBattleScale: 1.0220699

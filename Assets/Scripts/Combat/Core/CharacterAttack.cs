@@ -50,8 +50,10 @@ public static class CharacterCombatRules
         if (closest == null || !closest.Alive) return;
         var area = AttackAreaStrategies.Find(attackId);
         if (area == null) return;
+        var flatOrigin = Flat(origin);
+        var flatTarget = Flat(closest.transform.position);
         foreach (var enemy in enemies)
-            if (enemy != null && enemy.Alive && area.Contains(Flat(origin), Flat(closest.transform.position), Flat(enemy.transform.position), range))
+            if (enemy != null && enemy.Alive && area.Contains(flatOrigin, flatTarget, Flat(enemy.transform.position), range))
                 results.Add(enemy);
     }
 }

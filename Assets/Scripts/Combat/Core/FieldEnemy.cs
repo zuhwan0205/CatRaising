@@ -121,6 +121,7 @@ public class FieldEnemy : MonoBehaviour, ICharacterHitReceiver
         }
         else frames = cachedFrames;
         artwork.sprite = frames[0];
+        if (billboard != null) billboard.VisibilityRenderer = artwork;
         artwork.transform.localScale = Vector3.one;
         color = Color.white;
         artwork.color = color;
@@ -174,6 +175,7 @@ public class FieldEnemy : MonoBehaviour, ICharacterHitReceiver
         artwork.color = color = Color.white;
         if (raidVisual == null) raidVisual = gameObject.AddComponent<RaidBossVisual>();
         raidVisual.Build(artwork, index);
+        if (billboard != null) billboard.VisibilityRenderer = null;
         if (groundShadow != null) groundShadow.SetSize(2);
     }
 
@@ -205,7 +207,7 @@ public class FieldEnemy : MonoBehaviour, ICharacterHitReceiver
         slowRemaining = Mathf.Max(0, slowRemaining - delta);
         armorBreakRemaining = Mathf.Max(0, armorBreakRemaining - delta);
         animationTime += delta;
-        if (raidArtwork == null && !artwork.isVisible)
+        if (raidArtwork == null && !FieldBillboard.IsNearView(billboard != null ? billboard.ViewCamera : null, artwork))
         {
             previousPosition = transform.position;
             return;
@@ -218,11 +220,10 @@ public class FieldEnemy : MonoBehaviour, ICharacterHitReceiver
             if (Mathf.Abs(horizontal) > .0001f)
                 artwork.flipX = raidArtwork != null ? horizontal > 0 : horizontal < 0;
         }
-        if (raidArtwork != null)
-            artwork.sprite = raidArtwork;
-        else if (frames[0] != null)
-            artwork.sprite = frames[flashRemaining > 0 ? 4 + Mathf.Min(3, (int)((.15f - flashRemaining) / .15f * 4)) : (int)(animationTime * 6) % 4];
-        artwork.color = flashRemaining > 0 ? (raidArtwork != null ? new Color(1, .55f, .55f) : Color.white) : slowRemaining > 0 ? Color.Lerp(color, new Color(.35f, .8f, 1), .65f) : armorBreakRemaining > 0 ? Color.Lerp(color, new Color(.85f, .55f, 1), .45f) : color;
+        var frame = raidArtwork != null ? raidArtwork : frames[flashRemaining > 0 ? 4 + Mathf.Min(3, (int)((.15f - flashRemaining) / .15f * 4)) : (int)(animationTime * 6) % 4];
+        if (frame != null && artwork.sprite != frame) artwork.sprite = frame;
+        var tint = flashRemaining > 0 ? (raidArtwork != null ? new Color(1, .55f, .55f) : Color.white) : slowRemaining > 0 ? Color.Lerp(color, new Color(.35f, .8f, 1), .65f) : armorBreakRemaining > 0 ? Color.Lerp(color, new Color(.85f, .55f, 1), .45f) : color;
+        if (artwork.color != tint) artwork.color = tint;
         if (raidVisual != null) raidVisual.Step(delta, moved);
     }
     public bool Hit(double damage, bool ignoreDefense = false)
