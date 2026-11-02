@@ -5,6 +5,14 @@ public static class CatLocalSettings
 {
     private const string Prefix = "CatRaising.Settings.";
     public static event System.Action AudioChanged;
+    public static event System.Action MonsterShadowsChanged;
+    public static bool MonsterShadows => PlayerPrefs.GetInt(Prefix + "MonsterShadows", 1) != 0;
+    public static void SetMonsterShadows(bool enabled)
+    {
+        PlayerPrefs.SetInt(Prefix + "MonsterShadows", enabled ? 1 : 0);
+        Flush();
+        MonsterShadowsChanged?.Invoke();
+    }
     public static float GetVolume(CatAudioChannel channel) => Mathf.Clamp01(PlayerPrefs.GetFloat(
         Prefix + "Audio." + channel, PlayerPrefs.GetFloat(Prefix + "Volume", 1f)));
     public static bool Muted => PlayerPrefs.GetInt(Prefix + "Muted", 0) != 0;

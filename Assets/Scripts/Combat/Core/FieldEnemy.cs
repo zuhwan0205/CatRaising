@@ -10,6 +10,7 @@ public class FieldEnemy : MonoBehaviour, ICharacterHitReceiver
     public float RespawnRemaining;
     private SpriteRenderer artwork;
     private FieldBillboard billboard;
+    private MonsterGroundShadow groundShadow;
     private Transform healthBar;
     private Color color;
     private float flashRemaining;
@@ -101,6 +102,7 @@ public class FieldEnemy : MonoBehaviour, ICharacterHitReceiver
         GoldReward = gold[kind];
         baseMonsterHealth = health[kind];
         survivalGrowth = 1f;
+        if (groundShadow != null) groundShadow.SetSize(1);
         Health = new CombatHealth(baseMonsterHealth);
         MoveSpeed = speed[kind];
         ContactDamage = baseMonsterDamage = contact[kind];
@@ -137,6 +139,7 @@ public class FieldEnemy : MonoBehaviour, ICharacterHitReceiver
         ContactDamage = baseMonsterDamage * (1 + (multiplier - 1) * .5);
         Health.SetMaximumPreservingRatio(baseMonsterHealth * multiplier);
         artwork.transform.localScale = Vector3.one * multiplier;
+        if (groundShadow != null) groundShadow.SetSize(multiplier);
     }
     public void ConfigureRaidBoss(int kind, double health)
     {
@@ -171,6 +174,7 @@ public class FieldEnemy : MonoBehaviour, ICharacterHitReceiver
         artwork.color = color = Color.white;
         if (raidVisual == null) raidVisual = gameObject.AddComponent<RaidBossVisual>();
         raidVisual.Build(artwork, index);
+        if (groundShadow != null) groundShadow.SetSize(2);
     }
 
     public void ApplyIceSlow()
@@ -186,6 +190,14 @@ public class FieldEnemy : MonoBehaviour, ICharacterHitReceiver
         color = art.color;
         healthBar = bar;
         Health = new CombatHealth(hp);
+        var shadow = transform.Find("Target Shadow");
+        if (shadow == null)
+        {
+            shadow = new GameObject("Target Shadow").transform;
+            shadow.SetParent(transform, false);
+        }
+        groundShadow = shadow.GetComponent<MonsterGroundShadow>();
+        if (groundShadow == null) groundShadow = shadow.gameObject.AddComponent<MonsterGroundShadow>();
     }
     public void StepVisual(float delta)
     {

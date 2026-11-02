@@ -54,6 +54,17 @@ public partial class CatGameSceneUI
             specialRect.offsetMin = specialRect.offsetMax = Vector2.zero;
         }
         var giftIcon = specialShopButton.transform.Find("Gift Icon Slot/Gift Icon");
+        var shopArt = Resources.Load<Texture2D>("GameUIArt/SpecialShopIcon");
+        if (giftIcon != null && shopArt != null)
+        {
+            var image = giftIcon.GetComponent<RawImage>();
+            if (image == null) { image = giftIcon.gameObject.AddComponent<RawImage>(); changed = true; }
+            if (image.texture != shopArt) { image.texture = shopArt; changed = true; }
+            image.raycastTarget = false;
+            // Preserve the editable icon slot and hide the old procedural gift drawing.
+            foreach (Transform child in giftIcon)
+                if (child.gameObject.activeSelf) { child.gameObject.SetActive(false); changed = true; }
+        }
         if (changed && giftIcon != null && giftIcon.localScale != Vector3.one * .85f)
         {
             giftIcon.localScale = Vector3.one * .85f;
