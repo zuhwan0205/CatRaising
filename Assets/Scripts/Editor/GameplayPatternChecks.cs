@@ -77,6 +77,20 @@ public static class GameplayPatternChecks
             for (int i = 0; i < old.Length; i++)
             {
                 Require(current[i] != null && current[i].texture == old[i].texture, "Frame texture");
+                // Hammer attack art crosses the original uniform grid. Preserve foot anchors,
+                // but use corrected bounds; recovery intentionally reuses the intact idle pose.
+                if (entry.characterId == "cat_tiger" && i >= 8)
+                {
+                    var expectedRect = i == 8 ? new Rect(0, 0, 362, 400) :
+                        i == 9 ? new Rect(362, 0, 362, 382) : i == 10 ? new Rect(724, 0, 405, 300) : old[3].rect;
+                    var expectedPivot = i == 11 ? old[3].pivot : old[i].pivot;
+                    Require((current[i].rect.position - expectedRect.position).sqrMagnitude < .001f &&
+                        (current[i].rect.size - expectedRect.size).sqrMagnitude < .001f &&
+                        (current[i].pivot - expectedPivot).sqrMagnitude < .001f &&
+                        Mathf.Abs(current[i].pixelsPerUnit - old[i].pixelsPerUnit) < .001f, "Hammer attack bounds/anchor");
+                    count++;
+                    continue;
+                }
                 Require((current[i].rect.position - old[i].rect.position).sqrMagnitude < .001f &&
                     (current[i].rect.size - old[i].rect.size).sqrMagnitude < .001f &&
                     (current[i].pivot - old[i].pivot).sqrMagnitude < .001f &&

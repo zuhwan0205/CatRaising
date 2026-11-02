@@ -1,4 +1,4 @@
-using DG.Tweening;
+
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -11,7 +11,7 @@ public sealed class FieldDamageNumbers : MonoBehaviour
         public CanvasGroup Fade;
         public Text Label;
         public GameObject Coin;
-        public Sequence Animation;
+        public Vector3 Start, Travel; public float Age; public bool Gold, Active;
     }
     private readonly Entry[] entries = new Entry[32];
     private Camera view;
@@ -85,7 +85,7 @@ public sealed class FieldDamageNumbers : MonoBehaviour
         var entry = entries[next];
         float side = ((next % 3) - 1) * .16f;
         next = (next + 1) % entries.Length;
-        entry.Animation?.Kill();
+        entry.Age = 0; entry.Gold = gold; entry.Active = true;
         entry.Root.gameObject.SetActive(true);
         entry.Root.rotation = view.transform.rotation;
         var start = position + view.transform.up * (gold ? .35f : 1.35f)
@@ -97,40 +97,42 @@ public sealed class FieldDamageNumbers : MonoBehaviour
         entry.Coin.SetActive(gold);
         entry.Label.fontSize = gold ? 34 : 48;
         entry.Label.color = gold ? new Color(1f, .78f, .18f) : new Color(1f, .97f, .94f);
-        var animation = DOTween.Sequence().SetLink(gameObject, LinkBehaviour.KillOnDisable);
-        if (gold)
-        {
-            // 보상은 낮은 위치에서 오른쪽 위로 천천히 떠오릅니다.
-            animation.Append(DOTween.To(() => entry.Root.position, v => entry.Root.position = v,
-                start + view.transform.up * .55f + view.transform.right * .4f, 1.05f).SetEase(Ease.OutSine));
-            animation.Insert(.65f, DOTween.To(() => entry.Fade.alpha, v => entry.Fade.alpha = v, 0f, .4f));
-        }
-        else
-        {
-            // 피해량은 크게 튀어나온 뒤 빠르게 사라집니다.
-            animation.Append(DOTween.To(() => entry.Root.position, v => entry.Root.position = v,
-                start + view.transform.up * .8f, .5f).SetEase(Ease.OutCubic));
-            animation.Insert(0, DOTween.To(() => entry.Root.localScale, v => entry.Root.localScale = v,
-                Vector3.one * .01f, .18f).SetEase(Ease.OutQuad));
-            animation.Insert(.2f, DOTween.To(() => entry.Fade.alpha, v => entry.Fade.alpha = v, 0f, .3f));
-        }
-        animation.OnComplete(() => entry.Root.gameObject.SetActive(false));
-        entry.Animation = animation;
+        entry.Start = start;
+        entry.Travel = gold ? view.transform.up * .55f + view.transform.right * .4f : view.transform.up * .8f;
     }
 
     private void LateUpdate()
     {
         if (view == null) return;
+        var rotation = view.transform.rotation;
         foreach (var entry in entries)
-            if (entry != null && entry.Root.gameObject.activeSelf) entry.Root.rotation = view.transform.rotation;
+        {
+            if (entry == null || !entry.Active) continue;
+            entry.Age += Time.deltaTime;
+            float duration = entry.Gold ? 1.05f : .5f;
+            if (entry.Age >= duration)
+            {
+                entry.Active = false; entry.Root.gameObject.SetActive(false); continue;
+            }
+            float t = Mathf.Clamp01(entry.Age / duration);
+            float ease = entry.Gold ? Mathf.Sin(t * Mathf.PI * .5f) : 1 - Mathf.Pow(1 - t, 3);
+            entry.Root.position = entry.Start + entry.Travel * ease;
+            entry.Root.rotation = rotation;
+            if (!entry.Gold)
+            {
+                float scaleTime = Mathf.Clamp01(entry.Age / .18f);
+                entry.Root.localScale = Vector3.one * Mathf.Lerp(.012f, .01f, 1 - (1 - scaleTime) * (1 - scaleTime));
+            }
+            float fadeTime = Mathf.Clamp01((entry.Age - (entry.Gold ? .65f : .2f)) / (entry.Gold ? .4f : .3f));
+            entry.Fade.alpha = (1 - fadeTime) * (1 - fadeTime);
+        }
     }
-
     private void OnDisable()
     {
         foreach (var entry in entries)
         {
             if (entry == null) continue;
-            entry.Animation?.Kill();
+            entry.Active = false;
             if (entry.Root != null) entry.Root.gameObject.SetActive(false);
         }
     }

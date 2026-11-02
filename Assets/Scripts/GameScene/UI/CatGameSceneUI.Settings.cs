@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Threading.Tasks;
 using UnityEngine;
 using UnityEngine.UI;
@@ -87,8 +87,16 @@ public partial class CatGameSceneUI
         low = Button(body, "30 FPS · 절전", new Vector2(.10f, .305f), new Vector2(.48f, .385f), () => { CatLocalSettings.SetFrameRate(30); refresh(); });
         high = Button(body, "60 FPS · 부드럽게", new Vector2(.52f, .305f), new Vector2(.90f, .385f), () => { CatLocalSettings.SetFrameRate(60); refresh(); });
         refresh();
-        var message = Label(body, "설정은 이 기기에 저장됩니다.", 18, new Vector2(.06f, .03f), new Vector2(.94f, .12f));
-        Button(body, "진행 저장", new Vector2(.10f, .18f), new Vector2(.48f, .28f), async () =>
+        var shadows = Button(body, "", new Vector2(.10f, .205f), new Vector2(.90f, .285f), () => { });
+        Action refreshShadows = () =>
+        {
+            shadows.GetComponentInChildren<Text>().text = "몬스터 그림자  " + (CatLocalSettings.MonsterShadows ? "ON" : "OFF");
+            CozyButtonStyle.SetColor(shadows, CatLocalSettings.MonsterShadows ? CozyButtonStyle.Green : CozyButtonStyle.Cream);
+        };
+        shadows.onClick.AddListener(() => { CatLocalSettings.SetMonsterShadows(!CatLocalSettings.MonsterShadows); refreshShadows(); });
+        refreshShadows();
+        var message = Label(body, "설정은 이 기기에 저장됩니다.", 18, new Vector2(.06f, .025f), new Vector2(.94f, .075f));
+        Button(body, "진행 저장", new Vector2(.10f, .085f), new Vector2(.48f, .175f), async () =>
         {
             if (settingsBusy || saving) return;
             settingsBusy = true;
@@ -101,7 +109,7 @@ public partial class CatGameSceneUI
             catch (Exception) { if (message != null) message.text = "저장에 실패했습니다. 다시 시도해주세요."; }
             finally { settingsBusy = false; }
         });
-        var logout = Button(body, "로그아웃", new Vector2(.52f, .18f), new Vector2(.90f, .28f), () => { if (!settingsBusy && !saving) ShowLogoutConfirmation(); });
+        var logout = Button(body, "로그아웃", new Vector2(.52f, .085f), new Vector2(.90f, .175f), () => { if (!settingsBusy && !saving) ShowLogoutConfirmation(); });
         CozyButtonStyle.Apply(logout, CozyButtonStyle.Peach);
         Label(body, "v" + Application.version, 16, new Vector2(.10f, 0), new Vector2(.90f, .035f));
     }
@@ -152,6 +160,14 @@ public partial class CatGameSceneUI
     private void ShowLogoutConfirmation()
     {
         var body = SettingsBody("로그아웃");
+        var shadows = Button(body, "", new Vector2(.10f, .205f), new Vector2(.90f, .285f), () => { });
+        Action refreshShadows = () =>
+        {
+            shadows.GetComponentInChildren<Text>().text = "몬스터 그림자  " + (CatLocalSettings.MonsterShadows ? "ON" : "OFF");
+            CozyButtonStyle.SetColor(shadows, CatLocalSettings.MonsterShadows ? CozyButtonStyle.Green : CozyButtonStyle.Cream);
+        };
+        shadows.onClick.AddListener(() => { CatLocalSettings.SetMonsterShadows(!CatLocalSettings.MonsterShadows); refreshShadows(); });
+        refreshShadows();
         var message = Label(body, "진행 상황을 저장하고\n로그인 화면으로 돌아갈까요?\n\n계정과 고양이들은 삭제되지 않습니다.", 25,
             new Vector2(.09f, .34f), new Vector2(.91f, .79f));
         Button(body, "취소", new Vector2(.10f, .18f), new Vector2(.48f, .29f), () => { if (!settingsBusy) ShowSettings(); });

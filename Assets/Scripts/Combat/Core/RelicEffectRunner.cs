@@ -30,7 +30,12 @@ public sealed class RelicEffectRunner
         {
             if (string.IsNullOrEmpty(id) || !processed.Add(id))
                 continue;
-            var owned = data.relics.Find(x => x != null && x.relicId == id);
+            OwnedRelic owned = null;
+            for (int i = 0; i < data.relics.Count; i++)
+            {
+                var candidate = data.relics[i];
+                if (candidate != null && candidate.relicId == id) { owned = candidate; break; }
+            }
             var definition = catalog.FindRelic(id);
             if (owned == null || definition == null || definition.trigger != trigger)
                 continue;

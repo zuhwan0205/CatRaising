@@ -9,11 +9,13 @@ public sealed class FieldSkillStatus : MonoBehaviour
         public OwnedCharacter character;
         public int stacks;
         public float remaining, tick;
-        public void Clear() { stacks = 0; remaining = tick = 0; source = null; }
+        public void Clear() { stacks = 0; remaining = tick = 0; source = null; character = null; }
     }
     private readonly Status poison = new Status(), burn = new Status();
     private FieldEnemy enemy;
     private CombatHealth life;
+    private bool HasEffects => poison.stacks > 0 || burn.stacks > 0;
+    private void OnEnable() { if (!HasEffects) enabled = false; }
     public void Apply(FieldCombatController source, FieldEnemy target, int poisonRank, int burnRank)
     {
         if (life != target.Health) { poison.Clear(); burn.Clear(); }
@@ -21,6 +23,7 @@ public sealed class FieldSkillStatus : MonoBehaviour
         life = target.Health;
         Add(poison, source, poisonRank);
         Add(burn, source, burnRank);
+        enabled = HasEffects;
     }
     private void Add(Status status, FieldCombatController source, int rank)
     {
@@ -34,9 +37,10 @@ public sealed class FieldSkillStatus : MonoBehaviour
     private void Update()
     {
         if (Time.timeScale == 0) return;
-        if (enemy == null || !enemy.Alive || enemy.Health != life) { poison.Clear(); burn.Clear(); return; }
+        if (enemy == null || !enemy.Alive || enemy.Health != life) { enabled = false; return; }
         Tick(poison);
         if (enemy.Alive) Tick(burn);
+        if (!HasEffects) enabled = false;
     }
     private void Tick(Status status)
     {

@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using UnityEngine;
 
@@ -98,7 +98,7 @@ public partial class FieldCombatController : MonoBehaviour
         if (PlayerHealth.Dead) return;
         bool died = PlayerHealth.Damage(Math.Max(1, damage - defense));
         TrySkillPotion();
-        if (!died) TriggerRelics(EffectTrigger.OnDamaged, null);
+        if (!died) TriggerRelics(EffectTrigger.OnDamaged, false);
         PlayerHit?.Invoke();
         HealthChanged?.Invoke(PlayerHealth.Current, PlayerHealth.Maximum);
         if (died) LockedTarget = null;
@@ -166,10 +166,16 @@ public partial class FieldCombatController : MonoBehaviour
         FieldEnemy contactAttacker = null;
         FieldEnemy closest = null;
         float nearest = Range * Range;
-        for (int enemyIndex = 0; enemyIndex < (RaidMode ? enemies.Length : Math.Min(enemies.Length, TargetMonsterCount)); enemyIndex++)
+        var playerPosition = player.position;
+        int enemyLimit = RaidMode ? enemies.Length : Math.Min(enemies.Length, TargetMonsterCount);
+        int unlockedKinds = UnlockedMonsterKinds;
+        float growth = MonsterGrowthMultiplier;
+        float distantRange = Mathf.Max(14f, Range + 3f);
+        float contactRangeSquared = ContactDistance * ContactDistance;
+        for (int enemyIndex = 0; enemyIndex < enemyLimit; enemyIndex++)
         {
             var enemy = enemies[enemyIndex];
-            if (enemy == null || (!RaidMode && enemy.Kind >= UnlockedMonsterKinds))
+            if (enemy == null || (!RaidMode && enemy.Kind >= unlockedKinds))
                 continue;
             if (!enemy.Alive)
             {
@@ -180,24 +186,27 @@ public partial class FieldCombatController : MonoBehaviour
                 continue;
             }
 
-            Vector3 toward = player.position - enemy.transform.position;
+            var enemyTransform = enemy.transform;
+            var enemyPosition = enemyTransform.position;
+            Vector3 toward = playerPosition - enemyPosition;
             toward.y = 0;
             float distance = toward.magnitude;
-            float movementDelta = RaidMode ? delta : enemy.SimulationDelta(delta, distance > Mathf.Max(14f, Range + 3f));
-            if (!RaidMode && movementDelta > 0) enemy.ApplySurvivalGrowth(MonsterGrowthMultiplier);
+            float movementDelta = RaidMode ? delta : enemy.SimulationDelta(delta, distance > distantRange);
+            if (!RaidMode && movementDelta > 0) enemy.ApplySurvivalGrowth(growth);
             if (!RaidMode && distance > .9f && movementDelta > 0)
             {
-                Vector3 start = enemy.transform.position;
-                Vector3 goal = enemy.NextWaypoint(Navigation, player.position);
+                Vector3 start = enemyPosition;
+                Vector3 goal = enemy.NextWaypoint(Navigation, playerPosition);
                 Vector3 direction = goal - start;
                 direction.y = 0;
                 Vector3 step = direction.normalized * Mathf.Min(enemy.MoveSpeed * enemy.MovementMultiplier * movementDelta, Mathf.Min(direction.magnitude, distance - .9f));
-                enemy.transform.position = Navigation == null ? start + step : Navigation.Move(start, step);
+                enemyPosition = Navigation == null ? start + step : Navigation.Move(start, step);
+                enemyTransform.position = enemyPosition;
             }
             if (!RaidMode) enemy.StepVisual(delta);
-            float sqr = (enemy.transform.position - player.position).sqrMagnitude;
-            bool clear = sqr <= Mathf.Max(ContactDistance * ContactDistance, nearest) && (Navigation == null || Navigation.Clear(player.position, enemy.transform.position));
-            if (clear && sqr <= ContactDistance * ContactDistance)
+            float sqr = (enemyPosition - playerPosition).sqrMagnitude;
+            bool clear = sqr <= Mathf.Max(contactRangeSquared, nearest) && (Navigation == null || Navigation.Clear(playerPosition, enemyPosition));
+            if (clear && sqr <= contactRangeSquared)
             {
                 touching = true;
                 if (contactAttacker == null || enemy.ContactDamage > touchingDamage) contactAttacker = enemy;
@@ -231,7 +240,7 @@ public partial class FieldCombatController : MonoBehaviour
             bool died = PlayerHealth.Damage(Math.Max(1, touchingDamage - defense));
             TrySkillPotion();
             if (!died)
-                TriggerRelics(EffectTrigger.OnDamaged, null);
+                TriggerRelics(EffectTrigger.OnDamaged, false);
             PlayerHit?.Invoke();
             HealthChanged?.Invoke(PlayerHealth.Current, PlayerHealth.Maximum);
             if (died)
@@ -263,8 +272,7 @@ public partial class FieldCombatController : MonoBehaviour
         // 여러 적을 맞히는 공격도 몸의 방향/모션은 한 번만 시작합니다.
         AttackStarted?.Invoke(player.position, closest.transform.position);
         // OnAttack은 공격 1회당, OnHit은 기본 공격 명중 대상마다 실행합니다.
-        double attackBonus = 0;
-        TriggerRelics(EffectTrigger.OnAttack, value => attackBonus += value);
+        double attackBonus = TriggerRelics(EffectTrigger.OnAttack, true);
         if (UsesSkillArrows)
         {
             LaunchSkillArrows(closest, (attack + attackBonus) * AllyAttackMultiplier);
@@ -274,7 +282,11 @@ public partial class FieldCombatController : MonoBehaviour
         attackBehavior.SelectTargets(player.position, closest, basicCandidates, Range, attackTargets);
         ExpandMaceTargets(closest);
         if (Navigation != null)
-            attackTargets.RemoveAll(target => !Navigation.Clear(player.position, target.transform.position));
+        {
+            var origin = player.position;
+            for (int i = attackTargets.Count - 1; i >= 0; i--)
+                if (!Navigation.Clear(origin, attackTargets[i].transform.position)) attackTargets.RemoveAt(i);
+        }
         if (attackBehavior is TrioAttack trio)
             trio.LimitTargets(attackTargets);
         double minDamage = double.PositiveInfinity, maxDamage = 0, maxBonus = 0;
@@ -284,8 +296,7 @@ public partial class FieldCombatController : MonoBehaviour
         {
             if (!target.Alive) continue;
             if (!(attackBehavior is BreathAreaAttack) && !(attackBehavior is TargetAreaAttack)) AttackPerformed?.Invoke(player.position, target.transform.position);
-            double hitBonus = 0;
-            TriggerRelics(EffectTrigger.OnHit, value => hitBonus += value);
+            double hitBonus = TriggerRelics(EffectTrigger.OnHit, true);
             double bonus = attackBonus + hitBonus;
             double damage = (attack + bonus) * AllyAttackMultiplier;
             maxBonus = Math.Max(maxBonus, bonus);
@@ -304,22 +315,42 @@ public partial class FieldCombatController : MonoBehaviour
         }
     }
 
-    private void TriggerRelics(EffectTrigger trigger, Action<double> bonusDamage)
-    {
-        double restored = 0;
-        relicEffects.Trigger(trigger, value =>
-        {
-            double before = PlayerHealth.Current;
-            PlayerHealth.Heal(value);
-            restored = PlayerHealth.Current - before;
-            HealthChanged?.Invoke(PlayerHealth.Current, PlayerHealth.Maximum);
-        }, bonusDamage, (definition, value) =>
-        {
-            string effect = definition.effectId == "heal" ? $"HP +{restored:0.#}" : $"추가 피해 +{value:0.#}";
-            RelicMessageChanged?.Invoke($"{definition.displayName} 발동 · {effect}");
-        });
-    }
+    private Action<double> relicHealCallback, relicBonusCallback;
+    private Action<RelicDefinition, double> relicNotificationCallback;
+    private double relicBonus, relicRestored;
 
+    private double TriggerRelics(EffectTrigger trigger, bool allowBonus)
+    {
+        // Allocate delegates once, including after reinitialization; no per-hit closures.
+        if (relicHealCallback == null)
+        {
+            relicHealCallback = HealFromRelic;
+            relicBonusCallback = AddRelicBonus;
+            relicNotificationCallback = NotifyRelic;
+        }
+        double previousBonus = relicBonus, previousRestored = relicRestored;
+        relicBonus = relicRestored = 0;
+        try
+        {
+            relicEffects.Trigger(trigger, relicHealCallback, allowBonus ? relicBonusCallback : null, relicNotificationCallback);
+            return relicBonus;
+        }
+        finally { relicBonus = previousBonus; relicRestored = previousRestored; }
+    }
+    private void AddRelicBonus(double value) => relicBonus += value;
+    private void HealFromRelic(double value)
+    {
+        double before = PlayerHealth.Current;
+        PlayerHealth.Heal(value);
+        relicRestored = PlayerHealth.Current - before;
+        HealthChanged?.Invoke(PlayerHealth.Current, PlayerHealth.Maximum);
+    }
+    private void NotifyRelic(RelicDefinition definition, double value)
+    {
+        if (RelicMessageChanged == null) return;
+        string effect = definition.effectId == "heal" ? $"HP +{relicRestored:0.#}" : $"추가 피해 +{value:0.#}";
+        RelicMessageChanged.Invoke($"{definition.displayName} 발동 · {effect}");
+    }
     private void ResolveStats()
     {
         var owned = data.characters.Find(x => x != null && x.characterId == data.loadout.characterId);
