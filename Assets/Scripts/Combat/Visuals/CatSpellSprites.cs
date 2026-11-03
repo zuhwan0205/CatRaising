@@ -28,6 +28,7 @@ public static class CatSpellSprites
         if (cache.TryGetValue(id, out var existing)) return existing;
         var texture = Resources.Load<Texture2D>(resource);
         if (texture == null) return null;
+        texture.filterMode = FilterMode.Point;
         // 1254px 원본의 여백을 제외한 셀. 픽셀은 변경하지 않고 스프라이트 영역만 지정합니다.
         Rect[] regions = id == "cat_lion" ? new[] {
             new Rect(150,250,360,260), new Rect(735,220,410,340),

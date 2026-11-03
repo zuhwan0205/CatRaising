@@ -3,6 +3,25 @@ using UnityEngine.UI;
 
 public partial class CatGameSceneUI
 {
+    private void SetPageBackground(string tab)
+    {
+        UpgradeBackground();
+        if (safeArea == null) return;
+        var background = safeArea.parent.Find("Background");
+        if (background == null) return;
+        var picture = background.Find("Cozy Cat Wallpaper");
+        if (picture == null) return;
+        string resource = tab == "레이드" ? "RaidFortressWallpaper" : tab == "던전" ? "DungeonForestWallpaper" : "CozyCatWallpaper";
+        var texture = Resources.Load<Texture2D>("GameUIArt/" + resource);
+        if (texture == null) return;
+        var image = picture.GetComponent<RawImage>();
+        image.texture = texture;
+        image.color = Color.white;
+        image.raycastTarget = false;
+        var fit = picture.GetComponent<AspectRatioFitter>();
+        if (fit != null) fit.aspectRatio = (float)texture.width / texture.height;
+    }
+
     public bool UpgradeBackground()
     {
         if (safeArea == null) return false;

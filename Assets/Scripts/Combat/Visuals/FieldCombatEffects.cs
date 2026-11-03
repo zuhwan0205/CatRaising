@@ -89,7 +89,7 @@ public class FieldCombatEffects : MonoBehaviour
             sprite.transform.localScale = Vector3.one * size;
             float fade = spell.fire ? Mathf.Clamp01((CatSpellSprites.BreathSeconds - spell.age) / .10f) :
                 impact ? Mathf.Clamp01(1 - (spell.age - CatSpellSprites.FlightSeconds) / CatSpellSprites.ImpactSeconds) : 1;
-            sprite.color = new Color(1, 1, 1, fade);
+            sprite.color = new Color(1, 1, 1, fade * (spell.fire ? .72f : impact ? .8f : 1f));
             sprite.sortingOrder = AttackSortingOrder;
         }
     }

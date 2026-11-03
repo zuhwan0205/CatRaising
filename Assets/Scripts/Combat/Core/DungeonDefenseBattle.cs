@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
+using DG.Tweening;
 
 // 던전 전용 고정 경로 전투. 재화와 배치는 이 전투 안에서만 유지됩니다.
 public sealed class DungeonDefenseBattle : MonoBehaviour
@@ -10,12 +11,16 @@ public sealed class DungeonDefenseBattle : MonoBehaviour
     {
         public RectTransform rect; public RawImage art; public int segment, kind;
         public float distance, slowRemaining, armorBreakRemaining; public double hp; public bool alive, boss;
+        public float impactRemaining, nextImpactTime;
         public void ApplyIceSlow() => slowRemaining = CharacterCombatRules.SlowDuration;
         public void ApplyArmorBreak() => armorBreakRemaining = CharacterCombatRules.ArmorBreakDuration;
     }
     private sealed class Tower
     {
         public int slot, choice; public Image image; public Sprite[] frames; public float cooldown, attackTime;
+        public Enemy pendingTarget;
+        public float windup, duration = .3f;
+        public double pendingDamage;
     }
     public Action<string> InspectCat;
     public Action<int> WaveCleared;
@@ -123,6 +128,11 @@ public sealed class DungeonDefenseBattle : MonoBehaviour
             else if(e!=null) hint("빈 잔디 타일에만 옮길 수 있어요");
             rect.anchorMin=Vector2.zero; rect.anchorMax=Vector2.one; rect.offsetMin=rect.offsetMax=Vector2.zero;
         };
+        ShowRange(slot, false);
+        image.color = new Color(1, .85f, .5f);
+        DG.Tweening.DOTween.To(() => image.color, value => image.color = value, Color.white, .3f)
+            .SetLink(obj, LinkBehaviour.KillOnDestroy)
+            .OnKill(() => { if(image != null) image.color = Color.white; });
         Coins-=cost; hint("배치 완료 · 같은 고양이도 여러 칸에 배치할 수 있어요"); Refresh(); return true;
     }
     public void StartWave()
@@ -166,6 +176,8 @@ public sealed class DungeonDefenseBattle : MonoBehaviour
                 var enemy=enemies[spawned]; enemy.kind=DungeonStageRules.Kind(stage,wave,spawned);
                 enemy.boss=DungeonStageRules.IsBoss(stage,wave,spawned);
                 enemy.slowRemaining=enemy.armorBreakRemaining=0;
+                enemy.impactRemaining=enemy.nextImpactTime=0;
+                enemy.art.rectTransform.localScale=Vector3.one;
                 enemy.hp=DungeonStageRules.Health(stage,wave,spawned); enemy.segment=0; enemy.distance=0; enemy.alive=true;
                 enemy.art.texture=textures[enemy.kind]; SizeEnemy(enemy);
                 enemy.rect.anchoredPosition=Point(0); enemy.rect.gameObject.SetActive(true);
@@ -183,8 +195,15 @@ public sealed class DungeonDefenseBattle : MonoBehaviour
             float speed=(enemy.kind==1?62:enemy.kind==3?34:45)*movementScale;
             enemy.slowRemaining=Mathf.Max(0,enemy.slowRemaining-dt);
             enemy.armorBreakRemaining=Mathf.Max(0,enemy.armorBreakRemaining-dt);
+            if(enemy.impactRemaining>0)
+            {
+                enemy.impactRemaining=Mathf.Max(0,enemy.impactRemaining-dt);
+                float recoil=enemy.impactRemaining/.12f;
+                enemy.art.rectTransform.localScale=new Vector3(1+recoil*.07f,1-recoil*.07f,1);
+            }
             if(enemy.slowRemaining>0) speed*=CharacterCombatRules.SlowMultiplier;
             var tint=enemy.slowRemaining>0 ? new Color(.55f,.85f,1) : enemy.armorBreakRemaining>0 ? new Color(.85f,.65f,1) : Color.white;
+            if(enemy.impactRemaining>.05f) tint=new Color(1,.82f,.55f);
             if (enemy.art.color != tint) enemy.art.color = tint;
             enemy.distance+=speed*dt;
             while(enemy.segment<route.Length-1)
@@ -212,18 +231,31 @@ public sealed class DungeonDefenseBattle : MonoBehaviour
 
             if(tower.frames[0]!=null)
             {
-                var frame=tower.frames[tower.attackTime>0?8+Mathf.Min(3,(int)((.3f-tower.attackTime)/.075f)):(int)(Time.time*4)%4];
+                var frame=tower.frames[tower.attackTime>0?8+Mathf.Min(3,(int)((1-tower.attackTime/tower.duration)*4)):(int)(Time.time*4)%4];
                 if(tower.image.sprite!=frame) tower.image.sprite=frame;
             }
-            if(tower.cooldown>0) continue;
             float range=Range(tower.choice);
             Vector2 position=Vector2.Scale(slots[i].anchorMin,layoutSize);
+            if(tower.pendingTarget!=null)
+            {
+                tower.windup-=dt;
+                if(tower.windup>0) continue;
+                var pending=tower.pendingTarget; tower.pendingTarget=null;
+                if(!pending.alive || (TilePoint(pending.rect.anchoredPosition)-TilePoint(position)).sqrMagnitude>range*range)
+                    pending=targetGrid.Nearest(TilePoint(position),range) ?? pending;
+                if(IsProjectile(tower.choice) || (pending.alive && (TilePoint(pending.rect.anchoredPosition)-TilePoint(position)).sqrMagnitude<=range*range))
+                    LaunchShot(position,pending,tower.choice,tower.pendingDamage,tower.image);
+                continue;
+            }
+            if(tower.cooldown>0) continue;
             Enemy target=targetGrid.Nearest(TilePoint(position), range);
             if(target==null) continue;
             CombatStats(tower.choice, out double damage, out float speed, tower);
-            tower.cooldown=1/speed; tower.attackTime=.3f;
+            tower.cooldown=1/speed;
+            tower.duration=Mathf.Min(CatCharacterVisual.AnimationDuration(team[tower.choice].characterId),tower.cooldown*.9f);
+            tower.attackTime=tower.duration;
+            tower.windup=tower.duration*.5f; tower.pendingTarget=target; tower.pendingDamage=damage;
             tower.image.rectTransform.localScale=new Vector3(target.rect.anchoredPosition.x<position.x?-1:1,1,1);
-            LaunchShot(position, target, tower.choice, damage, tower.image);
         }
         if(flow.IsFighting && spawned==total && living==0)
         {
@@ -286,11 +318,11 @@ public sealed class DungeonDefenseBattle : MonoBehaviour
             shot.age+=dt;
             if(!shot.resolved)
             {
-                if(!shot.target.alive) { StopShot(shot); continue; }
-                shot.impactPosition=shot.target.rect.anchoredPosition + Vector2.up * (shot.target.rect.rect.height*.18f);
+                if(shot.target.alive)
+                    shot.impactPosition=shot.target.rect.anchoredPosition + Vector2.up * (shot.target.rect.rect.height*.18f);
                 if(shot.age>=CatSpellSprites.FlightSeconds)
                 {
-                    ResolveHit(shot);
+                    if(shot.target.alive) ResolveHit(shot);
                     shot.resolved=true;
                 }
             }
@@ -338,7 +370,7 @@ public sealed class DungeonDefenseBattle : MonoBehaviour
         rect.sizeDelta=new Vector2(width,width*sprite.rect.height/sprite.rect.width);
         float fade=fire ? Mathf.Clamp01((CatSpellSprites.BreathSeconds-shot.age)/.1f) :
             impact ? Mathf.Clamp01(1-(shot.age-CatSpellSprites.FlightSeconds)/CatSpellSprites.ImpactSeconds) : 1;
-        shot.spellImage.color=new Color(1,1,1,fade);
+        shot.spellImage.color=new Color(1,1,1,fade*(fire?.72f:impact?.8f:1f));
     }
     private void RenderShot(Shot shot,float progress)
     {
@@ -346,7 +378,7 @@ public sealed class DungeonDefenseBattle : MonoBehaviour
         bool arrow=shot.id=="cat_ninja", ice=shot.id=="cat_shadow", magic=shot.id=="cat_moon" || ice;
         bool fire=shot.id=="cat_lion", hammer=shot.id=="cat_tiger";
         bool projectile=IsProjectile(shot.choice);
-        Vector2 target=shot.target.rect.anchoredPosition + Vector2.up * (shot.target.rect.rect.height * .18f);
+        Vector2 target=shot.impactPosition;
         Vector2 direction=target-shot.source;
         shot.root.anchoredPosition=projectile ? Vector2.Lerp(shot.source,target,progress) : target;
         shot.root.localRotation=arrow ? Quaternion.Euler(0,0,Mathf.Atan2(direction.y,direction.x)*Mathf.Rad2Deg) : Quaternion.identity;
@@ -407,6 +439,13 @@ public sealed class DungeonDefenseBattle : MonoBehaviour
     private void HitEnemy(Enemy enemy, Shot shot)
     {
         if(!enemy.alive) return;
+        if(Time.time>=enemy.nextImpactTime)
+        {
+            enemy.nextImpactTime=Time.time+.1f;
+            enemy.impactRemaining=.12f;
+            HitSparkPool.Emit(map, enemy.rect.TransformPoint(enemy.rect.rect.center), map.rotation,
+                map.rect.width/DefenseTileBoard.Width*.42f, true);
+        }
         double defense=(enemy.kind==3?2:0)+(enemy.boss?2:0);
         enemy.hp-=CharacterCombatRules.DamageAfterDefense(shot.damage,defense,enemy.armorBreakRemaining>0);
         if(enemy.hp<=0) { Remove(enemy); Coins+=enemy.boss?20:4; Refresh(); return; }

@@ -83,15 +83,18 @@ public partial class CatGameSceneUI
     private void RaidList()
     {
         dungeonMode = false;
-        BuildRaidListBackground();
-        Label(page, $"레이드 · 계정 Lv.{data.progress.accountLevel}", 30,
-            new Vector2(.04f, .90f), new Vector2(.96f, .99f)).color = new Color(1, .93f, .73f);
+        var heading = Label(page, $"레이드 · 계정 Lv.{data.progress.accountLevel}", 30,
+            new Vector2(.06f, .90f), new Vector2(.94f, .99f));
+        heading.color = new Color(1, .93f, .73f);
+        var titleShadow = heading.gameObject.AddComponent<Shadow>();
+        titleShadow.effectColor = new Color(.04f, .07f, .12f, .95f);
+        titleShadow.effectDistance = new Vector2(2, -2);
         for (int i = 0; i < 4; i++)
         {
             int index = i;
             bool available = RaidBattle.CanEnter(i, data.progress.accountLevel);
-            var card = Panel(page, "Raid " + i, new Vector2(.04f, .69f - i * .22f), new Vector2(.96f, .87f - i * .22f),
-                available ? new Color(.22f, .30f, .26f) : new Color(.35f, .35f, .38f));
+            var card = Panel(page, "Raid " + i, new Vector2(.06f, .68f - i * .21f), new Vector2(.94f, .85f - i * .21f),
+                available ? new Color(.12f, .19f, .23f, .92f) : new Color(.24f, .25f, .29f, .88f));
             var rarityColor = i < 3 ? CharacterRarityColor(RaidBattle.Rarities[i]) : Color.gray;
             var stripe = Panel(card, "Rarity Accent", Vector2.zero, new Vector2(.012f, 1), rarityColor);
             stripe.GetComponent<Image>().raycastTarget = false;
@@ -114,38 +117,6 @@ public partial class CatGameSceneUI
             button.interactable = available;
             button.onClick.AddListener(() => { if (!saving) { selectedRaid = index; raidTeam.Clear(); RaidFormation(); } });
         }
-    }
-
-    private void BuildRaidListBackground()
-    {
-        // 목록의 첫 자식으로 배치해 카드와 버튼 뒤에만 표시합니다.
-        var frame = Panel(page, "Raid Window Frame", Vector2.zero, Vector2.one,
-            new Color(.48f, .39f, .25f));
-        frame.GetComponent<Image>().raycastTarget = false;
-        var background = Panel(frame, "Raid Window Background", Vector2.zero, Vector2.one,
-            new Color(.10f, .16f, .15f));
-        background.offsetMin = new Vector2(4, 4);
-        background.offsetMax = new Vector2(-4, -4);
-        background.GetComponent<Image>().raycastTarget = false;
-        // 낮은 대비의 블록 무늬로 기존 픽셀 UI와 어울리는 질감을 만듭니다.
-        for (int row = 0; row < 12; row++)
-        {
-            float y = row / 12f;
-            for (int column = 0; column < 4; column++)
-            {
-                float x = column * .25f;
-                var tile = Panel(background, "Background Tile", new Vector2(x + .008f, y + .004f),
-                    new Vector2(x + .242f, y + .078f),
-                    (row + column) % 2 == 0 ? new Color(.12f, .18f, .17f) : new Color(.11f, .17f, .16f));
-                tile.GetComponent<Image>().raycastTarget = false;
-            }
-        }
-        var header = Panel(background, "Raid Header Background", new Vector2(.018f, .898f),
-            new Vector2(.982f, .988f), new Color(.18f, .24f, .21f));
-        header.GetComponent<Image>().raycastTarget = false;
-        var divider = Panel(background, "Raid Header Divider", new Vector2(.04f, .89f),
-            new Vector2(.96f, .893f), new Color(.64f, .52f, .31f));
-        divider.GetComponent<Image>().raycastTarget = false;
     }
 
     private readonly OwnedCharacter[] raidSlots = new OwnedCharacter[4];

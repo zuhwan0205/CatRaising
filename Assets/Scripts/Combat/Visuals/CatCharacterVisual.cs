@@ -53,8 +53,10 @@ public sealed class CatCharacterVisual : MonoBehaviour
     private Vector2 attackDirection;
     private int pendingFacing;
     private float pendingFacingTime;
-    private float AttackDuration => UsesHammer ? .52f : selectedId == "cat_guardian" ? .48f :
-        selectedId == "cat_spinner" || selectedId == "cat_dancer" ? .44f : .32f;
+    public static float AnimationDuration(string id) => id == "cat_tiger" ? .52f : id == "cat_guardian" ? .48f :
+        id == "cat_spinner" || id == "cat_dancer" ? .44f : .32f;
+    private float AttackDuration => attackDuration;
+    private float attackDuration = .32f;
 
     public void Build(Transform player, Camera camera, BackendUserData playerData, Sprite square, Transform fallbackArt, bool matchStarterSize = false)
     {
@@ -131,6 +133,8 @@ public sealed class CatCharacterVisual : MonoBehaviour
         if (selectedId != data.loadout.characterId)
             ApplySelection();
         Face(target - source, false);
+        var controller = GetComponentInParent<FieldCombatController>();
+        attackDuration = controller != null ? controller.AttackAnimationDuration : AnimationDuration(selectedId);
         attackRemaining = AttackDuration;
         facingRemaining = Mathf.Max(.45f, AttackDuration + .1f);
     }

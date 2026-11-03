@@ -100,6 +100,10 @@ public partial class CatFieldController
         if (skillWindup > 0)
         {
             skillWindup = Mathf.Max(0, skillWindup - delta);
+            float urgency = 1 - skillWindup / 1.5f;
+            float pulse = .5f + .5f * Mathf.Sin(Time.time * 18);
+            foreach (var fill in skillFill) fill.color = new Color(1, .12f, .06f, .22f + urgency * .18f);
+            foreach (var pixel in skillPixels) pixel.color = Color.Lerp(Color.yellow, Color.white, pulse * urgency);
             foreach (var pixel in skillPixels) pixel.color = Color.Lerp(new Color(1, .2f, .1f, .5f), Color.yellow, Mathf.PingPong(skillWindup * 4, 1));
             foreach (var fill in skillFill) fill.color = new Color(1, .05f, .03f, .32f + Mathf.PingPong(skillWindup * .6f, .20f));
             RaidSkillMessage = $"⚠ 광역 공격 {skillWindup:0.0}초 · 붉은 영역 위험!";
