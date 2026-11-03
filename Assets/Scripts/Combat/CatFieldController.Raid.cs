@@ -4,6 +4,7 @@ using UnityEngine;
 
 public partial class CatFieldController
 {
+    private const float CatArtworkScale = 1.38996f;
     public event Action<bool> RaidFinished;
     public float RaidSeconds { get; private set; }
     public FieldEnemy RaidBoss { get; private set; }
@@ -28,7 +29,7 @@ public partial class CatFieldController
         bossObject.transform.SetParent(raidRoot.transform, false);
         bossObject.transform.position = FindRaidPosition(new Vector3(0, 0, 3));
         var billboard = Billboard("Boss Artwork", bossObject.transform);
-        billboard.localScale = Vector3.one * 2;
+        billboard.localScale = Vector3.one * 2.5f;
         var art = Paint("Boss", billboard, Vector2.zero, Vector2.one, Color.white, 0);
         var bar = BillboardHealth(billboard);
         RaidBoss = bossObject.AddComponent<FieldEnemy>();
@@ -64,12 +65,12 @@ public partial class CatFieldController
             cat.transform.SetParent(raidRoot.transform, false);
             cat.transform.position = raidParty.transform.position;
             var catArt = Billboard("Cat Artwork", cat.transform);
-            catArt.localScale = Vector3.one * 1.716f;
+            catArt.localScale = Vector3.one * CatArtworkScale;
             var fallback = new GameObject("Fallback").transform;
             fallback.SetParent(catArt, false);
             Paint("Body", fallback, Vector2.zero, Vector2.one, Color.yellow, 0);
             var visual = catArt.gameObject.AddComponent<CatCharacterVisual>();
-            visual.Build(cat.transform, fieldCamera, actorData, square, fallback);
+            visual.Build(cat.transform, fieldCamera, actorData, square, fallback, matchStarterSize: true);
             var hp = BillboardHealth(catArt);
             var fighter = cat.AddComponent<FieldCombatController>();
             fighter.RaidMode = true;

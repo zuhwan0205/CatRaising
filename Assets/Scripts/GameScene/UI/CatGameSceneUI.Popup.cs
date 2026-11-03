@@ -10,6 +10,30 @@ public partial class CatGameSceneUI
     private string detailTab;
     private OwnedRelic popupRelic;
     private CanvasGroup listInput;
+    private System.Action detailReturn;
+    private RectTransform noticeOverlay;
+    private Text noticeText;
+
+    private void ShowNoticePopup(string message)
+    {
+        if (safeArea == null) return;
+        if (noticeOverlay == null)
+        {
+            noticeOverlay = Panel(safeArea, "Notice Overlay", Vector2.zero, Vector2.one, new Color(0, 0, 0, .65f));
+            UnityEngine.Events.UnityAction close = () => noticeOverlay.gameObject.SetActive(false);
+            var body = PopupContent(noticeOverlay, "Notice Frame", "Notice Content",
+                new Vector2(.07f, .32f), new Vector2(.93f, .68f), new Color(.44f, .28f, .12f), close, out _);
+            Label(body, "안내", 28, new Vector2(.08f, .78f), new Vector2(.92f, .96f));
+            noticeText = Label(body, "", 23, new Vector2(.07f, .28f), new Vector2(.93f, .76f));
+            noticeText.resizeTextForBestFit = true;
+            noticeText.resizeTextMinSize = 16;
+            noticeText.resizeTextMaxSize = 23;
+            Button(body, "확인", new Vector2(.28f, .05f), new Vector2(.72f, .23f), close, true);
+        }
+        noticeText.text = message;
+        noticeOverlay.gameObject.SetActive(true);
+        noticeOverlay.SetAsLastSibling();
+    }
 
     private RectTransform OpenDetailPopup(string tab)
     {
@@ -37,6 +61,7 @@ public partial class CatGameSceneUI
         detailOverlay = cachedDetailOverlay;
         detailOverlay.gameObject.SetActive(true);
         detailOverlay.SetAsLastSibling();
+        if (noticeOverlay != null && noticeOverlay.gameObject.activeSelf) noticeOverlay.SetAsLastSibling();
         var content = cachedDetailContent;
         var frame = cachedDetailFrame;
         frame.anchorMin = new Vector2(.035f, .15f);
@@ -96,6 +121,13 @@ public partial class CatGameSceneUI
         listInput.interactable = true;
         listInput.blocksRaycasts = true;
         foreach (var tabButton in tabs) tabButton.interactable = true;
+        if (detailReturn != null)
+        {
+            var returnToPicker = detailReturn;
+            detailReturn = null;
+            returnToPicker();
+            return;
+        }
         // 장착/강화 후 카드 정보를 갱신하면서 원래 스크롤 위치를 복구합니다.
         string message=status.text;
         Show(detailTab);
