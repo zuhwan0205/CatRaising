@@ -578,43 +578,43 @@ MonoBehaviour:
       pixelsPerUnitPerSheetHeight: 0.22988506
     - normalizedRect:
         serializedVersion: 2
-        x: 0
-        y: 0.33333334
-        width: 0.25
-        height: 0.33333334
-      pivot: {x: 0.6, y: 0.075}
+        x: 0.0000000000
+        y: 0.3499079190
+        width: 0.2417127072
+        height: 0.3167587477
+      pivot: {x: 0.6205714286, y: 0.0265988598}
       pixelsPerUnitPerSheetHeight: 0.22988506
     - normalizedRect:
         serializedVersion: 2
-        x: 0.25
-        y: 0.33333334
-        width: 0.25
-        height: 0.33333334
-      pivot: {x: 0.6, y: 0.075}
+        x: 0.2624309392
+        y: 0.3499079190
+        width: 0.2313535912
+        height: 0.3167587477
+      pivot: {x: 0.5946268657, y: 0.0265988598}
       pixelsPerUnitPerSheetHeight: 0.22988506
     - normalizedRect:
         serializedVersion: 2
-        x: 0.5
-        y: 0.33333334
-        width: 0.25
-        height: 0.33333334
-      pivot: {x: 0.6, y: 0.075}
+        x: 0.5110497238
+        y: 0.3499079190
+        width: 0.2279005525
+        height: 0.3167587477
+      pivot: {x: 0.6096969697, y: 0.0265988598}
       pixelsPerUnitPerSheetHeight: 0.22988506
     - normalizedRect:
         serializedVersion: 2
-        x: 0.75
-        y: 0.33333334
-        width: 0.25
-        height: 0.33333334
-      pivot: {x: 0.6, y: 0.075}
+        x: 0.7596685083
+        y: 0.3499079190
+        width: 0.2403314917
+        height: 0.3167587477
+      pivot: {x: 0.5839080460, y: 0.0265988598}
       pixelsPerUnitPerSheetHeight: 0.22988506
     - normalizedRect:
         serializedVersion: 2
-        x: 0
-        y: 0
-        width: 0.25
-        height: 0.33333334
-      pivot: {x: 0.6, y: 0.12}
+        x: 0.0000000000
+        y: 0.0000000000
+        width: 0.2417127072
+        height: 0.3591160221
+      pivot: {x: 0.6205714286, y: 0.1113846176}
       pixelsPerUnitPerSheetHeight: 0.22988506
     - normalizedRect:
         serializedVersion: 2
@@ -634,11 +634,11 @@ MonoBehaviour:
       pixelsPerUnitPerSheetHeight: 0.22988506
     - normalizedRect:
         serializedVersion: 2
-        x: 0.805
-        y: 0
-        width: 0.195
+        x: 0.75
+        y: 0.6666667
+        width: 0.25
         height: 0.33333334
-      pivot: {x: 0.48717955, y: 0.12}
+      pivot: {x: 0.6, y: 0.04}
       pixelsPerUnitPerSheetHeight: 0.22988506
     mainBattleScale: 1.0245873
   - characterId: cat_kitten_trio
@@ -718,27 +718,27 @@ MonoBehaviour:
       pixelsPerUnitPerSheetHeight: 0.2020202
     - normalizedRect:
         serializedVersion: 2
-        x: 0.25
-        y: 0
-        width: 0.25
-        height: 0.33333334
-      pivot: {x: 0.52, y: 0.14}
+        x: 0.2555248619
+        y: 0.0000000000
+        width: 0.2555248619
+        height: 0.3333333333
+      pivot: {x: 0.4871351351, y: 0.1400000028}
       pixelsPerUnitPerSheetHeight: 0.2020202
     - normalizedRect:
         serializedVersion: 2
-        x: 0.5
-        y: 0
-        width: 0.25
-        height: 0.33333334
-      pivot: {x: 0.52, y: 0.14}
+        x: 0.5110497238
+        y: 0.0000000000
+        width: 0.2520718232
+        height: 0.3333333333
+      pivot: {x: 0.4718904110, y: 0.1400000028}
       pixelsPerUnitPerSheetHeight: 0.2020202
     - normalizedRect:
         serializedVersion: 2
         x: 0.75
-        y: 0
+        y: 0.6666667
         width: 0.25
         height: 0.33333334
-      pivot: {x: 0.52, y: 0.14}
+      pivot: {x: 0.52, y: 0.105}
       pixelsPerUnitPerSheetHeight: 0.2020202
     mainBattleScale: 1.326898
   - characterId: cat_celestial
@@ -746,27 +746,91 @@ MonoBehaviour:
     frames:
     - normalizedRect:
         serializedVersion: 2
-        x: 0
-        y: 0.6666667
-        width: 0.25
-        height: 0.33333334
-      pivot: {x: 0.5, y: 0.02}
+        x: 0.0000000000
+        y: 0.6666666667
+        width: 0.2624309392
+        height: 0.3333333333
+      pivot: {x: 0.4763157895, y: 0.0200001004}
       pixelsPerUnitPerSheetHeight: 0.2020202
     - normalizedRect:
         serializedVersion: 2
-        x: 0.25
-        y: 0.6666667
-        width: 0.25
-        height: 0.33333334
-      pivot: {x: 0.42600003, y: 0.02}
+        x: 0.2624309392
+        y: 0.6666666667
+        width: 0.2313535912
+        height: 0.3333333333
+      pivot: {x: 0.4066030175, y: 0.0200001004}
       pixelsPerUnitPerSheetHeight: 0.2020202
     - normalizedRect:
         serializedVersion: 2
-        x: 0.5
-        y: 0.6666667
-        width: 0.25
-        height: 0.33333334
-      pivot: {x: 0.346, y: 0.02}
+        x: 0.4937845304
+        y: 0.6666666667
+        width: 0.2417127072
+        height: 0.3333333333
+      pivot: {x: 0.3835771429, y: 0.0200001004}
+      pixelsPerUnitPerSheetHeight: 0.2020202
+    - normalizedRect:
+        serializedVersion: 2
+        x: 0.7562154696
+        y: 0.6666666667
+        width: 0.2437845304
+        height: 0.3333333333
+      pivot: {x: 0.4041869381, y: 0.0200001004}
+      pixelsPerUnitPerSheetHeight: 0.2020202
+    - normalizedRect:
+        serializedVersion: 2
+        x: 0.0000000000
+        y: 0.3591160221
+        width: 0.2693370166
+        height: 0.3075506446
+      pivot: {x: 0.4641025641, y: 0.0028742749}
+      pixelsPerUnitPerSheetHeight: 0.2020202
+    - normalizedRect:
+        serializedVersion: 2
+        x: 0.2693370166
+        y: 0.3591160221
+        width: 0.2279005525
+        height: 0.3075506446
+      pivot: {x: 0.4000121212, y: 0.0028742749}
+      pixelsPerUnitPerSheetHeight: 0.2020202
+    - normalizedRect:
+        serializedVersion: 2
+        x: 0.4972375691
+        y: 0.3591160221
+        width: 0.2417127072
+        height: 0.3075506446
+      pivot: {x: 0.3848057453, y: 0.0028742749}
+      pixelsPerUnitPerSheetHeight: 0.2020202
+    - normalizedRect:
+        serializedVersion: 2
+        x: 0.7562154696
+        y: 0.3591160221
+        width: 0.2437845304
+        height: 0.3075506446
+      pivot: {x: 0.3867535411, y: 0.0028742749}
+      pixelsPerUnitPerSheetHeight: 0.2020202
+    - normalizedRect:
+        serializedVersion: 2
+        x: 0.0000000000
+        y: 0.0000000000
+        width: 0.2624309392
+        height: 0.3545119705
+      pivot: {x: 0.4763157895, y: 0.1504415615}
+      pixelsPerUnitPerSheetHeight: 0.2020202
+    - normalizedRect:
+        serializedVersion: 2
+        x: 0.2624309392
+        y: 0.0000000000
+        width: 0.2555248619
+        height: 0.3268876611
+      pivot: {x: 0.4405405405, y: 0.1631549328}
+      pixelsPerUnitPerSheetHeight: 0.2020202
+    - normalizedRect:
+        serializedVersion: 2
+        x: 0.5179558011
+        y: 0.0000000000
+        width: 0.2486187845
+        height: 0.3268876611
+      pivot: {x: 0.4305555556, y: 0.1631549328}
       pixelsPerUnitPerSheetHeight: 0.2020202
     - normalizedRect:
         serializedVersion: 2
@@ -775,70 +839,6 @@ MonoBehaviour:
         width: 0.25
         height: 0.33333334
       pivot: {x: 0.41899997, y: 0.02}
-      pixelsPerUnitPerSheetHeight: 0.2020202
-    - normalizedRect:
-        serializedVersion: 2
-        x: 0
-        y: 0.33333334
-        width: 0.25
-        height: 0.33333334
-      pivot: {x: 0.5, y: 0.08}
-      pixelsPerUnitPerSheetHeight: 0.2020202
-    - normalizedRect:
-        serializedVersion: 2
-        x: 0.25
-        y: 0.33333334
-        width: 0.25
-        height: 0.33333334
-      pivot: {x: 0.442, y: 0.08}
-      pixelsPerUnitPerSheetHeight: 0.2020202
-    - normalizedRect:
-        serializedVersion: 2
-        x: 0.5
-        y: 0.33333334
-        width: 0.25
-        height: 0.33333334
-      pivot: {x: 0.36100003, y: 0.08}
-      pixelsPerUnitPerSheetHeight: 0.2020202
-    - normalizedRect:
-        serializedVersion: 2
-        x: 0.75
-        y: 0.33333334
-        width: 0.25
-        height: 0.33333334
-      pivot: {x: 0.402, y: 0.08}
-      pixelsPerUnitPerSheetHeight: 0.2020202
-    - normalizedRect:
-        serializedVersion: 2
-        x: 0
-        y: 0
-        width: 0.25
-        height: 0.33333334
-      pivot: {x: 0.5, y: 0.16}
-      pixelsPerUnitPerSheetHeight: 0.2020202
-    - normalizedRect:
-        serializedVersion: 2
-        x: 0.25
-        y: 0
-        width: 0.25
-        height: 0.33333334
-      pivot: {x: 0.5, y: 0.16}
-      pixelsPerUnitPerSheetHeight: 0.2020202
-    - normalizedRect:
-        serializedVersion: 2
-        x: 0.5
-        y: 0
-        width: 0.25
-        height: 0.33333334
-      pivot: {x: 0.5, y: 0.16}
-      pixelsPerUnitPerSheetHeight: 0.2020202
-    - normalizedRect:
-        serializedVersion: 2
-        x: 0.75
-        y: 0
-        width: 0.25
-        height: 0.33333334
-      pivot: {x: 0.5, y: 0.16}
       pixelsPerUnitPerSheetHeight: 0.2020202
     mainBattleScale: 1.0290228
   - characterId: cat_moon
@@ -926,16 +926,16 @@ MonoBehaviour:
       pixelsPerUnitPerSheetHeight: 0.22988506
     - normalizedRect:
         serializedVersion: 2
-        x: 0.5
-        y: 0
-        width: 0.25
-        height: 0.33333334
-      pivot: {x: 0.55, y: 0.02}
+        x: 0.5110497238
+        y: 0.0000000000
+        width: 0.2693370166
+        height: 0.3333333333
+      pivot: {x: 0.4694871795, y: 0.0200000004}
       pixelsPerUnitPerSheetHeight: 0.22988506
     - normalizedRect:
         serializedVersion: 2
         x: 0.75
-        y: 0
+        y: 0.6666667
         width: 0.25
         height: 0.33333334
       pivot: {x: 0.55, y: 0.02}
@@ -1126,16 +1126,16 @@ MonoBehaviour:
       pixelsPerUnitPerSheetHeight: 0.22988506
     - normalizedRect:
         serializedVersion: 2
-        x: 0.5
-        y: 0
-        width: 0.25
-        height: 0.33333334
-      pivot: {x: 0.5, y: 0.08}
+        x: 0.5000000000
+        y: 0.0000000000
+        width: 0.3004143646
+        height: 0.3333333333
+      pivot: {x: 0.4160919540, y: 0.0800000016}
       pixelsPerUnitPerSheetHeight: 0.22988506
     - normalizedRect:
         serializedVersion: 2
         x: 0.75
-        y: 0
+        y: 0.6666667
         width: 0.25
         height: 0.33333334
       pivot: {x: 0.5, y: 0.08}
@@ -1226,16 +1226,16 @@ MonoBehaviour:
       pixelsPerUnitPerSheetHeight: 0.22988506
     - normalizedRect:
         serializedVersion: 2
-        x: 0.5
-        y: 0
-        width: 0.25
-        height: 0.33333334
-      pivot: {x: 0.52, y: 0.02}
+        x: 0.5041436464
+        y: 0.0000000000
+        width: 0.2831491713
+        height: 0.3333333333
+      pivot: {x: 0.4444878049, y: 0.0200000004}
       pixelsPerUnitPerSheetHeight: 0.22988506
     - normalizedRect:
         serializedVersion: 2
         x: 0.75
-        y: 0
+        y: 0.6666667
         width: 0.25
         height: 0.33333334
       pivot: {x: 0.52, y: 0.02}
@@ -1246,27 +1246,27 @@ MonoBehaviour:
     frames:
     - normalizedRect:
         serializedVersion: 2
-        x: 0
-        y: 0.6666667
-        width: 0.25
-        height: 0.33333334
-      pivot: {x: 0.64, y: 0.07}
+        x: 0.0000000000
+        y: 0.6666666667
+        width: 0.2417127072
+        height: 0.3333333333
+      pivot: {x: 0.6619428571, y: 0.0700001014}
       pixelsPerUnitPerSheetHeight: 0.2020202
     - normalizedRect:
         serializedVersion: 2
-        x: 0.25
-        y: 0.6666667
-        width: 0.25
-        height: 0.33333334
-      pivot: {x: 0.64, y: 0.07}
+        x: 0.2417127072
+        y: 0.6666666667
+        width: 0.2417127072
+        height: 0.3333333333
+      pivot: {x: 0.6962285714, y: 0.0700001014}
       pixelsPerUnitPerSheetHeight: 0.2020202
     - normalizedRect:
         serializedVersion: 2
-        x: 0.5
-        y: 0.6666667
-        width: 0.25
-        height: 0.33333334
-      pivot: {x: 0.64, y: 0.07}
+        x: 0.4903314917
+        y: 0.6666666667
+        width: 0.2417127072
+        height: 0.3333333333
+      pivot: {x: 0.7019428571, y: 0.0700001014}
       pixelsPerUnitPerSheetHeight: 0.2020202
     - normalizedRect:
         serializedVersion: 2

@@ -174,6 +174,7 @@ public partial class CatGameSceneUI : MonoBehaviour
         playerHpLabel = null;
         ClearPage();
         RefreshWallet();
+        SetPageBackground(tab);
         status.text = preview ? "씬 미리보기 · 서버 저장 없음" : "";
         status.enabled = tab != "모험";
         string[] names = { "모험", "상점", "캐릭터", "유물" };

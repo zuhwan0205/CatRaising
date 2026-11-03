@@ -124,7 +124,7 @@ public partial class FieldCombatController
         if (target == null || !target.Alive || damage <= 0) return;
         var position = target.transform.position;
         double before = target.Health.Current;
-        bool killed = target.Hit(damage, trueDamage);
+        bool killed = target.Hit(damage, trueDamage, player.position);
         double actual = before - target.Health.Current;
         DamageDealt?.Invoke(position, actual);
         if (basicHit)
@@ -204,10 +204,10 @@ public partial class FieldCombatController
         return line;
     }
 
-    private void LaunchSkillArrows(FieldEnemy target, double damage)
+    private void LaunchSkillArrows(Vector3 targetPosition, double damage)
     {
         int count = Skill(CatSkillTree.DoubleArrow) > 0 ? 2 : 1;
-        Vector3 direction = target.transform.position - player.position;
+        Vector3 direction = targetPosition - player.position;
         direction.y = 0;
         if (direction.sqrMagnitude < .001f) direction = Vector3.forward;
         direction.Normalize();

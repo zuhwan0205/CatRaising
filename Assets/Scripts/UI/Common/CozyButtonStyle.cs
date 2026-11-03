@@ -51,9 +51,9 @@ public static class CozyButtonStyle
         var colors = button.colors;
         colors.normalColor = color;
         colors.highlightedColor = Color.Lerp(color, Color.white, .20f);
-        colors.selectedColor = Color.Lerp(color, Color.white, .12f);
+        colors.selectedColor = Color.Lerp(color, Cream, .32f);
         colors.pressedColor = Color.Lerp(color, Color.black, .24f);
-        colors.disabledColor = new Color(.52f, .51f, .46f);
+        colors.disabledColor = new Color(.46f, .43f, .38f, .65f);
         colors.colorMultiplier = 1;
         colors.fadeDuration = .08f;
         button.colors = colors;

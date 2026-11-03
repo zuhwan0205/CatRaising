@@ -44,6 +44,14 @@ public partial class CatGameSceneUI
         var instruction = Label(controls, "소환 버튼으로 고양이를 먼저 배치하세요", 17, new Vector2(.03f,.67f), new Vector2(.97f,.94f));
         instruction.color = new Color(.33f,.24f,.17f);
         var slotButtons = new UnityEngine.UI.Button[pads.Count];
+        Action refreshPlacement = () =>
+        {
+            foreach (var padButton in slotButtons)
+                if (padButton != null)
+                    padButton.GetComponent<Image>().color = choosingPlacement
+                        ? padButton.interactable ? new Color(.65f, 1f, .55f, .28f) : new Color(.9f, .25f, .18f, .18f)
+                        : Color.clear;
+        };
         // 반투명 배경이 맵 입력을 차단하고, 바깥을 누르면 소환 창만 닫습니다.
         var shop = Panel(root, "Deployment Overlay", Vector2.zero, Vector2.one, new Color(.10f,.14f,.10f,.68f));
         var shopBody = PopupContent(shop, "Deployment Wood Frame", "Deployment Cream",
@@ -65,6 +73,7 @@ public partial class CatGameSceneUI
         hint.color = new Color(.42f,.30f,.21f);
         map.GetComponent<Image>().raycastTarget = true;
         var choices = new UnityEngine.UI.Button[3];
+        var costLabels = new Text[3];
         var definitions = new CharacterDefinition[3];
         for (int i = 0; i < 3; i++)
         {
@@ -77,15 +86,18 @@ public partial class CatGameSceneUI
             CollectionBadge(card, $"Lv.{team[i].level}", new Vector2(.08f,.86f), new Vector2(.60f,.97f), CharacterRarityColor(definitions[i].rarity));
             var price = MapDecoration(card, "Summon Cost", new Vector2(.06f,.06f), new Vector2(.94f,.25f), new Color(.96f,.81f,.48f));
             RoundCollectionPanel(price);
-            Label(price, $"소환 {DungeonDefenseBattle.Cost(definitions[i].rarity)}", 20, Vector2.zero, Vector2.one).color = new Color(.29f,.20f,.12f);
+            costLabels[i] = Label(price, $"소환 {DungeonDefenseBattle.Cost(definitions[i].rarity)}", 20, Vector2.zero, Vector2.one);
+            costLabels[i].color = new Color(.29f,.20f,.12f);
             var button = card.gameObject.AddComponent<Button>();
             button.targetGraphic = card.GetComponent<Image>();
+            card.gameObject.AddComponent<ButtonTweenEffect>();
             choices[i] = button;
             button.onClick.AddListener(() =>
             {
                 engine.Selected = index;
                 choosingPlacement = true;
-                instruction.text = definitions[index].displayName + " · 빈 잔디 타일을 누르세요";
+                instruction.text = definitions[index].displayName + " · 소환 " + DungeonDefenseBattle.Cost(definitions[index].rarity) + " · 빛나는 칸에 배치";
+                refreshPlacement();
                 shop.gameObject.SetActive(false);
             });
         }
@@ -93,6 +105,7 @@ public partial class CatGameSceneUI
         var summon = Button(controls, "소환", new Vector2(.76f,.13f), new Vector2(.96f,.66f), () =>
         {
             choosingPlacement=false;
+            refreshPlacement();
             hint.text="고양이 선택 후 빈 잔디 타일에 배치하세요";
             shop.gameObject.SetActive(true);
         });
@@ -118,6 +131,7 @@ public partial class CatGameSceneUI
                 {
                     slotButtons[slot].interactable=false;
                     choosingPlacement=false;
+                    refreshPlacement();
                     instruction.text="배치 완료 · 전투 시작 또는 추가 소환이 가능합니다";
                 }
             });
@@ -126,11 +140,20 @@ public partial class CatGameSceneUI
         {
             slotButtons[from].interactable = true;
             slotButtons[to].interactable = false;
+            refreshPlacement();
         };
         var updateBattleHud = BuildDefenseHud(root, engine, stage);
         BuildEncounterPauseButton(root);
         engine.Initialize(stage, map, route, anchors, team, definitions,
-            text => { info.text=text; updateBattleHud(); for(int i=0;i<3;i++) choices[i].interactable=engine.Coins>=DungeonDefenseBattle.Cost(definitions[i].rarity); wave.interactable=engine.CanStartWave; wave.GetComponentInChildren<Text>().text=engine.WaveNumber == 0 ? "전투 시작" : engine.CanStartWave ? "다음 웨이브" : "전투 중"; },
+            text => { info.text=text; updateBattleHud(); for(int i=0;i<3;i++)
+                {
+                    int cost = DungeonDefenseBattle.Cost(definitions[i].rarity);
+                    bool affordable = engine.Coins >= cost;
+                    choices[i].interactable = affordable;
+                    costLabels[i].text = affordable ? $"소환 {cost}" : $"{cost} · 재화 부족";
+                    costLabels[i].color = affordable ? new Color(.29f,.20f,.12f) : new Color(.65f,.12f,.08f);
+                }
+                wave.interactable=engine.CanStartWave; wave.GetComponentInChildren<Text>().text=engine.WaveNumber == 0 ? "전투 시작" : engine.CanStartWave ? "다음 웨이브" : "전투 중"; },
             message => { hint.text=message; instruction.text=message; }, won => { hint.text="결과 저장 중…"; DungeonDefenseFinished?.Invoke(won); });
         engine.WaveCleared = clearedWave =>
         {

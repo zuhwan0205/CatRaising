@@ -20,6 +20,7 @@ public static class CatAnimationFrames
         var definition = CatVisualCatalog.Find(id);
         var sheet = definition == null ? null : Resources.Load<Texture2D>(definition.sheetResource);
         if (sheet == null || definition.frames == null) return cache[id] = new Sprite[12];
+        sheet.filterMode = FilterMode.Point;
         var result = new Sprite[definition.frames.Length];
         for (int i = 0; i < result.Length; i++)
         {

@@ -77,6 +77,20 @@ public static class GameplayPatternChecks
             for (int i = 0; i < old.Length; i++)
             {
                 Require(current[i] != null && current[i].texture == old[i].texture, "Frame texture");
+                bool corrected = entry.characterId == "cat_celestial" ||
+                    (entry.characterId == "cat_knight" && (i >= 4 && i <= 8 || i == 11)) ||
+                    (entry.characterId == "cat_kitten_trio" && i >= 9) ||
+                    ((entry.characterId == "cat_moon" || entry.characterId == "cat_ninja" || entry.characterId == "cat_shadow") && i >= 10) ||
+                    (entry.characterId == "cat_tiger" && i < 3);
+                if (corrected)
+                {
+                    var reference = i == 11 ? old[3] : old[i];
+                    Require((current[i].rect.position + current[i].pivot - reference.rect.position - reference.pivot).sqrMagnitude < .01f,
+                        "Corrected frame anchor: " + entry.characterId + "/" + i);
+                    Require(Mathf.Abs(current[i].pixelsPerUnit-reference.pixelsPerUnit)<.001f, "Corrected frame size");
+                    count++;
+                    continue;
+                }
                 // Hammer attack art crosses the original uniform grid. Preserve foot anchors,
                 // but use corrected bounds; recovery intentionally reuses the intact idle pose.
                 if (entry.characterId == "cat_tiger" && i >= 4)

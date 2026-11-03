@@ -1,0 +1,33 @@
+# Frame bounds audit
+12 source sheets inspected. Original PNGs and PPU unchanged. Cropped frames preserve sheet-space anchors. Recovery frames reuse idle frame 3.
+
+- cat_celestial / 11: 3
+- cat_celestial / 10: (750, 0, 360, 355)
+- cat_celestial / 9: (380, 0, 370, 355)
+- cat_celestial / 8: (0, 0, 380, 385)
+- cat_celestial / 7: (1095, 390, 353, 334)
+- cat_celestial / 6: (720, 390, 350, 334)
+- cat_celestial / 5: (390, 390, 330, 334)
+- cat_celestial / 4: (0, 390, 390, 334)
+- cat_celestial / 3: (1095, 724, 353, 362)
+- cat_celestial / 2: (715, 724, 350, 362)
+- cat_celestial / 1: (380, 724, 335, 362)
+- cat_celestial / 0: (0, 724, 380, 362)
+- cat_knight / 11: 3
+- cat_knight / 8: (0, 0, 350, 390)
+- cat_knight / 7: (1100, 380, 348, 344)
+- cat_knight / 6: (740, 380, 330, 344)
+- cat_knight / 5: (380, 380, 335, 344)
+- cat_knight / 4: (0, 380, 350, 344)
+- cat_kitten_trio / 11: 3
+- cat_kitten_trio / 10: (740, 0, 365, 362)
+- cat_kitten_trio / 9: (370, 0, 370, 362)
+- cat_moon / 11: 3
+- cat_moon / 10: (740, 0, 390, 362)
+- cat_ninja / 11: 3
+- cat_ninja / 10: (724, 0, 435, 362)
+- cat_shadow / 11: 3
+- cat_shadow / 10: (730, 0, 410, 362)
+- cat_tiger / 2: (710, 724, 350, 362)
+- cat_tiger / 1: (350, 724, 350, 362)
+- cat_tiger / 0: (0, 724, 350, 362)

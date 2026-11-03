@@ -57,6 +57,11 @@ public partial class FieldCombatController : MonoBehaviour
     private BackendUserData data;
     private CatGameCatalog catalog;
     private float cooldown;
+    private FieldEnemy pendingAttackTarget;
+    private CombatHealth pendingAttackLife;
+    private Vector3 pendingAttackPosition;
+    private float attackWindup;
+    public float AttackAnimationDuration { get; private set; } = .32f;
     private string selectedId;
     private int selectedLevel, selectedStars, selectedSkills;
     private double attack, speed;
@@ -119,6 +124,7 @@ public partial class FieldCombatController : MonoBehaviour
         killsThisFrame = 0;
         if (PlayerHealth.Dead)
         {
+            pendingAttackTarget = null;
             if (RaidMode) return;
             LockedTarget = null;
             deathRemaining -= delta;
@@ -265,19 +271,49 @@ public partial class FieldCombatController : MonoBehaviour
         // 쿨다운 중에도 범위를 벗어나면 즉시 이전 타겟을 해제합니다.
         LockedTarget = closest;
         UpdateArrowFocus(closest, false);
-        if (!valid || cooldown > 0 || closest == null)
-            return;
-        UpdateArrowFocus(closest, true);
-        cooldown = (float)(1 / (speed * (1 + focusStacks * .10)));
-        // 여러 적을 맞히는 공격도 몸의 방향/모션은 한 번만 시작합니다.
-        AttackStarted?.Invoke(player.position, closest.transform.position);
-        // OnAttack은 공격 1회당, OnHit은 기본 공격 명중 대상마다 실행합니다.
-        double attackBonus = TriggerRelics(EffectTrigger.OnAttack, true);
-        if (UsesSkillArrows)
+        if (pendingAttackTarget == null)
         {
-            LaunchSkillArrows(closest, (attack + attackBonus) * AllyAttackMultiplier);
+            if (!valid || cooldown > 0 || closest == null) return;
+            UpdateArrowFocus(closest, true);
+            cooldown = (float)(1 / (speed * (1 + focusStacks * .10)));
+            pendingAttackTarget = closest;
+            pendingAttackLife = closest.Health;
+            pendingAttackPosition = closest.transform.position;
+            attackWindup = Mathf.Min(CatCharacterVisual.AnimationDuration(selectedId) * .5f, cooldown * .45f);
+            AttackAnimationDuration = attackWindup * 2;
+            AttackStarted?.Invoke(player.position, closest.transform.position);
             return;
         }
+        attackWindup -= delta;
+        if (attackWindup > 0) return;
+        var intendedTarget = pendingAttackTarget;
+        pendingAttackTarget = null;
+        if (valid && UsesSkillArrows)
+        {
+            bool sameTarget = intendedTarget.Alive && intendedTarget.Health == pendingAttackLife;
+            var aim = sameTarget ? intendedTarget.transform.position : closest != null ? closest.transform.position : pendingAttackPosition;
+            double bonus = TriggerRelics(EffectTrigger.OnAttack, true);
+            LaunchSkillArrows(aim, (attack + bonus) * AllyAttackMultiplier);
+            return;
+        }
+        if (!valid) return;
+        if (!intendedTarget.Alive || intendedTarget.Health != pendingAttackLife ||
+            (intendedTarget.transform.position - player.position).sqrMagnitude > Range * Range ||
+            (Navigation != null && !Navigation.Clear(player.position, intendedTarget.transform.position)))
+        {
+            if (closest != null) intendedTarget = closest;
+            else
+            {
+                // Finish the visible shot even when another party member killed its target.
+                // This is a miss: no hit effects, damage or rewards are applied.
+                if (combatDefinition != null && combatDefinition.delivery == AttackDelivery.Projectile)
+                    AttackPerformed?.Invoke(player.position, pendingAttackPosition);
+                return;
+            }
+        }
+        closest = intendedTarget;
+        // OnAttack은 공격 1회당, OnHit은 기본 공격 명중 대상마다 실행합니다.
+        double attackBonus = TriggerRelics(EffectTrigger.OnAttack, true);
         NearbyEnemies(player.position, Range + 2f, basicCandidates);
         attackBehavior.SelectTargets(player.position, closest, basicCandidates, Range, attackTargets);
         ExpandMaceTargets(closest);
@@ -358,6 +394,7 @@ public partial class FieldCombatController : MonoBehaviour
         if (PlayerHealth != null && selectedId == data.loadout.characterId && selectedLevel == level && selectedStars == (owned == null ? 0 : owned.ascension) && selectedSkills == CatSkillTree.Signature(owned))
             return;
         bool characterChanged = selectedId != data.loadout.characterId || PlayerHealth == null;
+        if (characterChanged) pendingAttackTarget = null;
         selectedId = data.loadout.characterId;
         skillOwner = owned;
         ResetSkillAttacks();

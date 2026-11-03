@@ -70,30 +70,34 @@ public sealed class FieldExperienceCrystals : MonoBehaviour
         }
         if (encounter || combat.Blocked || combat.PlayerHealth == null || combat.PlayerHealth.Dead || Collect == null) return;
         magnetCooldown = Mathf.Max(0, magnetCooldown - Time.deltaTime);
-        bool magnet = combat.MagnetRank > 0 && magnetCooldown <= 0;
+        int magnetRank = combat.MagnetRank;
+        bool magnet = magnetRank > 0 && magnetCooldown <= 0;
         collected.Clear();
         long total = 0;
         var playerPosition = player.position;
-        if (magnet)
+        if (magnet && magnetRank >= CatSkillTree.MaxRank)
         {
             foreach (var item in active) { total += item.amount; collected.Add(item); }
         }
         else
         {
-            var min = Cell(playerPosition - new Vector3(1.2f, 0, 1.2f));
-            var max = Cell(playerPosition + new Vector3(1.2f, 0, 1.2f));
+            float radius = magnet ? magnetRank * 3f : 1.2f;
+            float radiusSquared = radius * radius;
+            var min = Cell(playerPosition - new Vector3(radius, 0, radius));
+            var max = Cell(playerPosition + new Vector3(radius, 0, radius));
             for (int z = min.y; z <= max.y; z++)
             for (int x = min.x; x <= max.x; x++)
                 if (cells.TryGetValue(new Vector2Int(x, z), out var bucket))
                     foreach (var item in bucket)
                     {
                         var offset = playerPosition - item.position; offset.y = 0;
-                        if (offset.sqrMagnitude > 1.2f * 1.2f) continue;
+                        if (offset.sqrMagnitude > radiusSquared) continue;
                         total += item.amount; collected.Add(item);
                     }
         }
+        // Empty searches also consume the interval, avoiding a large scan every frame.
+        if (magnet) magnetCooldown = 6 - magnetRank;
         if (total == 0 || !Collect(total)) return;
-        if (magnet) magnetCooldown = 6 - combat.MagnetRank;
         foreach (var item in collected)
         {
             var bucket = cells[item.cell]; bucket.Remove(item);

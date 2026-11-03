@@ -6,13 +6,12 @@ public partial class CatGameSceneUI
     private void DungeonChapters()
     {
         dungeonMode = true;
-        var background = MapDecoration(page, "Chapter Book", Vector2.zero, Vector2.one, new Color(.19f, .24f, .20f));
-        var hero = Rect(background, "Village Panorama", new Vector2(.025f, .68f), new Vector2(.975f, .985f));
-        DungeonArtwork(hero, Vector2.zero, Vector2.one, new Rect(.02f, .54f, .96f, .42f), Color.white);
-        var ribbon = MapDecoration(background, "Journey Banner", new Vector2(.055f, .655f), new Vector2(.945f, .735f), new Color(.55f, .22f, .16f));
-        RoundCollectionPanel(ribbon);
-        Label(ribbon, "집사의 여정", 30, Vector2.zero, Vector2.one).color = new Color(1, .94f, .76f);
-        var viewport = MapDecoration(background, "Chapter List Viewport", new Vector2(.025f, .025f), new Vector2(.975f, .635f), Color.clear);
+        var title = Label(page, "집사의 여정", 32, new Vector2(.06f, .89f), new Vector2(.94f, .99f));
+        title.color = new Color(1, .94f, .76f);
+        var shadow = title.gameObject.AddComponent<Shadow>();
+        shadow.effectColor = new Color(.10f, .16f, .08f, .9f);
+        shadow.effectDistance = new Vector2(2, -2);
+        var viewport = MapDecoration(page, "Chapter List Viewport", new Vector2(.04f, .03f), new Vector2(.96f, .84f), Color.clear);
         viewport.GetComponent<Image>().raycastTarget = true;
         viewport.gameObject.AddComponent<RectMask2D>();
         var scroll = viewport.gameObject.AddComponent<ScrollRect>();

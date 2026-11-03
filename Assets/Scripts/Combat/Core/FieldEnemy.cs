@@ -14,6 +14,8 @@ public class FieldEnemy : MonoBehaviour, ICharacterHitReceiver
     private Transform healthBar;
     private Color color;
     private float flashRemaining;
+    private float nextImpactTime, impactRemaining;
+    private Vector3 impactOffset, artworkRest;
     private float slowRemaining;
     private float armorBreakRemaining;
     public double EffectiveDefense => Defense * (armorBreakRemaining > 0 ? CharacterCombatRules.ArmorMultiplier : 1f);
@@ -188,6 +190,7 @@ public class FieldEnemy : MonoBehaviour, ICharacterHitReceiver
     public void Initialize(SpriteRenderer art, Transform bar, double hp)
     {
         artwork = art;
+        artworkRest = art.transform.localPosition;
         billboard = art.GetComponentInParent<FieldBillboard>();
         color = art.color;
         healthBar = bar;
@@ -207,6 +210,12 @@ public class FieldEnemy : MonoBehaviour, ICharacterHitReceiver
         slowRemaining = Mathf.Max(0, slowRemaining - delta);
         armorBreakRemaining = Mathf.Max(0, armorBreakRemaining - delta);
         animationTime += delta;
+        if (impactRemaining > 0)
+        {
+            impactRemaining = Mathf.Max(0, impactRemaining - delta);
+            if (raidVisual == null)
+                artwork.transform.localPosition = artworkRest + impactOffset * (impactRemaining / .12f);
+        }
         if (raidArtwork == null && !FieldBillboard.IsNearView(billboard != null ? billboard.ViewCamera : null, artwork))
         {
             previousPosition = transform.position;
@@ -223,15 +232,29 @@ public class FieldEnemy : MonoBehaviour, ICharacterHitReceiver
         var frame = raidArtwork != null ? raidArtwork : frames[flashRemaining > 0 ? 4 + Mathf.Min(3, (int)((.15f - flashRemaining) / .15f * 4)) : (int)(animationTime * 6) % 4];
         if (frame != null && artwork.sprite != frame) artwork.sprite = frame;
         var tint = flashRemaining > 0 ? (raidArtwork != null ? new Color(1, .55f, .55f) : Color.white) : slowRemaining > 0 ? Color.Lerp(color, new Color(.35f, .8f, 1), .65f) : armorBreakRemaining > 0 ? Color.Lerp(color, new Color(.85f, .55f, 1), .45f) : color;
+        if (raidVisual == null && impactRemaining > .05f) tint = new Color(1, .82f, .55f);
         if (artwork.color != tint) artwork.color = tint;
         if (raidVisual != null) raidVisual.Step(delta, moved);
     }
-    public bool Hit(double damage, bool ignoreDefense = false)
+    public bool Hit(double damage, bool ignoreDefense = false, Vector3? sourcePosition = null)
     {
         if (!Alive)
             return false;
         LastHitDamage = ignoreDefense ? System.Math.Max(0, damage) : CharacterCombatRules.DamageAfterDefense(damage, Defense, armorBreakRemaining > 0);
         bool killed = Health.Damage(LastHitDamage);
+        if (LastHitDamage > 0 && Time.time >= nextImpactTime && billboard != null &&
+            FieldBillboard.IsNearView(billboard.ViewCamera, artwork))
+        {
+            nextImpactTime = Time.time + .1f;
+            impactRemaining = .12f;
+            var camera = billboard.ViewCamera;
+            if (camera != null)
+            {
+                var direction = transform.position - (sourcePosition ?? transform.position - camera.transform.right);
+                impactOffset = new Vector3(Vector3.Dot(direction.normalized, camera.transform.right), 0, 0) * .055f;
+                HitSparkPool.Emit(camera.transform, artwork.bounds.center, camera.transform.rotation, .32f);
+            }
+        }
         HealthBarTween.Set(healthBar, (float)(Health.Current / Health.Maximum));
         flashRemaining = .15f;
         artwork.color = Color.white;
@@ -249,6 +272,8 @@ public class FieldEnemy : MonoBehaviour, ICharacterHitReceiver
         pathGoal = position;
         Health.Reset();
         flashRemaining = 0;
+        nextImpactTime = impactRemaining = 0;
+        if (raidVisual == null) artwork.transform.localPosition = artworkRest;
         slowRemaining = 0;
         armorBreakRemaining = 0;
         animationTime = 0;
