@@ -198,7 +198,14 @@ public class BackendManager : MonoBehaviour
     private async Task CompleteLoginAsync()
     {
         loginUI.ShowMessage("데이터베이스에 연결하고 유저 데이터를 준비합니다…");
-        if (!await BackendGameData.Instance.InitializeAndLoadAsync(databaseUuid))
+        var loading = BackendGameData.Instance.InitializeAndLoadAsync(databaseUuid, message =>
+        {
+            Debug.Log("[Login Load] " + message);
+            if (this != null) loginUI.ShowMessage(message);
+        });
+        if (await Task.WhenAny(loading, Task.Delay(15000)) != loading && this != null)
+            loginUI.ShowMessage("로그인은 완료됐지만 데이터 서버 응답이 지연되고 있습니다. 데이터를 불러올 때까지 기다려주세요.");
+        if (!await loading)
         {
             if (this != null)
                 loginUI.ShowMessage(BackendGameData.Instance.LastError);
@@ -207,6 +214,7 @@ public class BackendManager : MonoBehaviour
         if (this == null)
             return;
         CatGameRuntime.Initialize(BackendGameData.userData, null, false);
+        Debug.Log("[Login Load] 유저 데이터 준비 완료. 게임 씬 이동을 시작합니다.");
         BackendLogin.ManualLoginRequired = false;
         loginReady = true;
         loginUI.ShowCompleted();

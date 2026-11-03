@@ -62,10 +62,13 @@ public class BackendGameData
     private long revision;
 #endif
 
-    public async Task<bool> InitializeAndLoadAsync(string databaseUuid)
+    public async Task<bool> InitializeAndLoadAsync(string databaseUuid, Action<string> progress = null)
     {
         if (busy)
+        {
+            LastError = "이전 데이터 요청이 진행 중입니다. 잠시 후 다시 시도해주세요.";
             return false;
+        }
         busy = true;
         userData = null;
         RewardJournal = null;
@@ -82,13 +85,16 @@ public class BackendGameData
             string owner = Backend.UserInDate;
             if (string.IsNullOrEmpty(owner)) throw new InvalidOperationException("먼저 로그인해주세요.");
             client = new Client(databaseUuid);
+            progress?.Invoke("DB 인증 서버에 연결하는 중…");
             await client.Initialize();
             if (string.IsNullOrEmpty(client.UserUUID)) throw new InvalidOperationException("데이터베이스 인증 초기화에 실패했습니다.");
             string key = client.UserUUID;
+            progress?.Invoke("저장된 유저 데이터를 불러오는 중…");
             var row = await client.From<PlayerSaveRow>().OfCurrentUser().Where(x => x.SaveId == key).FirstOrDefault();
             if (row == null)
             {
                 // 조회 오류는 예외로 중단되며, 조회 성공 후 없음일 때만 이전/신규 생성합니다.
+                progress?.Invoke("기존 데이터를 확인하고 초기 데이터를 준비하는 중…");
                 var candidate = await LegacyGameDataReader.LoadAsync() ?? BackendUserData.CreateNew();
                 row = ToRow(candidate, key, 1);
                 EnsureOwner(owner);
@@ -97,6 +103,7 @@ public class BackendGameData
                 Debug.Log("데이터베이스 player_save 초기 저장 완료. 기존 USER_DATA는 보존합니다.");
             }
             EnsureOwner(owner);
+            progress?.Invoke("미저장 보상을 확인하고 복구하는 중…");
             var loaded = FromRow(row);
             // 닉네임은 계정 서버가 기준입니다. 프로필 JSON 저장 실패 후에도 복원됩니다.
             if (!string.IsNullOrEmpty(Backend.UserNickName)) loaded.progress.profileName = Backend.UserNickName;

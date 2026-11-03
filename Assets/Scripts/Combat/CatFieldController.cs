@@ -71,7 +71,7 @@ public partial class CatFieldController : MonoBehaviour
         var cat = new GameObject("Player Cat");
         cat.transform.SetParent(field.transform, false);
         var catArt = Billboard("Cat Artwork", cat.transform);
-        catArt.localScale = Vector3.one * 1.38996f;
+        catArt.localScale = Vector3.one * CatArtworkScale;
         var fallbackArt = new GameObject("Legacy Cat Artwork").transform;
         fallbackArt.SetParent(catArt, false);
         Paint("Body", fallbackArt, Vector2.zero, new Vector2(.8f, .7f), new Color(1, .85f, .58f), 0);

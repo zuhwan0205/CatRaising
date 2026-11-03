@@ -307,7 +307,9 @@ public partial class CatGameSceneUI : MonoBehaviour
             characterCards.Remove(removed);
         }
         int index = 0;
-        foreach (var owned in data.characters.Where(item => item != null).OrderBy(item => catalog.FindCharacter(item.characterId)?.rarity ?? ItemRarity.Common))
+        foreach (var owned in data.characters.Where(item => item != null)
+            .OrderByDescending(item => data.loadout.characterId == item.characterId)
+            .ThenBy(item => catalog.FindCharacter(item.characterId)?.rarity ?? ItemRarity.Common))
         {
             bool selected = data.loadout.characterId == owned.characterId;
             if (!characterCards.TryGetValue(owned, out var cached))
@@ -360,7 +362,8 @@ public partial class CatGameSceneUI : MonoBehaviour
             details += "캐릭터 공통 설정을 연결해주세요.";
         upgradeDetails = Label(page, details, 23, new Vector2(0, .29f), new Vector2(1, .56f));
         Button(page, $"스킬 · {CatSkillTree.Available(owned)} 포인트", new Vector2(0, .19f), new Vector2(1, .27f), () => ShowSkillTree(owned));
-        Button(page, "이 고양이 선택 · 저장", new Vector2(0, .09f), new Vector2(1, .17f), () => CharacterSelected?.Invoke(owned));
+        if (detailReturn == null)
+            Button(page, "이 고양이 선택 · 저장", new Vector2(0, .09f), new Vector2(1, .17f), () => CharacterSelected?.Invoke(owned));
         long fragmentCost = 0;
         bool canGrow = CatProgression.TryStarCost(owned.ascension, out fragmentCost);
         var grow = Button(page, canGrow ? $"{owned.ascension}성 → {owned.ascension + 1}성 · 조각 {fragmentCost:N0}개" : "최대 성급 · 5성", Vector2.zero, new Vector2(1, .07f), () => CharacterLevelUpRequested?.Invoke(owned));
@@ -371,16 +374,19 @@ public partial class CatGameSceneUI : MonoBehaviour
 
     private void Relics()
     {
+        EquippedRelicSlots();
         if (data.relics.Count == 0)
         {
             Label(page, "유물", 32, new Vector2(0, .90f), Vector2.one);
             Label(page, "아직 보유한 유물이 없어요.\n유물을 획득하면 이곳에 표시됩니다.", 25, new Vector2(.04f, .30f), new Vector2(.96f, .70f));
             return;
         }
-        var grid = Grid("유물  ·  " + data.relics.Count, transparent: true);
+        var grid = Grid("유물  ·  " + data.relics.Count, top: .65f, transparent: true);
         var layout = grid.GetComponent<GridLayoutGroup>();
         layout.cellSize = new Vector2(layout.cellSize.x, 220);
-        foreach (var owned in data.relics.Where(item => item != null).OrderBy(item => catalog.FindRelic(item.relicId)?.rarity ?? ItemRarity.Common))
+        foreach (var owned in data.relics.Where(item => item != null)
+            .OrderBy(item => { int slot = data.loadout.relicIds.IndexOf(item.relicId); return slot < 0 ? int.MaxValue : slot; })
+            .ThenBy(item => catalog.FindRelic(item.relicId)?.rarity ?? ItemRarity.Common))
         {
             if (owned == null)
                 continue;
@@ -389,6 +395,28 @@ public partial class CatGameSceneUI : MonoBehaviour
             string name = definition == null ? relic.relicId : definition.displayName;
             string equipped = data.loadout.relicIds.Contains(relic.relicId) ? "\n장착 중" : "";
             RelicCard(grid, definition, name, $"Lv. {relic.level}" + equipped, () => RelicDetail(relic));
+        }
+    }
+
+    private void EquippedRelicSlots()
+    {
+        for (int i = 0; i < 3; i++)
+        {
+            string id = i < data.loadout.relicIds.Count ? data.loadout.relicIds[i] : null;
+            var owned = data.relics.Find(item => item != null && item.relicId == id);
+            var definition = owned == null ? null : catalog.FindRelic(owned.relicId);
+            float left = .04f + i * .32f;
+            var slot = Button(page, "", new Vector2(left, .69f), new Vector2(left + .28f, .88f), () =>
+            {
+                if (owned != null) RelicDetail(owned);
+            });
+            slot.name = "Equipped Relic Slot " + (i + 1);
+            slot.interactable = owned != null;
+            var inset = Panel(slot.transform, "Slot Interior", new Vector2(.06f, .07f), new Vector2(.94f, .93f),
+                owned == null ? new Color(.85f, .79f, .68f, .65f) :
+                Color.Lerp(CharacterRarityColor(definition == null ? ItemRarity.Common : definition.rarity), Color.white, .4f));
+            inset.GetComponent<Image>().raycastTarget = false;
+            if (owned != null) RelicIcon(inset, definition);
         }
     }
 
@@ -478,7 +506,11 @@ public partial class CatGameSceneUI : MonoBehaviour
     }
     public void ShowStatus(string message)
     {
-        status.text = message;
+        if (status != null) status.text = "";
+        if (string.IsNullOrWhiteSpace(message)) return;
+        // Progress updates are transient, not acknowledgements requiring a click.
+        if (message == "저장했습니다." || message == "저장 중…" || message == "전투 입장 준비 중…" || message == "테스트 광고를 불러오는 중…") return;
+        ShowNoticePopup(message);
     }
     private string Rarity(ItemRarity value)
     {

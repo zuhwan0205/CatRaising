@@ -79,11 +79,12 @@ public static class GameplayPatternChecks
                 Require(current[i] != null && current[i].texture == old[i].texture, "Frame texture");
                 // Hammer attack art crosses the original uniform grid. Preserve foot anchors,
                 // but use corrected bounds; recovery intentionally reuses the intact idle pose.
-                if (entry.characterId == "cat_tiger" && i >= 8)
+                if (entry.characterId == "cat_tiger" && i >= 4)
                 {
-                    var expectedRect = i == 8 ? new Rect(0, 0, 362, 400) :
+                    var expectedRect = i < 8 ? new Rect(new[] { 0, 350, 704, 1080 }[i - 4], 400, i == 7 ? 330 : 320, 324) : i == 8 ? new Rect(0, 0, 362, 400) :
                         i == 9 ? new Rect(362, 0, 362, 382) : i == 10 ? new Rect(724, 0, 405, 300) : old[3].rect;
                     var expectedPivot = i == 11 ? old[3].pivot : old[i].pivot;
+                    if (i < 8) expectedPivot += old[i].rect.position - expectedRect.position;
                     Require((current[i].rect.position - expectedRect.position).sqrMagnitude < .001f &&
                         (current[i].rect.size - expectedRect.size).sqrMagnitude < .001f &&
                         (current[i].pivot - expectedPivot).sqrMagnitude < .001f &&

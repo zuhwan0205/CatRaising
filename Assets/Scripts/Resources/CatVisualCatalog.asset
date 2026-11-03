@@ -1278,35 +1278,35 @@ MonoBehaviour:
       pixelsPerUnitPerSheetHeight: 0.2020202
     - normalizedRect:
         serializedVersion: 2
-        x: 0
-        y: 0.33333334
-        width: 0.25
-        height: 0.33333334
-      pivot: {x: 0.64, y: 0.12}
+        x: 0.0000000000
+        y: 0.3683241252
+        width: 0.2209944751
+        height: 0.2983425414
+      pivot: {x: 0.7240000000, y: 0.0167901235}
       pixelsPerUnitPerSheetHeight: 0.2020202
     - normalizedRect:
         serializedVersion: 2
-        x: 0.25
-        y: 0.33333334
-        width: 0.25
-        height: 0.33333334
-      pivot: {x: 0.64, y: 0.12}
+        x: 0.2417127072
+        y: 0.3683241252
+        width: 0.2209944751
+        height: 0.2983425414
+      pivot: {x: 0.7615000000, y: 0.0167901235}
       pixelsPerUnitPerSheetHeight: 0.2020202
     - normalizedRect:
         serializedVersion: 2
-        x: 0.5
-        y: 0.33333334
-        width: 0.25
-        height: 0.33333334
-      pivot: {x: 0.64, y: 0.12}
+        x: 0.4861878453
+        y: 0.3683241252
+        width: 0.2209944751
+        height: 0.2983425414
+      pivot: {x: 0.7865000000, y: 0.0167901235}
       pixelsPerUnitPerSheetHeight: 0.2020202
     - normalizedRect:
         serializedVersion: 2
-        x: 0.75
-        y: 0.33333334
-        width: 0.25
-        height: 0.33333334
-      pivot: {x: 0.64, y: 0.12}
+        x: 0.7458563536
+        y: 0.3683241252
+        width: 0.2279005525
+        height: 0.2983425414
+      pivot: {x: 0.7202424242, y: 0.0167901235}
       pixelsPerUnitPerSheetHeight: 0.2020202
     - normalizedRect:
         serializedVersion: 2

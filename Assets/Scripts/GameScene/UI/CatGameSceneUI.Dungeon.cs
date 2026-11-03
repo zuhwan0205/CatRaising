@@ -194,7 +194,7 @@ public partial class CatGameSceneUI
     private void OpenTeamCatPicker(OwnedCharacter[] slots, int slot, string title, Action refresh, bool compact = false)
     {
         var overlay = Panel(page, "Owned Cat Picker", Vector2.zero, Vector2.one, cream);
-        Label(overlay, compact ? title : $"{title} · 보유 고양이 선택", 28, new Vector2(0, .88f), Vector2.one);
+        Label(overlay, "짧게 눌러 편성 · 꾹 눌러 성장/스킬", 22, new Vector2(0, .88f), Vector2.one);
         Button(overlay, "슬롯 비우기", new Vector2(.02f, .02f), new Vector2(.45f, .10f), () => { slots[slot] = null; refresh(); });
         Button(overlay, "닫기", new Vector2(.70f, .02f), new Vector2(.98f, .10f), () => RemoveUI(overlay.gameObject));
         var viewport = Panel(overlay, "Picker Viewport", new Vector2(.02f, .13f), new Vector2(.98f, .86f), cream);
@@ -227,12 +227,26 @@ public partial class CatGameSceneUI
             bool otherSlot = false;
             for (int i = 0; i < slots.Length; i++)
                 if (i != slot && slots[i]?.characterId == cat.characterId) otherSlot = true;
-            CharacterCard(content, cat, definition, () =>
+            CardHoldAction hold = null;
+            var card = CharacterCard(content, cat, definition, () =>
             {
+                if (hold != null && hold.SuppressClick) return;
                 slots[slot] = cat;
                 refresh();
             }, otherSlot ? (compact ? "편성 중" : "다른 슬롯 편성 중") : slots[slot]?.characterId == cat.characterId ? (compact ? "선택됨" : "현재 편성") : null,
                 interactable: !otherSlot, showEquipped: false);
+            var track = Panel(card, "Hold Track", new Vector2(.08f, .02f), new Vector2(.92f, .05f), new Color(.2f, .15f, .1f, .7f));
+            track.GetComponent<Image>().raycastTarget = false;
+            var progress = Panel(track, "Hold Progress", Vector2.zero, new Vector2(0, 1), new Color(1, .8f, .3f));
+            progress.GetComponent<Image>().raycastTarget = false;
+            hold = card.gameObject.AddComponent<CardHoldAction>();
+            hold.Progress = progress;
+            hold.Held = () =>
+            {
+                if (saving) return;
+                detailReturn = () => { refresh(); OpenTeamCatPicker(slots, slot, title, refresh, compact); };
+                CharacterDetail(cat);
+            };
         }
     }
 }
