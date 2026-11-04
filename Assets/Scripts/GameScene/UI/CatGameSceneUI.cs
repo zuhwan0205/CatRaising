@@ -25,6 +25,9 @@ public partial class CatGameSceneUI : MonoBehaviour
     public event Action<OwnedRelic> RelicSelected;
     public event Action<OwnedCharacter> CharacterLevelUpRequested;
     public event Action<OwnedRelic> RelicLevelUpRequested;
+    public event Action<OwnedRelic> RelicAscensionRequested;
+    private Button relicAscensionButton;
+    private Func<bool> canAscendRelic;
     private bool saving;
     private BackendUserData data;
     [SerializeField] private RectTransform page;
@@ -346,22 +349,49 @@ public partial class CatGameSceneUI : MonoBehaviour
         var page = OpenDetailPopup("캐릭터");
         Button(page, "닫기", new Vector2(0, .92f), new Vector2(.24f, 1), CloseDetailPopup);
         Label(page, CharacterName(owned.characterId), 30, new Vector2(.26f, .92f), Vector2.one);
-        var portrait = Panel(page, "Character Portrait", new Vector2(0, .58f), new Vector2(1, .88f), new Color(.94f, .87f, .77f));
+        var portrait = Panel(page, "Character Portrait", new Vector2(.30f, .74f), new Vector2(.70f, .91f), new Color(.94f, .87f, .77f));
         CharacterPortrait(portrait, catalog.FindCharacter(owned.characterId));
         upgradePortrait = portrait;
         var definition = catalog.FindCharacter(owned.characterId);
         string details = $"Lv. {owned.level}  ·  {owned.ascension}성  ·  조각 {owned.fragments}\n";
         details += owned.level >= CatProgression.MaxLevel ? "최대 레벨\n" : $"EXP {owned.experience}/{CatProgression.RequiredExperience(owned.level)} · 결정 수집으로 성장\n";
+        upgradeDetails = Label(page, details, 19, new Vector2(0, .65f), new Vector2(1, .74f));
         if (definition != null)
         {
             var b = definition.baseStats;
             var g = definition.statsPerLevel;
             int n = Mathf.Max(0, owned.level - 1);
-            details += $"{Rarity(definition.rarity)}  ·  성급 적용 스탯\nHP {(b.maxHealth + g.maxHealth * n) * CatProgression.StarMultiplier(owned.ascension) * CatSkillTree.Health(owned):0.#}    공격력 {(b.attack + g.attack * n) * CatProgression.StarMultiplier(owned.ascension) * CatSkillTree.Attack(owned):0.#}\n방어력 {(b.defense + g.defense * n) * CatProgression.StarMultiplier(owned.ascension) + CatSkillTree.Defense(owned):0.#}    공격 속도 {(b.attackSpeed + g.attackSpeed * n) * CatSkillTree.Speed(owned):0.##}\n{definition.description}";
+            double stars = CatProgression.StarMultiplier(owned.ascension);
+            double[] values = {
+                (b.attack + (double)g.attack*n)*stars*CatSkillTree.Attack(owned),
+                (b.defense + (double)g.defense*n)*stars+CatSkillTree.Defense(owned),
+                (b.maxHealth + (double)g.maxHealth*n)*stars*CatSkillTree.Health(owned),
+                CriticalHitRules.ChanceFor(owned)*100,
+                (b.attackSpeed + (double)g.attackSpeed*n)*CatSkillTree.Speed(owned),
+                3*CatSkillTree.Movement(owned)
+            };
+            // Fixed axis references keep comparisons consistent between characters and levels.
+            double[] references = { 50, 20, 500, 100, 5, 6 };
+            string[] names = { "공격력", "방어력", "체력", "치명타 확률", "공격 속도", "이동 속도" };
+            var area = Rect(page, "Stat Radar Area", new Vector2(.02f,.29f), new Vector2(.98f,.64f));
+            var chart = Rect(area, "Stat Radar", new Vector2(.24f,.16f), new Vector2(.76f,.84f));
+            var fitter = chart.gameObject.AddComponent<AspectRatioFitter>();
+            fitter.aspectMode = AspectRatioFitter.AspectMode.FitInParent;
+            fitter.aspectRatio = 1;
+            // Fit within a dedicated inner area so labels remain outside the polygon.
+            var inner = Rect(area, "Radar Bounds", new Vector2(.25f,.18f), new Vector2(.75f,.82f));
+            chart.SetParent(inner, false);
+            chart.gameObject.AddComponent<CanvasRenderer>();
+            var radar = chart.gameObject.AddComponent<CharacterRadarGraphic>();
+            radar.raycastTarget = false;
+            Vector2[] anchors = { new Vector2(.5f,.94f), new Vector2(.85f,.72f), new Vector2(.85f,.28f), new Vector2(.5f,.06f), new Vector2(.15f,.28f), new Vector2(.15f,.72f) };
+            for (int i=0; i<6; i++)
+            {
+                radar.Values[i] = (float)(values[i]/references[i]);
+                string number = values[i].ToString("0.##") + (i==3 ? "%" : "");
+                Label(area, names[i]+"\n"+number, 18, anchors[i]-new Vector2(.15f,.09f), anchors[i]+new Vector2(.15f,.09f));
+            }
         }
-        else
-            details += "캐릭터 공통 설정을 연결해주세요.";
-        upgradeDetails = Label(page, details, 23, new Vector2(0, .29f), new Vector2(1, .56f));
         Button(page, $"스킬 · {CatSkillTree.Available(owned)} 포인트", new Vector2(0, .19f), new Vector2(1, .27f), () => ShowSkillTree(owned));
         if (detailReturn == null)
             Button(page, "이 고양이 선택 · 저장", new Vector2(0, .09f), new Vector2(1, .17f), () => CharacterSelected?.Invoke(owned));
@@ -395,7 +425,7 @@ public partial class CatGameSceneUI : MonoBehaviour
             var definition = catalog.FindRelic(relic.relicId);
             string name = definition == null ? relic.relicId : definition.displayName;
             string equipped = data.loadout.relicIds.Contains(relic.relicId) ? "\n장착 중" : "";
-            RelicCard(grid, definition, name, $"Lv. {relic.level}" + equipped, () => RelicDetail(relic));
+            RelicCard(grid, definition, name, $"Lv. {relic.level} · {relic.ascension}성" + equipped, () => RelicDetail(relic));
         }
     }
 
@@ -429,15 +459,21 @@ public partial class CatGameSceneUI : MonoBehaviour
         Button(page, "닫기", new Vector2(0, .92f), new Vector2(.24f, 1), CloseDetailPopup);
         Label(page, definition == null ? owned.relicId : definition.displayName, 30, new Vector2(.26f, .92f), Vector2.one);
         string description = definition == null ? "유물 공통 설정을 연결해주세요." :
-            $"{Rarity(definition.rarity)} · Lv. {owned.level} · 조각 {owned.fragments}\n{definition.description}\n{definition.trigger} · 확률 {definition.chance:P0}\n효과 {definition.effectValue + definition.effectPerLevel * Math.Max(0, owned.level - 1):0.#} · 재사용 {definition.cooldownSeconds:0.#}초";
+            $"{Rarity(definition.rarity)} · Lv. {owned.level} · {owned.ascension}성 · 조각 {owned.fragments}\n{definition.DescriptionAtLevel(owned.level, owned.ascension)}";
         var portrait = Panel(page, "Relic Portrait", new Vector2(.32f, .65f), new Vector2(.68f, .89f),
             Color.Lerp(CharacterRarityColor(definition == null ? ItemRarity.Common : definition.rarity), Color.white, .55f));
         RelicIcon(portrait, definition);
-        Label(page, description, 23, new Vector2(.04f, .25f), new Vector2(.96f, .63f));
+        Label(page, description, 23, new Vector2(.04f, .33f), new Vector2(.96f, .63f));
         bool equipped = data.loadout.relicIds.Contains(owned.relicId);
-        var button = Button(page, equipped ? "유물 해제 · 저장" : "유물 장착 · 저장 (최대 3개)", new Vector2(0, .08f), new Vector2(1, .20f), () => RelicSelected?.Invoke(owned));
+        var button = Button(page, equipped ? "유물 해제 · 저장" : "유물 장착 · 저장 (최대 3개)", new Vector2(0, .20f), new Vector2(1, .30f), () => RelicSelected?.Invoke(owned));
         button.interactable = definition != null || equipped;
         LevelUpButton(definition?.growth, owned.level, Vector2.zero, new Vector2(1, .07f), () => RelicLevelUpRequested?.Invoke(owned), page);
+        bool canGrow = definition != null && CatProgression.TryStarCost(owned.ascension, out _);
+        CatProgression.TryStarCost(owned.ascension, out long fragmentCost);
+        relicAscensionButton = Button(page, canGrow ? $"{owned.ascension}성 → {owned.ascension + 1}성 · 조각 {owned.fragments:N0}/{fragmentCost:N0}" : "최대 성급 · 5성",
+            new Vector2(0, .09f), new Vector2(1, .18f), () => RelicAscensionRequested?.Invoke(owned));
+        canAscendRelic = () => canGrow && owned.fragments >= fragmentCost;
+        RefreshUpgradeButton();
     }
 
     private void LevelUpButton(LevelUpRules rules, int level, Vector2 min, Vector2 max, UnityAction action, Transform parent = null)
@@ -485,6 +521,8 @@ public partial class CatGameSceneUI : MonoBehaviour
 
     private void RefreshUpgradeButton()
     {
+        if (relicAscensionButton != null)
+            relicAscensionButton.interactable = !saving && canAscendRelic != null && canAscendRelic();
         if (upgradeButton != null)
             upgradeButton.interactable = !saving && canAffordUpgrade != null && canAffordUpgrade();
     }

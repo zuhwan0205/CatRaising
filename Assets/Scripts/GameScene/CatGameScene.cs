@@ -112,6 +112,7 @@ public class CatGameScene : MonoBehaviour
         view.RelicSelected += SelectRelic;
         view.CharacterLevelUpRequested += LevelUpCharacter;
         view.RelicLevelUpRequested += LevelUpRelic;
+        view.RelicAscensionRequested += AscendRelic;
         view.CharacterPurchaseRequested += BuyCharacter;
         view.RelicDrawRequested += DrawRelic;
         view.CharacterDrawRequested += DrawCharacter;
@@ -338,6 +339,12 @@ public class CatGameScene : MonoBehaviour
             if(character.ascension > previousStars) view.PlayCharacterUpgrade();
         }
     }
+    private async void AscendRelic(OwnedRelic relic)
+    {
+        await session.AscendRelicAsync(relic);
+        if (view != null) view.RefreshRelicDetail(relic);
+    }
+
     private async void LevelUpRelic(OwnedRelic relic)
     {
         await session.LevelUpRelicAsync(relic);
@@ -381,6 +388,7 @@ public class CatGameScene : MonoBehaviour
             view.RelicSelected -= SelectRelic;
             view.CharacterLevelUpRequested -= LevelUpCharacter;
             view.RelicLevelUpRequested -= LevelUpRelic;
+            view.RelicAscensionRequested -= AscendRelic;
             view.CharacterPurchaseRequested -= BuyCharacter;
             view.RelicDrawRequested -= DrawRelic;
             view.CharacterDrawRequested -= DrawCharacter;

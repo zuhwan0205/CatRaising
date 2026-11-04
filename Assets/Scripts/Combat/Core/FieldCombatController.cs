@@ -13,7 +13,7 @@ public partial class FieldCombatController : MonoBehaviour
     public event Action<double, double> HealthChanged;
     public event Action PlayerHit;
     public event Action<Vector3, Vector3> AttackPerformed;
-    public event Action<Vector3, double> DamageDealt;
+    public event Action<Vector3, double, bool> DamageDealt;
     public event Action<Vector3, Vector3> AttackStarted;
     public CombatHealth PlayerHealth
     {

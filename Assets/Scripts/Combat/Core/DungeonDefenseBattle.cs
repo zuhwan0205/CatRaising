@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
@@ -13,7 +13,7 @@ public sealed class DungeonDefenseBattle : MonoBehaviour
         public float distance, slowRemaining, armorBreakRemaining; public double hp; public bool alive, boss;
         public float impactRemaining, nextImpactTime;
         public void ApplyIceSlow() => slowRemaining = CharacterCombatRules.SlowDuration;
-        public void ApplyArmorBreak() => armorBreakRemaining = CharacterCombatRules.ArmorBreakDuration;
+        public void ApplyArmorBreak() => armorBreakRemaining = Mathf.Max(armorBreakRemaining, CharacterCombatRules.ArmorBreakDuration);
     }
     private sealed class Tower
     {
@@ -26,6 +26,7 @@ public sealed class DungeonDefenseBattle : MonoBehaviour
     public Action<int> WaveCleared;
     public Action<int,int> TowerMoved;
     private bool draggingTower;
+    private DefenseDamageFeedback damageFeedback;
     private RectTransform rangeCircle;
     private int rangeSlot = -1;
     public int Selected { get; set; }
@@ -57,6 +58,7 @@ public sealed class DungeonDefenseBattle : MonoBehaviour
         IList<OwnedCharacter> cats, CharacterDefinition[] types, Action<string> status, Action<string> message, Action<bool> complete)
     {
         stage=level; map=arena; route=path; slots=pads; team=cats; definitions=types;
+        damageFeedback=map.gameObject.AddComponent<DefenseDamageFeedback>();
         routePoints=new Vector2[path.Length]; segmentLengths=new float[path.Length-1];
         towers=new Tower[pads.Length]; hud=status; hint=message; ended=complete;
         for(int i=0;i<DungeonStageRules.KindCount(stage);i++) textures[i]=Resources.Load<Texture2D>("MonsterArt/"+DungeonStageRules.MonsterArt[i]);
@@ -447,9 +449,14 @@ public sealed class DungeonDefenseBattle : MonoBehaviour
                 map.rect.width/DefenseTileBoard.Width*.42f, true);
         }
         double defense=(enemy.kind==3?2:0)+(enemy.boss?2:0);
-        enemy.hp-=CharacterCombatRules.DamageAfterDefense(shot.damage,defense,enemy.armorBreakRemaining>0);
+        bool critical=CriticalHitRules.Roll(team[shot.choice]);
+        double damage=CharacterCombatRules.DamageAfterDefense(shot.damage*(critical?CriticalHitRules.Multiplier:1),defense,enemy.armorBreakRemaining>0);
+        enemy.hp-=damage;
+        damageFeedback.Show(enemy.rect.anchoredPosition,damage,critical);
         if(enemy.hp<=0) { Remove(enemy); Coins+=enemy.boss?20:4; Refresh(); return; }
         CharacterCombatRules.ApplyHit(definitions[shot.choice].hitEffect, enemy);
+        int armorRank = CatSkillTree.Rank(team[shot.choice], CatSkillTree.ArmorBreak);
+        if (armorRank > 0) enemy.armorBreakRemaining = Mathf.Max(enemy.armorBreakRemaining, armorRank);
 
     }
 

@@ -19,7 +19,8 @@ public class FieldEnemy : MonoBehaviour, ICharacterHitReceiver
     private float slowRemaining;
     private float armorBreakRemaining;
     public double EffectiveDefense => Defense * (armorBreakRemaining > 0 ? CharacterCombatRules.ArmorMultiplier : 1f);
-    public void ApplyArmorBreak() { if (Alive) armorBreakRemaining = CharacterCombatRules.ArmorBreakDuration; }
+    public void ApplyArmorBreak() => ApplyArmorBreak(CharacterCombatRules.ArmorBreakDuration);
+    public void ApplyArmorBreak(float duration) { if (Alive) armorBreakRemaining = Mathf.Max(armorBreakRemaining, duration); }
     private double baseMonsterHealth;
     private double baseMonsterDamage;
     public double StatusDamageMultiplier => raidArtwork != null ? .4 : 1;
