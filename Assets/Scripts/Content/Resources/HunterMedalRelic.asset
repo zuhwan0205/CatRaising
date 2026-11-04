@@ -21,7 +21,7 @@ MonoBehaviour:
       maxLevel: 100
       baseGoldCost: 40
       goldCostPerLevel: 20
-    description: "적 처치 시 HP 8을 회복합니다. 재사용 대기시간은 1초입니다. 표기 수치는 1레벨 기준입니다."
+    description: "적 처치 시 HP 8을 회복합니다. 재사용 대기시간은 1초입니다."
     icon: {fileID: 21300000, guid: 3dbc6bfa6c7f47a08e59f596c8cb3765, type: 3}
     effectPerLevel: 0.8
     id: relic_hunter_medal

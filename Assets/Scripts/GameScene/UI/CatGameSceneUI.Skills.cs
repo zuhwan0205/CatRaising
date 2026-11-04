@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -87,9 +87,9 @@ public partial class CatGameSceneUI
         var rect = Rect(holder, "Skill Icon", Vector2.zero, Vector2.one);
         var icon = rect.gameObject.AddComponent<RawImage>();
         icon.raycastTarget = false;
-        icon.texture = Resources.Load<Texture2D>(node == 16 ? "GameUIArt/SkillPotion" : "GameUIArt/SkillIcons");
+        icon.texture = node == CatSkillTree.ArmorBreak ? Resources.Load<Texture2D>("GameUIArt/SkillArmorBreak") : Resources.Load<Texture2D>(node == 16 ? "GameUIArt/SkillPotion" : "GameUIArt/SkillIcons");
         if (icon.texture != null) icon.texture.filterMode = FilterMode.Point;
-        if (node < 16) icon.uvRect = new Rect(node % 4 * .25f, (3 - node / 4) * .25f, .25f, .25f);
+        if (node < 16 && node != CatSkillTree.ArmorBreak) icon.uvRect = new Rect(node % 4 * .25f, (3 - node / 4) * .25f, .25f, .25f);
         icon.color = locked ? new Color(.5f, .5f, .5f, .55f) : Color.white;
         var fit = rect.gameObject.AddComponent<AspectRatioFitter>();
         fit.aspectMode = AspectRatioFitter.AspectMode.FitInParent;

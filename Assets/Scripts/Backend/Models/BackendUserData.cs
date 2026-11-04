@@ -95,6 +95,7 @@ public class OwnedEquipment
 public class OwnedRelic
 {
     public string relicId;
+    public int ascension;
     public int level = 1;
     public long fragments;
 }

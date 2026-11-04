@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 
 public static class CatSkillTree
 {
@@ -11,12 +11,12 @@ public static class CatSkillTree
         return false;
     }
     public const int Vitality = 0, Daggers = 1, Vampire = 2, Poison = 3, Greatsword = 4,
-        Lightning = 5, Mace = 6, Haste = 7, SteelArrow = 8, Explosion = 9,
+        Lightning = 5, Mace = 6, Haste = 7, SteelArrow = 8, ArmorBreak = 9,
         LargeArrow = 10, DoubleArrow = 11, Burn = 12, ArrowStacks = 13,
         Magnet = 14, Boots = 15, Potion = 16;
     public static readonly string[] Names = {
         "생명력", "쌍단검", "흡혈", "독 방울", "대검", "번개", "둔기",
-        "신속", "강철 화살", "폭발", "거대 화살", "쌍화살", "화상", "집중 사격",
+        "신속", "강철 화살", "방어구 파괴", "거대 화살", "쌍화살", "화상", "집중 사격",
         "자석", "신발", "회복 물약"
     };
     public static readonly string[] Effects = {
@@ -28,7 +28,7 @@ public static class CatSkillTree
         "기본 공격이 대상 주변 범위 공격으로 변경\n단계당 범위 반경 0.4 증가",
         "단계당 공격 속도 +5%",
         "관통 화살 발사 · 사거리 끝에서 소멸\n피해량 68/76/84/92/100%",
-        "사거리 끝에서 폭발 · 단계당 피해 20%\n반경 1.2/1.4/1.6/1.8/2",
+        "기본 공격 명중 시 방어력 30% 감소\n지속 1/2/3/4/5초 · 재명중 시 갱신\n다른 방어력 감소와 중첩되지 않음",
         "화살 크기·충돌 폭 단계당 +10%\n최대 1.5배",
         "한 번에 화살 2개 발사\n두 번째 화살 피해 52/64/76/88/100%",
         "명중 시 화상 +1 · 단계당 중첩 한도 +1\n중첩당 최대 HP 0.5%/초 · 5초 유지\n레이드 보스에게는 효과 40%",

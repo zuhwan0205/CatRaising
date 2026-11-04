@@ -2,6 +2,7 @@ using UnityEngine;
 using UnityEngine.UI;
 
 // A bounded, scene-owned pool. No per-hit GameObjects, tweens or material instances.
+[DefaultExecutionOrder(220)]
 public sealed class HitSparkPool : MonoBehaviour
 {
     private readonly Transform[] items = new Transform[24];
@@ -62,6 +63,14 @@ public sealed class HitSparkPool : MonoBehaviour
             items[i].localScale=Vector3.one*sizes[i]*(1.3f-.3f*t);
             var tint=new Color(1,1,1,t);
             if(ui[i]!=null) ui[i].color=tint; else world[i].color=tint;
+        }
+    }
+    private void OnDisable()
+    {
+        for (int i = 0; i < items.Length; i++)
+        {
+            life[i] = 0;
+            if (items[i] != null) items[i].gameObject.SetActive(false);
         }
     }
     private void OnDestroy() { if(sprite!=null) Destroy(sprite); if(texture!=null) Destroy(texture); }

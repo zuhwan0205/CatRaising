@@ -80,6 +80,34 @@ public class RelicDefinition
     public float durationSeconds;
     public float cooldownSeconds;
     public int maxStacks = 1;
+
+    public double EffectAtLevel(int level, int ascension = 0)
+    {
+        return (effectValue + (double)effectPerLevel * Math.Max(0, level - 1)) * CatProgression.StarMultiplier(ascension);
+    }
+
+    public string DescriptionAtLevel(int level, int ascension = 0)
+    {
+        if (effectId != "heal" && effectId != "bonus_damage") return description;
+        string timing;
+        switch (trigger)
+        {
+            case EffectTrigger.OnHit: timing = "기본 공격 명중 시"; break;
+            case EffectTrigger.OnDamaged: timing = "살아남은 피격 후"; break;
+            case EffectTrigger.OnKill: timing = "적 처치 시"; break;
+            default: timing = "공격 시"; break;
+        }
+        string probability = chance < 1 ? $" {Mathf.Clamp01(chance):0.##%} 확률로" : "";
+        string value = EffectAtLevel(level, ascension).ToString("0.##");
+        string effect = effectId == "heal" ? $"HP를 {value} 회복합니다." :
+            trigger == EffectTrigger.OnAttack ? $"해당 공격의 각 대상에게 {value}의 추가 피해를 줍니다." :
+            $"{value}의 추가 피해를 줍니다.";
+        string result = $"{timing}{probability} {effect}";
+        if (cooldownSeconds > 0) result += $" 재사용 대기시간은 {cooldownSeconds:0.##}초입니다.";
+        if (effectId == "heal" && trigger == EffectTrigger.OnDamaged)
+            result += " 치명적인 피해는 막지 못합니다.";
+        return result;
+    }
 }
 
 // 공통 설정은 유저 세이브에 복제하지 않습니다.

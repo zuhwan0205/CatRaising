@@ -341,6 +341,26 @@ public class CatGameSession
         });
     }
 
+    public async Task AscendRelicAsync(OwnedRelic relic)
+    {
+        if (MutationBlocked || relic == null || !data.relics.Contains(relic)) return;
+        if (!CatProgression.TryStarCost(relic.ascension, out long cost))
+        {
+            PublishMessage("최대 성급(5성)이거나 성급 정보가 올바르지 않습니다.");
+            return;
+        }
+        if (relic.fragments < cost)
+        {
+            PublishMessage($"해당 유물 조각이 부족합니다. 필요 조각: {cost:N0}");
+            return;
+        }
+        await ExecuteMutationAsync(change =>
+        {
+            change.Set(() => relic.ascension, value => relic.ascension = value, relic.ascension + 1);
+            change.Set(() => relic.fragments, value => relic.fragments = value, relic.fragments - cost);
+        });
+    }
+
     public Task LevelUpRelicAsync(OwnedRelic relic)
     {
         if (relic == null || !data.relics.Contains(relic))

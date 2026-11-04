@@ -69,9 +69,15 @@ public sealed class FieldDamageNumbers : MonoBehaviour
         combat.EnemyGoldDropped += ShowGold;
     }
 
-    private void Show(Vector3 position, double damage)
+    private void Show(Vector3 position, double damage, bool critical)
     {
-        ShowValue(position, damage.ToString("0.#", System.Globalization.CultureInfo.InvariantCulture), false);
+        ShowValue(position, damage.ToString("0.#", System.Globalization.CultureInfo.InvariantCulture) + (critical ? "!" : ""), false, critical);
+        if (critical && view != null)
+        {
+            var point = view.WorldToViewportPoint(position);
+            if (point.z > 0 && point.x >= 0 && point.x <= 1 && point.y >= 0 && point.y <= 1)
+                view.GetComponent<CatCameraFollow>()?.CriticalShake();
+        }
     }
 
     private void ShowGold(Vector3 position, long amount)
@@ -79,7 +85,7 @@ public sealed class FieldDamageNumbers : MonoBehaviour
         ShowValue(position, "+" + amount.ToString() + " G", true);
     }
 
-    private void ShowValue(Vector3 position, string value, bool gold)
+    private void ShowValue(Vector3 position, string value, bool gold, bool critical = false)
     {
         if (!isActiveAndEnabled || view == null) return;
         var entry = entries[next];
@@ -95,8 +101,8 @@ public sealed class FieldDamageNumbers : MonoBehaviour
         entry.Fade.alpha = 1;
         entry.Label.text = value;
         entry.Coin.SetActive(gold);
-        entry.Label.fontSize = gold ? 34 : 48;
-        entry.Label.color = gold ? new Color(1f, .78f, .18f) : new Color(1f, .97f, .94f);
+        entry.Label.fontSize = gold ? 34 : critical ? 62 : 48;
+        entry.Label.color = gold ? new Color(1f, .78f, .18f) : critical ? new Color(1, .38f, .22f) : new Color(1f, .97f, .94f);
         entry.Start = start;
         entry.Travel = gold ? view.transform.up * .55f + view.transform.right * .4f : view.transform.up * .8f;
     }

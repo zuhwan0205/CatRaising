@@ -41,7 +41,7 @@ public sealed class RelicEffectRunner
                 continue;
             if (readyAt.TryGetValue(id, out double ready) && elapsed < ready)
                 continue;
-            double value = definition.effectValue + (double)definition.effectPerLevel * Math.Max(0, owned.level - 1);
+            double value = definition.EffectAtLevel(owned.level, owned.ascension);
             if (double.IsNaN(value) || double.IsInfinity(value) || value <= 0)
                 continue;
             Action<double> effect = definition.effectId == "heal" ? heal :

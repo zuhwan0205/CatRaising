@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using UnityEngine;
 
@@ -124,15 +124,20 @@ public partial class FieldCombatController
         if (target == null || !target.Alive || damage <= 0) return;
         var position = target.transform.position;
         double before = target.Health.Current;
+        bool critical = !trueDamage && CriticalHitRules.Roll(skillOwner);
+        if (critical) damage *= CriticalHitRules.Multiplier;
         bool killed = target.Hit(damage, trueDamage, player.position);
         double actual = before - target.Health.Current;
-        DamageDealt?.Invoke(position, actual);
+        // Show the resolved hit, including overkill; healing still uses HP actually removed.
+        DamageDealt?.Invoke(position, target.LastHitDamage, critical);
         if (basicHit)
         {
             HealSkill(actual * Skill(CatSkillTree.Vampire) * .02);
             if (!killed)
             {
                 CharacterCombatRules.ApplyHit(combatDefinition?.hitEffect ?? CharacterHitEffect.None, target);
+                int armorBreak = Skill(CatSkillTree.ArmorBreak);
+                if (armorBreak > 0) target.ApplyArmorBreak(armorBreak);
                 int poison = Skill(CatSkillTree.Poison), burn = Skill(CatSkillTree.Burn);
                 if (poison > 0 || burn > 0)
                 {
@@ -180,7 +185,6 @@ public partial class FieldCombatController
         public Vector3 position, direction;
         public float remaining, scale;
         public double damage;
-        public int explosion;
         public LineRenderer visual;
         public SpriteRenderer spell;
         public Sprite[] spellFrames;
@@ -235,7 +239,6 @@ public partial class FieldCombatController
             arrow.piercing = Skill(CatSkillTree.SteelArrow) > 0;
             arrow.scale = 1 + Skill(CatSkillTree.LargeArrow) * .1f;
             arrow.remaining = Range;
-            arrow.explosion = Skill(CatSkillTree.Explosion);
             arrow.position = player.position + side * (count == 2 ? (i == 0 ? -.16f : .16f) : 0);
             arrow.direction = direction;
             arrow.damage = damage * (arrow.piercing ? .6 + Skill(CatSkillTree.SteelArrow) * .08 : 1);
@@ -271,16 +274,6 @@ public partial class FieldCombatController
         arrow.remaining -= travel;
         DrawArrow(arrow);
         if (arrow.remaining > .001f) return;
-        if (arrow.explosion > 0)
-        {
-            float radius = 1 + arrow.explosion * .2f;
-            SkillExplosion(end, radius);
-            NearbyEnemies(end, radius, areaCandidates);
-            foreach (var target in areaCandidates)
-                if (target != null && target.Alive && FlatDistanceSquared(end, target.transform.position) <= radius * radius &&
-                    (Navigation == null || Navigation.Clear(end, target.transform.position)))
-                    DealSkillDamage(target, arrow.damage * arrow.explosion * .2);
-        }
         arrow.Stop();
     }
 
@@ -371,17 +364,6 @@ public partial class FieldCombatController
         line.SetPosition(0, a + Vector3.up * .5f);
         line.SetPosition(1, (a + b) * .5f + Vector3.up * .65f + Vector3.right * .12f);
         line.SetPosition(2, b + Vector3.up * .5f);
-    }
-    private void SkillExplosion(Vector3 center, float radius)
-    {
-        var line = AcquireSkillFlash(new Color(1, .5f, .1f), .12f, .22f);
-        if (line == null) return;
-        line.positionCount = 25;
-        for (int i = 0; i < 25; i++)
-        {
-            float angle = i * Mathf.PI * 2 / 24;
-            line.SetPosition(i, center + new Vector3(Mathf.Cos(angle) * radius, .25f, Mathf.Sin(angle) * radius));
-        }
     }
     private void FixedUpdate()
     {
