@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Threading.Tasks;
 
 // UI/SDK에 독립적인 비동기 저장 기능입니다. 전송 중 씬이 닫혀도 완료 결과를 처리합니다.
@@ -388,6 +388,14 @@ public class CatGameSession
             change.Set(() => data.wallet.gold, value => data.wallet.gold = value, data.wallet.gold - cost);
             change.Apply(() => setLevel(level + 1), () => setLevel(level));
         });
+    }
+
+    public Task<bool> CompleteTutorialAsync(int topic)
+    {
+        if (topic < 0 || topic > 7) throw new ArgumentOutOfRangeException(nameof(topic));
+        int mask = data.progress.tutorialSeenMask | (1 << topic);
+        return ExecuteMutationAsync(change => change.Set(() => data.progress.tutorialSeenMask,
+            value => data.progress.tutorialSeenMask = value, mask));
     }
 
     public async Task<bool> SelectCharacterAsync(OwnedCharacter character)

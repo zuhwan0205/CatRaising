@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Threading.Tasks;
 using UnityEngine;
 using UnityEngine.UI;
@@ -54,7 +54,7 @@ public partial class CatGameSceneUI
     private RectTransform SettingsBody(string title)
     {
         CloseSettings();
-        settingsPopup = Panel(safeArea, "Settings Popup", Vector2.zero, Vector2.one, new Color(.07f, .10f, .08f, .76f));
+        settingsPopup = Panel(encounterPauseOverlay != null ? encounterPauseOverlay : safeArea, "Settings Popup", Vector2.zero, Vector2.one, new Color(.07f, .10f, .08f, .76f));
         settingsPopup.SetAsLastSibling();
         var body = PopupContent(settingsPopup, "Settings Wood Frame", "Settings Paper",
             new Vector2(.045f, .16f), new Vector2(.955f, .87f), new Color(.39f, .27f, .18f), CloseSettings, out _);
@@ -96,23 +96,27 @@ public partial class CatGameSceneUI
         };
         shadows.onClick.AddListener(() => { CatLocalSettings.SetMonsterShadows(!CatLocalSettings.MonsterShadows); refreshShadows(); });
         refreshShadows();
-        var message = Label(body, "설정은 이 기기에 저장됩니다.", 18, new Vector2(.06f, .025f), new Vector2(.94f, .075f));
-        Button(body, "진행 저장", new Vector2(.10f, .085f), new Vector2(.48f, .175f), async () =>
+        var message = Label(body, "", 18, new Vector2(.06f, .18f), new Vector2(.94f, .205f));
+        if (!standaloneEncounter)
         {
-            if (settingsBusy || saving) return;
-            settingsBusy = true;
-            message.text = "저장 중…";
-            try
+            Button(body, "진행 저장", new Vector2(.10f, .085f), new Vector2(.48f, .175f), async () =>
             {
-                bool success = SettingsSaveRequested != null && await SettingsSaveRequested();
-                if (message != null) message.text = success ? "저장했습니다." : "저장에 실패했습니다. 다시 시도해주세요.";
-            }
-            catch (Exception) { if (message != null) message.text = "저장에 실패했습니다. 다시 시도해주세요."; }
-            finally { settingsBusy = false; }
-        });
-        var logout = Button(body, "로그아웃", new Vector2(.52f, .085f), new Vector2(.90f, .175f), () => { if (!settingsBusy && !saving) ShowLogoutConfirmation(); });
-        CozyButtonStyle.Apply(logout, CozyButtonStyle.Peach);
-        Label(body, "v" + Application.version, 16, new Vector2(.10f, 0), new Vector2(.90f, .035f));
+                if (settingsBusy || saving) return;
+                settingsBusy = true;
+                message.text = "저장 중…";
+                try
+                {
+                    bool success = SettingsSaveRequested != null && await SettingsSaveRequested();
+                    if (message != null) message.text = success ? "저장했습니다." : "저장에 실패했습니다. 다시 시도해주세요.";
+                }
+                catch (Exception) { if (message != null) message.text = "저장에 실패했습니다. 다시 시도해주세요."; }
+                finally { settingsBusy = false; }
+            });
+            var logout = Button(body, "로그아웃", new Vector2(.52f, .085f), new Vector2(.90f, .175f), () => { if (!settingsBusy && !saving) ShowLogoutConfirmation(); });
+            CozyButtonStyle.Apply(logout, CozyButtonStyle.Peach);
+        }
+        Button(body, "도움말 다시 보기", new Vector2(.20f, .005f), new Vector2(.80f, .075f), ShowGuideMenu);
+
     }
 
     private static void StyleFrameRateOption(Button button, bool applied, string title)

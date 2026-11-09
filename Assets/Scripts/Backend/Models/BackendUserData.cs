@@ -34,6 +34,8 @@ public class BackendUserData
 [Serializable]
 public class PlayerProgress
 {
+    // Missing in older saves: defaults to zero; each bit records a completed/skipped guide.
+    public int tutorialSeenMask;
     // 저장과 함께 확정되는 전송 대기 로그. 전송 성공 후 다음 저장에서 정리됩니다.
     public List<ItemAuditEvent> itemAuditPending = new List<ItemAuditEvent>();
     public bool itemAuditInitialized;

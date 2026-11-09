@@ -1,4 +1,4 @@
-﻿using UnityEngine;
+using UnityEngine;
 
 // 씬 진입점: 데이터 기능과 UI를 생성하고 이벤트만 연결합니다.
 public class CatGameScene : MonoBehaviour
@@ -131,6 +131,8 @@ public class CatGameScene : MonoBehaviour
         field.Combat.HealthChanged += view.ShowPlayerHealth;
         view.PendingAdSave = session.HasPendingReward;
         SetSessionBlocked(session.GameplayBlocked);
+        var returnTab = runtime.ConsumeReturnTab();
+        if (returnTab != null) view.ShowEncounterSelection(returnTab == "던전");
         StartCoroutine(SaveCombatRewardsPeriodically());
         StartCoroutine(PrepareOwnedCharacterFrames());
     }

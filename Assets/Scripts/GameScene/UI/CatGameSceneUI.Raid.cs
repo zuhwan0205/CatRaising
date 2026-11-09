@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
@@ -255,6 +255,7 @@ public partial class CatGameSceneUI
                 new Vector2(.32f, .13f), new Vector2(.98f, .25f)).color = Color.white;
         }
         BuildEncounterPauseButton(page);
+        QueueGuide(Guide.RaidBattle);
         ShowStatus(dungeonMode ? "몰려오는 몬스터를 막고 3개 웨이브를 모두 처치하세요." : "직접 이동해 위험 범위를 피하세요. 공격은 자동으로 진행됩니다.");
     }
 
@@ -305,7 +306,7 @@ public partial class CatGameSceneUI
         Label(body, pendingSave ? "저장 대기 중 · 메인 상점에서 저장을 재시도해주세요." : won && rewarded ? "보상을 받았어요!" : "더 강해져서 다시 만나요!",
             19, new Vector2(.08f, .03f), new Vector2(.92f, .17f));
         Label(backdrop, won ? "VICTORY" : "TRY AGAIN", 40, new Vector2(.08f, .82f), new Vector2(.92f, .95f)).color = new Color(1, .89f, .61f);
-        var back = Button(backdrop, standaloneEncounter ? "메인 전투로" : $"{EncounterTab} 목록으로", new Vector2(.20f, .045f), new Vector2(.80f, .13f), ExitRaid);
+        var back = Button(backdrop, $"{EncounterTab} 선택으로", new Vector2(.20f, .045f), new Vector2(.80f, .13f), ExitRaid);
         CozyButtonStyle.Apply(back, CozyButtonStyle.Green);
     }
 

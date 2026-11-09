@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Linq;
 using UnityEngine;
 using UnityEngine.Events;
@@ -162,6 +162,8 @@ public partial class CatGameSceneUI : MonoBehaviour
         Show("모험");
     }
 
+    public void ShowEncounterSelection(bool dungeon) => Show(dungeon ? "던전" : "레이드");
+
     private void Show(string tab)
     {
         if (raidActive) { ShowStatus("전투를 종료한 뒤 이동해주세요."); return; }
@@ -200,6 +202,7 @@ public partial class CatGameSceneUI : MonoBehaviour
             DungeonChapters();
         else
             Relics();
+        QueuePageGuide(tab);
     }
 
     private void Adventure()

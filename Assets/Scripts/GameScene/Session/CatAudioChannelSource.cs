@@ -11,6 +11,12 @@ public sealed class CatAudioChannelSource : MonoBehaviour
     [SerializeField, Range(0f, 1f)] private float baseVolume = 1f;
     private AudioSource source;
 
+    public float BaseVolume
+    {
+        get => baseVolume;
+        set { baseVolume = Mathf.Clamp01(value); ApplyVolume(); }
+    }
+
     public CatAudioChannel Channel
     {
         get => channel;

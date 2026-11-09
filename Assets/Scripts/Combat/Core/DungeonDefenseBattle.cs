@@ -419,7 +419,8 @@ public sealed class DungeonDefenseBattle : MonoBehaviour
     private Vector2 TilePoint(Vector2 point) => new Vector2(point.x / Mathf.Max(1, map.rect.width) * DefenseTileBoard.Width,
         point.y / Mathf.Max(1, map.rect.height) * DefenseTileBoard.Height);
     private Vector2 TowerPoint(Tower tower) => Vector2.Scale(slots[tower.slot].anchorMin, new Vector2(DefenseTileBoard.Width, DefenseTileBoard.Height));
-    private float Range(int choice) => definitions[choice].attackRange * CatSkillTree.Range(team[choice]);
+    private float Range(int choice) => definitions[choice].attackRange * CatSkillTree.Range(team[choice])
+        * (CatSkillTree.IsRanged(team[choice]) ? .5f : 1f);
 
     private double AuraMultiplier(Tower recipient)
     {

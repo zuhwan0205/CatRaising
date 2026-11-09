@@ -40,7 +40,9 @@ public sealed class HitSparkPool : MonoBehaviour
         int i=next; next=(next+1)%items.Length;
         if(items[i]==null)
         {
-            var obj=new GameObject("Pooled Hit Spark",canvas?typeof(RectTransform):typeof(Transform));
+            var obj = canvas
+                ? new GameObject("Pooled Hit Spark", typeof(RectTransform))
+                : new GameObject("Pooled Hit Spark");
             obj.transform.SetParent(transform,false); items[i]=obj.transform;
             if(canvas) { ui[i]=obj.AddComponent<Image>(); ui[i].sprite=sprite; ui[i].raycastTarget=false; ((RectTransform)items[i]).sizeDelta=Vector2.one; }
             else { obj.layer=2; world[i]=obj.AddComponent<SpriteRenderer>(); world[i].sprite=sprite; world[i].sortingOrder=19000; }
