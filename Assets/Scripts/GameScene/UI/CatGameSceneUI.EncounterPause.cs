@@ -40,18 +40,19 @@ public partial class CatGameSceneUI
         EncounterPauseChanged?.Invoke(true);
         encounterPauseOverlay = Panel(safeArea.parent, "Encounter Pause", Vector2.zero, Vector2.one, new Color(.08f,.07f,.05f,.72f));
         encounterPauseOverlay.SetAsLastSibling();
-        var frame = Panel(encounterPauseOverlay, "Pause Frame", new Vector2(.12f,.32f), new Vector2(.88f,.68f), new Color(.35f,.24f,.16f));
+        var frame = Panel(encounterPauseOverlay, "Pause Frame", new Vector2(.12f,.27f), new Vector2(.88f,.73f), new Color(.35f,.24f,.16f));
         RoundCollectionPanel(frame);
         var body = Panel(frame, "Pause Paper", new Vector2(.025f,.025f), new Vector2(.975f,.975f), cream);
         DecorateCatPopup(body);
         Label(body, "일시정지", 32, new Vector2(.08f,.72f), new Vector2(.92f,.93f));
-        var resume = Button(body, "계속하기", new Vector2(.12f,.40f), new Vector2(.88f,.64f), () =>
+        var resume = Button(body, "계속하기", new Vector2(.12f,.51f), new Vector2(.88f,.69f), () =>
         {
             CloseEncounterPause();
             EncounterPauseChanged?.Invoke(false);
         });
         CozyButtonStyle.Apply(resume, CozyButtonStyle.Green);
-        Button(body, "나가기", new Vector2(.12f,.09f), new Vector2(.88f,.33f), ExitRaid);
+        Button(body, "설정", new Vector2(.12f,.29f), new Vector2(.88f,.47f), ShowSettings);
+        Button(body, "나가기", new Vector2(.12f,.07f), new Vector2(.88f,.25f), ExitRaid);
     }
 
     public void CloseEncounterPause()

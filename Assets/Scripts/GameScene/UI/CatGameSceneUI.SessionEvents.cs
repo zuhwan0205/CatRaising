@@ -14,7 +14,7 @@ public partial class CatGameSceneUI
         if (isActiveAndEnabled) SubscribeSessionEvents();
     }
     private void OnEnable() => SubscribeSessionEvents();
-    private void OnDisable() => ReleaseSessionEvents();
+    private void OnDisable() { CloseGuide(); ReleaseSessionEvents(); }
 
     private void SubscribeSessionEvents()
     {

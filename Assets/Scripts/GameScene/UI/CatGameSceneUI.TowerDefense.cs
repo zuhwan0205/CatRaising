@@ -144,6 +144,7 @@ public partial class CatGameSceneUI
         };
         var updateBattleHud = BuildDefenseHud(root, engine, stage);
         BuildEncounterPauseButton(root);
+        QueueGuide(Guide.DungeonBattle);
         engine.Initialize(stage, map, route, anchors, team, definitions,
             text => { info.text=text; updateBattleHud(); for(int i=0;i<3;i++)
                 {

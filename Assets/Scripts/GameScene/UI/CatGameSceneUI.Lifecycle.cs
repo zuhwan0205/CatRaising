@@ -1,4 +1,4 @@
-﻿using UnityEngine;
+using UnityEngine;
 using UnityEngine.EventSystems;
 
 public partial class CatGameSceneUI
@@ -24,6 +24,7 @@ public partial class CatGameSceneUI
 
     private void ClearPage()
     {
+        CloseGuide();
         ReleaseSpecialShop();
         var header = safeArea != null ? safeArea.Find("Currency Bar") : null;
         if (header != null) header.gameObject.SetActive(false);

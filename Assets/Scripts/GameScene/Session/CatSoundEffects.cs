@@ -110,6 +110,7 @@ public sealed class CatSoundEffects : MonoBehaviour
         if (slot < 0) slot = combat ? combatCursor++ % 8 : 8 + uiCursor++ % 4;
         var voice = voices[slot];
         voice.Stop();
+        voice.GetComponent<CatAudioChannelSource>().BaseVolume = combat && sound != CatSound.Magnet ? .7f : 1f;
         voice.clip = clips[index];
         voice.Play();
     }

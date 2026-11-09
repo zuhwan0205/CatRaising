@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using UnityEngine;
@@ -18,6 +18,14 @@ public sealed class CatGameRuntime : MonoBehaviour
     public bool IsTransitioning { get; private set; }
     public EncounterRequest Encounter { get; private set; }
     private bool ownsCatalog;
+    private string returnTab;
+
+    public string ConsumeReturnTab()
+    {
+        string tab = returnTab;
+        returnTab = null;
+        return tab;
+    }
 
     public sealed class EncounterRequest
     {
@@ -68,6 +76,7 @@ public sealed class CatGameRuntime : MonoBehaviour
             runtime.Catalog, preview ? null : BackendGameData.Instance.RewardJournal);
         runtime.Session.NicknameUpdateRequested = BackendLogin.Instance.UpdateNicknameAsync;
         runtime.Encounter = null;
+        runtime.returnTab = null;
         return runtime;
     }
 
@@ -116,11 +125,14 @@ public sealed class CatGameRuntime : MonoBehaviour
         if (IsTransitioning || Session.IsSaving) return;
         EnsureSceneAvailable(MainScene);
         IsTransitioning = true;
+        returnTab = Encounter != null && Encounter.ResultHandled
+            ? (Encounter.IsDungeon ? "던전" : "레이드") : null;
         try
         {
             await LoadSceneAsync(MainScene);
             Encounter = null;
         }
+        catch { returnTab = null; throw; }
         finally { IsTransitioning = false; }
     }
 
