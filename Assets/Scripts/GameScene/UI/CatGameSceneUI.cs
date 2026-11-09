@@ -130,6 +130,7 @@ public partial class CatGameSceneUI : MonoBehaviour
         {
             string title = names[i];
             tabs[i].onClick.RemoveAllListeners();
+            ButtonTweenEffect.BindSound(tabs[i]);
             tabs[i].onClick.AddListener(() => Navigate(title));
         }
     }

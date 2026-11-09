@@ -23,6 +23,7 @@ public sealed class ButtonTweenEffect : MonoBehaviour, IPointerEnterHandler, IPo
     private void Awake()
     {
         button = GetComponent<Button>();
+        BindSound(button);
         CozyButtonStyle.RoundCorners(button);
         initialScale = transform.localScale;
     }
@@ -102,8 +103,17 @@ public sealed class ButtonTweenEffect : MonoBehaviour, IPointerEnterHandler, IPo
         transform.localScale = initialScale;
         if (glow != null) glow.color = new Color(1, .95f, .75f, 0);
     }
+    public static void BindSound(Button target)
+    {
+        target.onClick.RemoveListener(PlayClickSound);
+        target.onClick.AddListener(PlayClickSound);
+    }
+
+    private static void PlayClickSound() => CatSoundEffects.Play(CatSound.Button);
+
     private void OnDestroy()
     {
+        if (button != null) button.onClick.RemoveListener(PlayClickSound);
         animation?.Kill(); glowAnimation?.Kill();
     }
 }

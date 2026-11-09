@@ -312,7 +312,7 @@ public class CatGameSession
                 results.Add(result);
             }
             change.Set(() => data.wallet.gold, value => data.wallet.gold = value, data.wallet.gold - totalCost);
-        });
+        }, (typeof(TOwned) == typeof(OwnedCharacter) ? "character_draw_" : "relic_draw_") + count);
         return saved ? results : null;
     }
     private async Task PurchaseAsync(ShopOffer offer, bool alreadyOwned, Action grant, Action revoke)
@@ -394,8 +394,10 @@ public class CatGameSession
     {
         if (MutationBlocked || character == null || !data.characters.Contains(character))
             return false;
-        return await ExecuteMutationAsync(change =>
+        bool saved = await ExecuteMutationAsync(change =>
             change.Set(() => data.loadout.characterId, value => data.loadout.characterId = value, character.characterId));
+        if (saved && !preview) CatSoundEffects.Play(CatSound.Meow);
+        return saved;
     }
 
     public async Task ToggleRelicAsync(OwnedRelic relic)
@@ -409,18 +411,26 @@ public class CatGameSession
             if (next.Count >= 3) { PublishMessage("유물은 최대 3개까지 장착할 수 있습니다."); return; }
             next.Add(relic.relicId);
         }
-        await ExecuteMutationAsync(change => change.Set(() => data.loadout.relicIds, value => data.loadout.relicIds = value, next));
+        bool saved = await ExecuteMutationAsync(change => change.Set(() => data.loadout.relicIds, value => data.loadout.relicIds = value, next));
+        if (saved && !preview) CatSoundEffects.Play(CatSound.Equip);
     }
 
-    private async Task<bool> ExecuteMutationAsync(Action<ReversibleMutation> apply)
+    private async Task<bool> ExecuteMutationAsync(Action<ReversibleMutation> apply,
+        [System.Runtime.CompilerServices.CallerMemberName] string source = "mutation")
     {
         if (MutationBlocked) return false;
         using (var change = new ReversibleMutation())
         {
             apply(change);
-            bool saved = await SaveAsync(change.Rollback);
-            if (saved) change.Commit();
-            return saved;
+            string previousSource = data.auditSource;
+            data.auditSource = source;
+            try
+            {
+                bool saved = await SaveAsync(change.Rollback);
+                if (saved) change.Commit();
+                return saved;
+            }
+            finally { data.auditSource = previousSource; }
         }
     }
 

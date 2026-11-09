@@ -21,7 +21,7 @@ public static class CatLocalSettings
     [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.BeforeSceneLoad)]
     public static void Apply()
     {
-        AudioListener.volume = Muted ? 0f : 1f;
+        AudioListener.volume = Muted ? 0f : .5f;
         AudioChanged?.Invoke();
         QualitySettings.vSyncCount = 0;
         Application.targetFrameRate = FrameRate;

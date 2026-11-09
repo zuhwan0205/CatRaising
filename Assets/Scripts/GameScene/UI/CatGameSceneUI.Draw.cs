@@ -1,4 +1,4 @@
-using System.Collections;
+﻿using System.Collections;
 using DG.Tweening;
 using UnityEngine;
 using UnityEngine.UI;
@@ -70,6 +70,7 @@ public partial class CatGameSceneUI
         skip.targetGraphic = hit;
         skip.transition = Selectable.Transition.None;
         skip.onClick.AddListener(() => { skipDrawMotion = true; hint.text = "저장 결과를 기다리고 있어요…"; });
+        CatSoundEffects.Play(CatSound.Chest);
         float elapsed = 0;
         var shake = DOTween.Sequence().SetUpdate(true).SetLink(chest.gameObject, LinkBehaviour.KillOnDisable);
         shake.Append(DOTween.To(() => chest.localEulerAngles.z, v => chest.localRotation = Quaternion.Euler(0, 0, v), 5f, .08f));
@@ -99,6 +100,7 @@ public partial class CatGameSceneUI
             yield break;
         }
 
+        CatSoundEffects.Play(CatSound.Reward);
         if (drawCount > 1)
         {
             chest.gameObject.SetActive(false);

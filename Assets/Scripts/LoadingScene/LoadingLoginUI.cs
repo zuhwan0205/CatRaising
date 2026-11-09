@@ -157,11 +157,17 @@ public class LoadingLoginUI : MonoBehaviour
         }
         // 재초기화에서도 런타임 이벤트가 중복되지 않도록 합니다.
         signUpButton.onClick.RemoveAllListeners();
+        ButtonTweenEffect.BindSound(signUpButton);
         loginButton.onClick.RemoveAllListeners();
+        ButtonTweenEffect.BindSound(loginButton);
         googleButton.onClick.RemoveAllListeners();
+        ButtonTweenEffect.BindSound(googleButton);
         submitButton.onClick.RemoveAllListeners();
+        ButtonTweenEffect.BindSound(submitButton);
         backButton.onClick.RemoveAllListeners();
+        ButtonTweenEffect.BindSound(backButton);
         retry.onClick.RemoveAllListeners();
+        ButtonTweenEffect.BindSound(retry);
         signUpButton.onClick.AddListener(() => SelectMode(true));
         loginButton.onClick.AddListener(() => SelectMode(false));
         googleButton.onClick.AddListener(() => { if (!busy) StartCoroutine(SubmitRoutine(true)); });

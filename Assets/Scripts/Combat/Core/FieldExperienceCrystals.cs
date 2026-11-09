@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using UnityEngine;
 
@@ -98,6 +98,7 @@ public sealed class FieldExperienceCrystals : MonoBehaviour
         // Empty searches also consume the interval, avoiding a large scan every frame.
         if (magnet) magnetCooldown = 6 - magnetRank;
         if (total == 0 || !Collect(total)) return;
+        if (magnet) CatSoundEffects.Play(CatSound.Magnet, true);
         foreach (var item in collected)
         {
             var bucket = cells[item.cell]; bucket.Remove(item);

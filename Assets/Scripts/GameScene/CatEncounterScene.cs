@@ -74,6 +74,7 @@ public sealed class CatEncounterScene : MonoBehaviour
     private async void OnFinished(bool won)
     {
         if (!flow.BeginResult()) return;
+        CatSoundEffects.Play(won ? CatSound.Victory : CatSound.Lose);
         RestorePause();
         view.CloseEncounterPause();
         try
