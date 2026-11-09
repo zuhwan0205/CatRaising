@@ -1,5 +1,6 @@
 using System;
 using System.Threading.Tasks;
+using System.Threading;
 using BackEnd;
 using UnityEngine;
 #if BACKND_SDK_INSTALLED
@@ -19,8 +20,39 @@ public class BackendGameData
     {
         get; private set;
     }
+    [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.SubsystemRegistration)]
+    private static void ResetSession()
+    {
+        var previous = instance;
+        instance = null;
+        userData = null;
+#if BACKND_SDK_INSTALLED
+        previous?.client?.Dispose();
+#endif
+    }
+
+    // A timeout only abandons waiting; it does not prove a server write was cancelled.
+    private async Task<T> WaitForRequest<T>(Task<T> request, string stage, CancellationToken cancellation = default)
+    {
+        using var timer = CancellationTokenSource.CreateLinkedTokenSource(cancellation);
+        var deadline = Task.Delay(45000, timer.Token);
+        if (await Task.WhenAny(request, deadline) != request)
+        {
+            _ = request.ContinueWith(t => { var observed = t.Exception; },
+                CancellationToken.None, TaskContinuationOptions.OnlyOnFaulted, TaskScheduler.Default);
+            cancellation.ThrowIfCancellationRequested();
+            throw new TimeoutException(stage + " 응답이 45초 이상 지연되었습니다. 잠시 후 다시 로그인해주세요.");
+        }
+        timer.Cancel();
+        cancellation.ThrowIfCancellationRequested();
+        if (instance != this || !Application.isPlaying)
+            throw new OperationCanceledException("이전 실행의 데이터 요청을 무시합니다.");
+        return await request;
+    }
+
     private bool busy;
     private bool requiresReload;
+    private ItemAuditSnapshot auditSnapshot;
     public CombatRewardJournal RewardJournal { get; private set; }
 
     public void ClearLoggedOutSession()
@@ -34,6 +66,7 @@ public class BackendGameData
         revision = 0;
 #endif
         userData = null;
+        auditSnapshot = null;
         RewardJournal = null;
         requiresReload = false;
         LastError = "";
@@ -62,7 +95,7 @@ public class BackendGameData
     private long revision;
 #endif
 
-    public async Task<bool> InitializeAndLoadAsync(string databaseUuid, Action<string> progress = null)
+    public async Task<bool> InitializeAndLoadAsync(string databaseUuid, Action<string> progress = null, CancellationToken cancellation = default)
     {
         if (busy)
         {
@@ -86,20 +119,20 @@ public class BackendGameData
             if (string.IsNullOrEmpty(owner)) throw new InvalidOperationException("먼저 로그인해주세요.");
             client = new Client(databaseUuid);
             progress?.Invoke("DB 인증 서버에 연결하는 중…");
-            await client.Initialize();
+            await WaitForRequest(InitializeClientAsync(client), "DB 인증", cancellation);
             if (string.IsNullOrEmpty(client.UserUUID)) throw new InvalidOperationException("데이터베이스 인증 초기화에 실패했습니다.");
             string key = client.UserUUID;
             progress?.Invoke("저장된 유저 데이터를 불러오는 중…");
-            var row = await client.From<PlayerSaveRow>().OfCurrentUser().Where(x => x.SaveId == key).FirstOrDefault();
+            var row = await WaitForRequest(ReadRowAsync(client, key), "유저 데이터 조회", cancellation);
             if (row == null)
             {
                 // 조회 오류는 예외로 중단되며, 조회 성공 후 없음일 때만 이전/신규 생성합니다.
                 progress?.Invoke("기존 데이터를 확인하고 초기 데이터를 준비하는 중…");
-                var candidate = await LegacyGameDataReader.LoadAsync() ?? BackendUserData.CreateNew();
+                var candidate = await WaitForRequest(LegacyGameDataReader.LoadAsync(), "기존 데이터 조회", cancellation) ?? BackendUserData.CreateNew();
                 row = ToRow(candidate, key, 1);
                 EnsureOwner(owner);
-                var inserted = await client.From<PlayerSaveRow>().Insert(row);
-                if (inserted.AffectedRows != 1) throw new InvalidOperationException("초기 데이터 이전/삽입 결과를 확인할 수 없습니다. 다시 로그인해주세요.");
+                var inserted = await WaitForRequest(InsertRowAsync(client, row), "초기 데이터 저장", cancellation);
+                if (inserted != 1) throw new InvalidOperationException("초기 데이터 이전/삽입 결과를 확인할 수 없습니다. 다시 로그인해주세요.");
                 Debug.Log("데이터베이스 player_save 초기 저장 완료. 기존 USER_DATA는 보존합니다.");
             }
             EnsureOwner(owner);
@@ -118,6 +151,10 @@ public class BackendGameData
             revision = row.Revision;
             userData = loaded;
             RewardJournal = journal;
+            auditSnapshot = new ItemAuditSnapshot(loaded);
+            if (loaded.progress.itemAuditPending == null)
+                loaded.progress.itemAuditPending = new System.Collections.Generic.List<ItemAuditEvent>();
+            _ = BackendItemAudit.FlushAsync(loaded, owner, key);
             return true;
 #else
             await Task.CompletedTask;
@@ -126,6 +163,10 @@ public class BackendGameData
         }
         catch (Exception exception)
         {
+#if BACKND_SDK_INSTALLED
+            client?.Dispose();
+            client = null;
+#endif
             LastError = exception.Message;
             Debug.LogException(exception);
             return false;
@@ -139,6 +180,9 @@ public class BackendGameData
             return false;
         busy = true;
         LastError = "";
+        var pendingAudits = new System.Collections.Generic.List<ItemAuditEvent>();
+        bool auditWasInitialized = userData?.progress?.itemAuditInitialized ?? false;
+        bool committed = false;
         try
         {
 #if BACKND_SDK_INSTALLED
@@ -150,8 +194,7 @@ public class BackendGameData
             if (RewardJournal != null && RewardJournal.HasAttempts)
             {
                 string lookupKey = saveId;
-                var current = await client.From<PlayerSaveRow>().OfCurrentUser()
-                    .Where(x => x.SaveId == lookupKey).FirstOrDefault();
+                var current = await WaitForRequest(ReadRowAsync(client, lookupKey), "이전 저장 확인");
                 if (current == null || current.Revision != revision)
                 {
                     requiresReload = true;
@@ -162,17 +205,40 @@ public class BackendGameData
                 revision = current.Revision;
             }
             long expectedRevision = revision;
+            var nextAudit = new ItemAuditSnapshot(userData);
+            var previousAudit = auditSnapshot ?? nextAudit;
+            if (!auditWasInitialized)
+            {
+                var baseline = previousAudit.Compare(previousAudit, "inventory_baseline",
+                    checked(expectedRevision + 1), Application.version, true);
+                if (baseline != null) pendingAudits.Add(baseline);
+            }
+            var changeAudit = previousAudit.Compare(nextAudit, userData.auditSource,
+                checked(expectedRevision + 1), Application.version);
+            if (changeAudit != null) pendingAudits.Add(changeAudit);
+            if (pendingAudits.Count > 0)
+            {
+                if (userData.progress.itemAuditPending.Count + pendingAudits.Count > 24)
+                {
+                    _ = BackendItemAudit.FlushAsync(userData, ownerInDate, saveId);
+                    throw new InvalidOperationException("아이템 로그 전송이 지연되고 있습니다. 잠시 후 다시 저장해주세요.");
+                }
+                userData.progress.itemAuditPending.AddRange(pendingAudits);
+            }
+            userData.progress.itemAuditInitialized = true;
             if (RewardJournal != null) userData.progress.combatSaveReceipt = RewardJournal.BeginUpload();
             var row = ToRow(userData, saveId, checked(expectedRevision + 1));
             string key = saveId;
-            var result = await client.From<PlayerSaveRow>().OfCurrentUser()
-                .Where(x => x.SaveId == key && x.Revision == expectedRevision).Update(row);
-            if (result.AffectedRows != 1)
+            var affected = await WaitForRequest(UpdateRowAsync(client, key, expectedRevision, row), "유저 데이터 저장");
+            if (affected != 1)
                 throw new InvalidOperationException("저장 버전이 변경됐거나 행이 없습니다. 다시 로그인해 최신 데이터를 불러와주세요.");
             revision = row.Revision;
+            committed = true;
+            auditSnapshot = nextAudit;
             // 서버 저장 성공 후 로컬 디스크 오류가 나도 구매 등을 롤백하면 안 됩니다.
             try { RewardJournal?.Reconcile(row.Progress.combatSaveReceipt); }
             catch (Exception exception) { Debug.LogException(exception); }
+            _ = BackendItemAudit.FlushAsync(userData, ownerInDate, saveId);
             return true;
 #else
             await Task.CompletedTask;
@@ -181,14 +247,44 @@ public class BackendGameData
         }
         catch (Exception exception)
         {
+            if (exception is TimeoutException) requiresReload = true;
             LastError = exception.Message;
             Debug.LogException(exception);
             return false;
         }
-        finally { busy = false; }
+        finally
+        {
+            if (instance == this && !committed && userData != null)
+            {
+                foreach (var entry in pendingAudits) userData.progress.itemAuditPending.Remove(entry);
+                userData.progress.itemAuditInitialized = auditWasInitialized;
+#if BACKND_SDK_INSTALLED
+                // 용량 제한으로 저장이 거절돼도 이미 확정된 대기 로그는 다시 전송합니다.
+                if (!string.IsNullOrEmpty(ownerInDate) && !string.IsNullOrEmpty(saveId))
+                    _ = BackendItemAudit.FlushAsync(userData, ownerInDate, saveId);
+#endif
+            }
+            busy = false;
+        }
     }
 
 #if BACKND_SDK_INSTALLED
+    private static async Task<bool> InitializeClientAsync(Client requestClient)
+    {
+        await requestClient.Initialize();
+        return true;
+    }
+
+    private static async Task<PlayerSaveRow> ReadRowAsync(Client requestClient, string key) =>
+        await requestClient.From<PlayerSaveRow>().OfCurrentUser().Where(x => x.SaveId == key).FirstOrDefault();
+
+    private static async Task<int> InsertRowAsync(Client requestClient, PlayerSaveRow row) =>
+        (await requestClient.From<PlayerSaveRow>().Insert(row)).AffectedRows;
+
+    private static async Task<int> UpdateRowAsync(Client requestClient, string key, long expectedRevision, PlayerSaveRow row) =>
+        (await requestClient.From<PlayerSaveRow>().OfCurrentUser()
+            .Where(x => x.SaveId == key && x.Revision == expectedRevision).Update(row)).AffectedRows;
+
     private static void EnsureOwner(string owner)
     {
         if (owner != Backend.UserInDate) throw new InvalidOperationException("로그인 계정이 변경되었습니다. 다시 로그인해주세요.");

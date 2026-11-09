@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Threading.Tasks;
 using UnityEngine;
 using UnityEngine.UI;
@@ -17,6 +17,7 @@ public partial class CatGameSceneUI
         {
             var button = existing.GetComponent<Button>();
             button.onClick.RemoveAllListeners();
+            ButtonTweenEffect.BindSound(button);
             button.onClick.AddListener(ShowSettings);
             BuildSettingsGear(button.transform);
             return;

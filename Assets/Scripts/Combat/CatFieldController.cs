@@ -201,6 +201,7 @@ public partial class CatFieldController : MonoBehaviour
     public void SetVisible(bool value)
     {
         visible = value;
+        CatSoundEffects.SetCombatAudible(value);
         if (movement != null)
         {
             movement.ManualInputEnabled = value;
@@ -229,6 +230,8 @@ public partial class CatFieldController : MonoBehaviour
     }
     private void OnDestroy()
     {
+        // The next scene (including dungeon defense) owns its own combat audio.
+        CatSoundEffects.SetCombatAudible(true);
         if (fieldCamera != null)
             fieldCamera.targetTexture = null;
         if (Output != null)

@@ -4,6 +4,7 @@ using System.Collections.Generic;
 [Serializable]
 public class BackendUserData
 {
+    [NonSerialized] public string auditSource = "save";
     public const int CurrentVersion = 1;
     public int schemaVersion = CurrentVersion;
     public PlayerProgress progress = new PlayerProgress();
@@ -33,6 +34,9 @@ public class BackendUserData
 [Serializable]
 public class PlayerProgress
 {
+    // 저장과 함께 확정되는 전송 대기 로그. 전송 성공 후 다음 저장에서 정리됩니다.
+    public List<ItemAuditEvent> itemAuditPending = new List<ItemAuditEvent>();
+    public bool itemAuditInitialized;
     // 기존 progress JSON 안에 저장되므로 DB 컬럼 추가가 필요하지 않습니다.
     public string combatSaveReceipt = "";
     public string profileName = "고양이 집사";

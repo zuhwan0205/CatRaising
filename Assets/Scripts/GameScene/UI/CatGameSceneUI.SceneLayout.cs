@@ -1,4 +1,4 @@
-using UnityEngine;
+﻿using UnityEngine;
 using UnityEngine.UI;
 
 public partial class CatGameSceneUI
@@ -52,6 +52,7 @@ public partial class CatGameSceneUI
         adventureJoystick.InputChanged = value => StickChanged?.Invoke(value);
         adventureJoystick.gameObject.SetActive(!automatic);
         adventureMode.onClick.RemoveAllListeners();
+        ButtonTweenEffect.BindSound(adventureMode);
         adventureMode.onClick.AddListener(() =>
         {
             if (saving) return;

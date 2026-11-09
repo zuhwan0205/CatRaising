@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using UnityEngine;
 
@@ -293,6 +293,7 @@ public partial class FieldCombatController : MonoBehaviour
             bool sameTarget = intendedTarget.Alive && intendedTarget.Health == pendingAttackLife;
             var aim = sameTarget ? intendedTarget.transform.position : closest != null ? closest.transform.position : pendingAttackPosition;
             double bonus = TriggerRelics(EffectTrigger.OnAttack, true);
+            CatSoundEffects.Attack(selectedId);
             LaunchSkillArrows(aim, (attack + bonus) * AllyAttackMultiplier);
             return;
         }
@@ -307,7 +308,10 @@ public partial class FieldCombatController : MonoBehaviour
                 // Finish the visible shot even when another party member killed its target.
                 // This is a miss: no hit effects, damage or rewards are applied.
                 if (combatDefinition != null && combatDefinition.delivery == AttackDelivery.Projectile)
+                {
+                    CatSoundEffects.Attack(selectedId);
                     AttackPerformed?.Invoke(player.position, pendingAttackPosition);
+                }
                 return;
             }
         }
@@ -325,6 +329,7 @@ public partial class FieldCombatController : MonoBehaviour
         }
         if (attackBehavior is TrioAttack trio)
             trio.LimitTargets(attackTargets);
+        if (attackTargets.Count > 0) CatSoundEffects.Attack(selectedId);
         double minDamage = double.PositiveInfinity, maxDamage = 0, maxBonus = 0;
         if ((attackBehavior is BreathAreaAttack || attackBehavior is TargetAreaAttack) && attackTargets.Count > 0)
             AttackPerformed?.Invoke(player.position, closest.transform.position);

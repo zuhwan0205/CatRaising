@@ -202,7 +202,7 @@ public class BackendManager : MonoBehaviour
         {
             Debug.Log("[Login Load] " + message);
             if (this != null) loginUI.ShowMessage(message);
-        });
+        }, destroyCancellationToken);
         if (await Task.WhenAny(loading, Task.Delay(15000)) != loading && this != null)
             loginUI.ShowMessage("로그인은 완료됐지만 데이터 서버 응답이 지연되고 있습니다. 데이터를 불러올 때까지 기다려주세요.");
         if (!await loading)

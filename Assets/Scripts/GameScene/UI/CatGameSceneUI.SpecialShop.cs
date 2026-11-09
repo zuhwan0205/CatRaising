@@ -71,6 +71,7 @@ public partial class CatGameSceneUI
             changed = true;
         }
         specialShopButton.onClick.RemoveAllListeners();
+        ButtonTweenEffect.BindSound(specialShopButton);
         specialShopButton.onClick.AddListener(() => Navigate("특별 상점"));
         return changed;
     }

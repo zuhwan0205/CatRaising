@@ -278,6 +278,7 @@ public sealed class DungeonDefenseBattle : MonoBehaviour
     private readonly List<Shot> shots = new List<Shot>();
     private void LaunchShot(Vector2 source, Enemy target, int choice, double damage, Image sourceImage)
     {
+        CatSoundEffects.Attack(team[choice].characterId);
         Shot shot=null;
         foreach(var candidate in shots) if(!candidate.active) { shot=candidate; break; }
         if(shot==null)
