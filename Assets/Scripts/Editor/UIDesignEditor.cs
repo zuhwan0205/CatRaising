@@ -4,7 +4,7 @@ using UnityEngine.UI;
 
 public static class UIDesignEditor
 {
-    private const string AssetPath = "Assets/Scripts/Resources/UIDesignOverrides.asset";
+    private const string AssetPath = "Assets/Resources/UIDesignOverrides.asset";
 
     [MenuItem("CatRaising/UI 디자인/선택 UI 디자인 저장 (하위 포함)")]
     private static void Save()

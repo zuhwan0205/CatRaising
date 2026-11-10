@@ -1,4 +1,4 @@
-﻿#if UNITY_EDITOR
+#if UNITY_EDITOR
 using UnityEngine;
 using UnityEngine.UI;
 using UnityEditor;
@@ -26,7 +26,7 @@ public partial class CatGameSceneUI
         {
             var sprite = image.sprite;
             if (sprite == null || EditorUtility.IsPersistent(sprite)) continue;
-            const string shapePath = "Assets/Scripts/Resources/SpecialShop/RoundedShape.asset";
+            const string shapePath = "Assets/Resources/SpecialShop/RoundedShape.asset";
             var saved = AssetDatabase.LoadAssetAtPath<Texture2D>(shapePath);
             if (saved == null)
             {

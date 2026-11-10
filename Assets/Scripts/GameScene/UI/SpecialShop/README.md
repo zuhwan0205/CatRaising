@@ -3,7 +3,7 @@
 특별 상점은 MVP 방식으로 분리했습니다. 화면 모양(View), 상품 데이터(Catalog), 카드 클릭과 팝업 수명 관리(Presenter)를 각각 담당합니다. 메인 UI는 특별 상점을 열고 닫기만 합니다.
 
 ## Unity에서 직접 수정하는 파일
-Project 창에서 `Assets/Scripts/Resources/SpecialShop`을 엽니다.
+Project 창에서 `Assets/Resources/SpecialShop`을 엽니다.
 
 - `SpecialShopView.prefab`: 상점 제목, 배경, 스크롤 영역. `Package Cards`의 Special Shop Grid에서 열 수(Constraint Count), 카드 높이(Cell Size Y), 간격(Spacing), 여백(Padding)을 수정합니다. 카드 폭은 화면 너비에 맞게 자동 계산합니다.
 - `SpecialShopCard.prefab`: 모든 상품 카드에 공통으로 쓰는 틀. 이미지 영역, 상품명 위치, 가격 배경, 글자 크기, 모서리 등을 편집합니다. 카드 전체 크기는 목록의 Grid가 결정합니다.
