@@ -1,6 +1,6 @@
 # Encounter menu backgrounds
 
-Generated with built-in image_gen. Original images are preserved; project copies are in Assets/Scripts/Resources/GameUIArt.
+Generated with built-in image_gen. Original images are preserved; project copies are in Assets/Resources/GameUIArt.
 
 ## DungeonForestWallpaper.png
 

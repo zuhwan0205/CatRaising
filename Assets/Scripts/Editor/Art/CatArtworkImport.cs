@@ -23,8 +23,8 @@ public static class CatArtworkImport
             ImportTexture("Assets/Scripts/Content/Resources/" + name + ".png", true);
         foreach (string name in RaidBattle.ArtworkNames)
         {
-            ImportTexture("Assets/Scripts/Resources/RaidArt/" + name + ".png", true);
-            ImportTexture("Assets/Scripts/Resources/RaidArt/" + name + "Attack.png", true);
+            ImportTexture("Assets/Resources/RaidArt/" + name + ".png", true);
+            ImportTexture("Assets/Resources/RaidArt/" + name + "Attack.png", true);
         }
     }
 

@@ -12,7 +12,7 @@ public static class GameplayPatternMigration
     {
         if (EditorApplication.isPlayingOrWillChangePlaymode || EditorApplication.isCompiling ||
             BuildPipeline.isBuildingPlayer || AssetDatabase.IsAssetImportWorkerProcess()) return;
-        const string path = "Assets/Scripts/Resources/CatVisualCatalog.asset";
+        const string path = "Assets/Resources/CatVisualCatalog.asset";
         if (AssetDatabase.LoadAssetAtPath<CatVisualCatalog>(path) == null)
         {
             var catalog = ScriptableObject.CreateInstance<CatVisualCatalog>();

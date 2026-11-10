@@ -7,7 +7,7 @@ using UnityEngine;
 [InitializeOnLoad]
 public static class SpecialShopPrefabSetup
 {
-    public const string Folder = "Assets/Scripts/Resources/SpecialShop";
+    public const string Folder = "Assets/Resources/SpecialShop";
     static SpecialShopPrefabSetup() => EditorApplication.delayCall += Prepare;
 
     [MenuItem("CatRaising/Prepare Special Shop Prefabs")]
@@ -15,7 +15,7 @@ public static class SpecialShopPrefabSetup
     {
         if (EditorApplication.isPlayingOrWillChangePlaymode || EditorApplication.isCompiling ||
             BuildPipeline.isBuildingPlayer || AssetDatabase.IsAssetImportWorkerProcess()) return;
-        if (!AssetDatabase.IsValidFolder(Folder)) AssetDatabase.CreateFolder("Assets/Scripts/Resources", "SpecialShop");
+        if (!AssetDatabase.IsValidFolder(Folder)) AssetDatabase.CreateFolder("Assets/Resources", "SpecialShop");
         var catalog = AssetDatabase.LoadAssetAtPath<SpecialShopCatalog>(Folder + "/SpecialShopCatalog.asset");
         if (catalog == null)
         {

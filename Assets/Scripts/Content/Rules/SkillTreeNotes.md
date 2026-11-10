@@ -49,7 +49,7 @@ cat_lion(용), cat_shadow(눈꽃)이다. 새 캐릭터 추가 시 CatSkillTree.I
 내장 image_gen 도구로 생성한 투명 픽셀 아이콘을 프로젝트에 복사했다.
 SkillIcons.png는 4×4 셀, SkillPotion.png는 단일 이미지이다.
 
-경로: Assets/Scripts/Resources/GameUIArt/SkillIcons.png, SkillPotion.png
+경로: Assets/Resources/GameUIArt/SkillIcons.png, SkillPotion.png
 
 최종 아틀라스 프롬프트:
 

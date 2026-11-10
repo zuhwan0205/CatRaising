@@ -24,8 +24,16 @@
 
 ## 유지한 경로와 참조
 
-- Resources, Content의 기존 데이터 에셋, MapDesign, UIArt, 그림·폰트는 기존 위치를 유지합니다.
+- 2026-11-10: `Assets/Scripts/Resources`의 에셋은 `.meta`와 함께 `Assets/Resources`로 이동했습니다. 에디터의 고정 경로도 갱신했습니다. Content의 별도 Resources와 MapDesign, UIArt는 유지합니다.
 - Editor 도구는 계속 Editor 폴더 아래에 있어 기기 빌드에서 제외됩니다.
 - 이동한 스크립트의 `.meta` 파일을 함께 이동하여 기존 GUID를 유지합니다.
 - 기존 설명 문서는 작성 당시의 경로를 포함할 수 있습니다. 현재 소스 위치는 위 표를 기준으로 찾습니다.
 - `.editorconfig`는 C# 들여쓰기와 줄바꿈 형식을 지정합니다.
+
+## 현재 기능과 문서 (2026-11-10)
+
+- `GameScene/Session/CatBackgroundMusic`: 로딩·메인·던전·레이드별 BGM 자동 전환과 무한 반복, 기본 음량 30%.
+- `CatSoundEffects`: `SFX/` 로딩, 전투 8개·UI 4개 음원 풀.
+- `CatAudioChannelSource`, `CatLocalSettings`: BGM·효과음 개별 볼륨, 음소거, FPS, 그림자 설정.
+- `GameScene/UI/CatGameSceneUI.Tutorial`: 8종 안내, 완료 상태 저장, 설정에서 다시 보기.
+- 전체 현황: [개발 현황](../../Docs/개발_현황.md), [게임 구조 설명](../../Docs/게임_구조_설명.md), [오디오·리소스](../../Docs/오디오_리소스.md).

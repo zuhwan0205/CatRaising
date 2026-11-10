@@ -98,7 +98,7 @@ public sealed class CatSoundEffects : MonoBehaviour
         if (!loaded[index])
         {
             loaded[index] = true;
-            clips[index] = Resources.Load<AudioClip>("SFX, BGM/" + Paths[index]);
+            clips[index] = Resources.Load<AudioClip>("SFX/" + Paths[index]);
             if (clips[index] == null) Debug.LogWarning("Missing sound: " + Paths[index]);
         }
         if (clips[index] == null) return;

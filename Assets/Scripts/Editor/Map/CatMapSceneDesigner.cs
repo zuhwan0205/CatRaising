@@ -114,8 +114,8 @@ public static class CatMapSceneDesigner
             foreach(var camera in copy.GetComponentsInChildren<Camera>(true))Object.DestroyImmediate(camera.gameObject);
             foreach(var billboard in copy.GetComponentsInChildren<FieldBillboard>(true))billboard.ViewCamera=null;
             foreach(var child in copy.GetComponentsInChildren<Transform>(true))child.gameObject.layer=2;
-            Directory.CreateDirectory("Assets/Scripts/Resources");
-            PrefabUtility.SaveAsPrefabAsset(copy,"Assets/Scripts/Resources/BattleMap.prefab");
+            Directory.CreateDirectory("Assets/Resources");
+            PrefabUtility.SaveAsPrefabAsset(copy,"Assets/Resources/BattleMap.prefab");
         }
         finally {Object.DestroyImmediate(copy);}
         Debug.Log("MapEditor 배치를 BattleMap에 반영했습니다. 다음 전투 실행부터 사용합니다.");
